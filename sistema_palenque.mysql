@@ -3,6 +3,6 @@
   "port": 3306,          // Puerto de MySQL (predeterminado: 3306)
   "username": "root",     // Nombre de usuario
   "password": "Clave123*", // Tu contraseña
-  "database": "sistema_palenque.sql",  // Nombre de la base de datos
+  "database": "sistema_palenque",  // Nombre de la base de datos
   "ssl": false            // Desactivar SSL si no lo usas
 }

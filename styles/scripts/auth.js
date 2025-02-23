@@ -1,4 +1,3 @@
-// scripts/auth.js
 document.getElementById('formRegistro').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -11,32 +10,33 @@ document.getElementById('formRegistro').addEventListener('submit', async (e) => 
         confirmacion: document.getElementById('confirmarContraseña').value
     };
 
-        // ------------ VALIDACIONES AQUÍ ------------
-    // 1. Validar formato de email
+    // ========== VALIDACIONES FRONTEND ==========
+    // 1. Campos vacíos
+    if (!datos.nombre || !datos.email || !datos.usuario || !datos.contraseña) {
+        alert('⚠️ Todos los campos son obligatorios');
+        return;
+    }
+
+    // 2. Formato de email
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) {
-        alert('❌ El correo electrónico no es válido');
+        alert('❌ Formato de email inválido');
         return;
     }
 
-    // 2. Validar contraseña fuerte (mínimo 8 caracteres)
+    // 3. Contraseña segura
     if (datos.contraseña.length < 8) {
-        alert('⚠️ La contraseña debe tener al menos 8 caracteres');
+        alert('⚠️ La contraseña debe tener mínimo 8 caracteres');
         return;
     }
 
-    // 3. Confirmar contraseña
+    // 4. Confirmación de contraseña
     if (datos.contraseña !== datos.confirmacion) {
         alert('⚠️ Las contraseñas no coinciden');
         return;
     }
-    // Validación básica frontend
-    if (datos.contraseña !== datos.confirmacion) {
-        alert('Las contraseñas no coinciden');
-        return;
-    }
 
+    // ========== ENVÍO AL SERVIDOR ==========
     try {
-        // Enviar datos al backend
         const response = await fetch('server/api/registro.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -46,12 +46,12 @@ document.getElementById('formRegistro').addEventListener('submit', async (e) => 
         const resultado = await response.json();
 
         if (resultado.success) {
-            alert('Registro exitoso!');
+            alert('✅ Registro exitoso! Redirigiendo...');
             window.location.href = 'menu.html';
         } else {
-            alert(`Error: ${resultado.error}`);
+            alert(`❌ Error: ${resultado.error}`);
         }
     } catch (error) {
-        alert('Error de conexión con el servidor');
+        alert('🔥 Error de conexión con el servidor');
     }
 });
