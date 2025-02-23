@@ -11,6 +11,24 @@ document.getElementById('formRegistro').addEventListener('submit', async (e) => 
         confirmacion: document.getElementById('confirmarContraseña').value
     };
 
+        // ------------ VALIDACIONES AQUÍ ------------
+    // 1. Validar formato de email
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.email)) {
+        alert('❌ El correo electrónico no es válido');
+        return;
+    }
+
+    // 2. Validar contraseña fuerte (mínimo 8 caracteres)
+    if (datos.contraseña.length < 8) {
+        alert('⚠️ La contraseña debe tener al menos 8 caracteres');
+        return;
+    }
+
+    // 3. Confirmar contraseña
+    if (datos.contraseña !== datos.confirmacion) {
+        alert('⚠️ Las contraseñas no coinciden');
+        return;
+    }
     // Validación básica frontend
     if (datos.contraseña !== datos.confirmacion) {
         alert('Las contraseñas no coinciden');
