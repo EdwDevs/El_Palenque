@@ -1,62 +1,138 @@
+// ------------------------- UTILIDADES -------------------------
+// Hashing básico (requiere crypto-js en tu HTML)
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Mostrar/Ocultar loading
+function toggleLoading(form, show) {
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (show) {
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<div class="spinner-border spinner-border-sm"></div> Procesando...';
+    } else {
+        submitButton.disabled = false;
+        submitButton.innerHTML = form.id === 'formLogin' ? 'Ingresar' : 'Crear Cuenta';
+    }
+}
+
+// ------------------------- MANEJO DE LOGIN -------------------------
 document.getElementById('formLogin').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const usuario = document.getElementById('usuario').value;
-    const contraseña = document.getElementById('contraseña').value;
+    const form = e.target;
+    const usuario = form.usuario.value.trim();
+    const contraseña = form.contraseña.value;
+    const errorContainer = document.getElementById('loginError');
 
+    // Reset mensajes
+    errorContainer.innerHTML = '';
+    
+    // Validación mejorada
     if (!usuario || !contraseña) {
-        alert('⚠️ Usuario y contraseña son obligatorios');
+        showError(errorContainer, '⚠️ Todos los campos son obligatorios');
         return;
     }
 
     try {
+        toggleLoading(form, true);
+        
+        // Hashing de contraseña
+        const hashedPassword = await hashPassword(contraseña);
+        
         const response = await fetch('server/api/login.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usuario, contraseña })
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': document.querySelector('[name="csrfToken"]').content
+            },
+            body: JSON.stringify({ usuario, contraseña: hashedPassword })
         });
+        
         const data = await response.json();
 
         if (data.success) {
-            window.location.href = 'menu.html'; 
+            sessionStorage.setItem('authToken', data.token);
+            window.location.href = 'menu.html';
         } else {
-            alert('❌ Credenciales incorrectas');
+            showError(errorContainer, data.error || '❌ Credenciales incorrectas');
         }
     } catch (error) {
-        alert('Error de conexión');
+        showError(errorContainer, 'Error de conexión con el servidor');
+    } finally {
+        toggleLoading(form, false);
     }
 });
-// Validación del formulario de registro
+
+// ---------------------- MANEJO DE REGISTRO ----------------------
 document.getElementById('formRegistro').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
-    const nombre = document.getElementById('nombre').value;
-    const email = document.getElementById('email').value;
-    const usuario = document.getElementById('usuarioRegistro').value;
-    const contraseña = document.getElementById('contraseñaRegistro').value;
-    const confirmacion = document.getElementById('confirmarContraseña').value;
+    const form = e.target;
+    const nombre = form.nombreCompleto.value.trim();
+    const email = form.email.value.trim();
+    const usuario = form.usuarioRegistro.value.trim();
+    const contraseña = form.contraseñaRegistro.value;
+    const confirmacion = form.confirmarContraseña.value;
+    const errorContainer = document.getElementById('registroError');
 
-    // Validación básica
+    errorContainer.innerHTML = '';
+
+    // Validación mejorada
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showError(errorContainer, '⚠️ Formato de email inválido');
+        return;
+    }
+    
+    if (contraseña.length < 8) {
+        showError(errorContainer, '⚠️ La contraseña debe tener al menos 8 caracteres');
+        return;
+    }
+    
     if (contraseña !== confirmacion) {
-        alert('⚠️ Las contraseñas no coinciden');
+        showError(errorContainer, '⚠️ Las contraseñas no coinciden');
         return;
     }
 
     try {
+        toggleLoading(form, true);
+        const hashedPassword = await hashPassword(contraseña);
+        
         const response = await fetch('server/api/registro.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre, email, usuario, contraseña })
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': document.querySelector('[name="csrfToken"]').content
+            },
+            body: JSON.stringify({ nombre, email, usuario, contraseña: hashedPassword })
         });
         
         const data = await response.json();
         
         if (data.success) {
-            alert('✅ Registro exitoso! Ya puedes iniciar sesión');
-            $('#registroModal').modal('hide');
+            showSuccess('✅ Registro exitoso! Redirigiendo...');
+            setTimeout(() => {
+                $('#registroModal').modal('hide');
+                window.location.reload();
+            }, 1500);
         } else {
-            alert(`❌ Error: ${data.error}`);
+            showError(errorContainer, data.error || '❌ Error en el registro');
         }
     } catch (error) {
-        alert('Error de conexión');
+        showError(errorContainer, 'Error de conexión');
+    } finally {
+        toggleLoading(form, false);
     }
 });
+
+// ------------------------- HELPERS -------------------------
+function showError(container, message) {
+    container.innerHTML = `<div class="alert alert-danger mt-2">${message}</div>`;
+}
+
+function showSuccess(message) {
+    const container = document.getElementById('globalAlerts');
+    container.innerHTML = `<div class="alert alert-success">${message}</div>`;
+    setTimeout(() => container.innerHTML = '', 3000);
+}
