@@ -1,28 +1,42 @@
-<!-- Modal de Login - Actualizado con opción de registro -->
+<!-- Modal de Login - Versión mejorada con enlace a registro -->
 <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered"> <!-- Centrado verticalmente -->
         <div class="modal-content">
+            <!-- Encabezado del modal -->
             <div class="modal-header bg-brown text-white">
                 <h5 class="modal-title" id="loginModalLabel">🔐 Iniciar Sesión</h5>
+                <!-- Botón de cierre -->
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            
+            <!-- Cuerpo del modal -->
             <div class="modal-body">
                 <form id="formLogin">
+                    <!-- Campo de usuario -->
                     <div class="mb-4">
                         <label for="usuario" class="form-label">Usuario</label>
                         <input type="text" class="form-control" id="usuario" required>
                     </div>
+                    
+                    <!-- Campo de contraseña -->
                     <div class="mb-4">
                         <label for="contraseña" class="form-label">Contraseña</label>
                         <input type="password" class="form-control" id="contraseña" required>
                     </div>
+                    
+                    <!-- Botón de envío -->
                     <button type="submit" class="btn btn-primary w-100 mb-3">Ingresar</button>
+                    
+                    <!-- Enlaces adicionales -->
                     <div class="text-center">
+                        <!-- Enlace para abrir modal de registro -->
                         <a href="#!" class="text-decoration-none" 
                            data-bs-toggle="modal" 
                            data-bs-target="#registroModal">
                            ¿Primera vez? <span class="text-brown fw-bold">Regístrate aquí</span>
                         </a><br>
+                        
+                        <!-- Enlace para recuperar contraseña -->
                         <a href="#recuperar" class="text-decoration-none small text-secondary">
                             ¿Olvidaste tu contraseña?
                         </a>
@@ -33,36 +47,50 @@
     </div>
 </div>
 
-<!-- Modal de Registro -->
+<!-- Modal de Registro - Complementario al login -->
 <div class="modal fade" id="registroModal" tabindex="-1" aria-labelledby="registroModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
+            <!-- Encabezado con estilo diferente -->
             <div class="modal-header bg-green text-white">
                 <h5 class="modal-title" id="registroModalLabel">📝 Nuevo Registro</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            
+            <!-- Formulario de registro -->
             <div class="modal-body">
                 <form id="formRegistro">
+                    <!-- Nombre completo -->
                     <div class="mb-3">
                         <label for="nombreCompleto" class="form-label">Nombre Completo</label>
                         <input type="text" class="form-control" id="nombreCompleto" required>
                     </div>
+                    
+                    <!-- Email -->
                     <div class="mb-3">
                         <label for="email" class="form-label">Correo Electrónico</label>
                         <input type="email" class="form-control" id="email" required>
                     </div>
+                    
+                    <!-- Nombre de usuario -->
                     <div class="mb-3">
                         <label for="usuarioRegistro" class="form-label">Nombre de Usuario</label>
                         <input type="text" class="form-control" id="usuarioRegistro" required>
                     </div>
+                    
+                    <!-- Contraseña -->
                     <div class="mb-3">
                         <label for="contraseñaRegistro" class="form-label">Contraseña</label>
                         <input type="password" class="form-control" id="contraseñaRegistro" required>
                     </div>
+                    
+                    <!-- Confirmación de contraseña -->
                     <div class="mb-4">
                         <label for="confirmarContraseña" class="form-label">Confirmar Contraseña</label>
                         <input type="password" class="form-control" id="confirmarContraseña" required>
                     </div>
+                    
+                    <!-- Botón de envío -->
                     <button type="submit" class="btn btn-success w-100">Crear Cuenta</button>
                 </form>
             </div>

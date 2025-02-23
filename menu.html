@@ -1,28 +1,70 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Mismos estilos y scripts que index.html -->
+    <!-- Configuración compartida con index.html para mantener consistencia -->
+    <!-- Metadatos, estilos y scripts comunes a toda la aplicación -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú de Usuario - Palenque</title>
+    
+    <!-- Mismos recursos que index.html -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-    <!-- Barra de navegación (similar al index) -->
+    <!-- Barra de navegación simplificada -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-brown">
-        <!-- ... -->
+        <!-- Contenedor para elementos de navegación -->
+        <div class="container">
+            <!-- Logo/Marca consistente con el index -->
+            <a class="navbar-brand" href="#">
+                <span class="text-warning">[Logo]</span> Palenque 🥁
+            </a>
+            
+            <!-- Botón para menú móvil -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Elementos de navegación -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#inicio">Volver al Inicio</a></li>
+                </ul>
+            </div>
+        </div>
     </nav>
 
-    <!-- Contenido del menú -->
-    <div class="container mt-4">
+    <!-- Contenido principal del menú de usuario -->
+    <div class="container mt-4"> <!-- Margen superior para separar del nav -->
+        <!-- Saludo personalizado -->
         <h2>Bienvenido, <span id="nombreUsuario"></span></h2>
-        <div class="row">
-            <div class="col-md-4">
+        
+        <!-- Sección de opciones de usuario -->
+        <div class="row"> <!-- Sistema de grid de Bootstrap -->
+            <!-- Tarjeta de Perfil -->
+            <div class="col-md-4"> <!-- 1/3 del ancho en pantallas medianas/grandes -->
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Perfil</h5>
+                        <h5 class="card-title">👤 Perfil</h5>
+                        <!-- Botón para editar perfil -->
                         <a href="#editarPerfil" class="btn btn-primary">Editar</a>
                     </div>
                 </div>
             </div>
-            <!-- Más opciones según perfil -->
+
+            <!-- Espacio para más opciones -->
+            <!-- Ejemplos de posibles futuras tarjetas:
+                 - Configuración de cuenta
+                 - Historial de compras
+                 - Participación en foros
+                 - Contenido guardado
+            -->
         </div>
     </div>
+
+    <!-- Scripts comunes -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="scripts/userMenu.js"></script> <!-- Script específico para funcionalidades del menú -->
 </body>
 </html>
