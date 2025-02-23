@@ -1,33 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Configuración básica del documento -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Encanto en Palenque 🌍</title>
     
-    <!-- Enlaces a hojas de estilo -->
-    <!-- Bootstrap para diseño responsivo y componentes -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Estilos personalizados del sitio -->
+    <!-- CSS personalizado -->
     <link rel="stylesheet" href="styles/main.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Barra de navegación principal -->
+    <!-- Barra de navegación corregida -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-brown fixed-top">
         <div class="container">
-            <!-- Logo/Marca del sitio -->
+            <!-- Logo/Marca -->
             <a class="navbar-brand" href="#">
                 <span class="text-warning">[Logo pendiente]</span> Palenque 🥁
-                
-                <!-- Botón de login en versión móvil -->
-                <li class="nav-item">
-                    <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#loginModal">Iniciar Sesión</button>
-                </li>
             </a>
             
-            <!-- Botón para menú hamburguesa en móviles -->
+            <!-- Botón móvil -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -35,10 +27,20 @@
             <!-- Elementos de navegación -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <!-- Elementos del menú -->
                     <li class="nav-item"><a class="nav-link active" href="#inicio">Inicio</a></li>
                     <li class="nav-item"><a class="nav-link" href="#tradiciones">Tradiciones</a></li>
                     <li class="nav-item"><a class="nav-link" href="#tienda">Tienda</a></li>
                     <li class="nav-item"><a class="nav-link" href="#foro">Foro</a></li>
+                    
+                    <!-- Botón Login - Posición corregida -->
+                    <li class="nav-item ms-2">
+                        <button class="btn btn-outline-light" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#loginModal">
+                            Iniciar Sesión
+                        </button>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -120,22 +122,21 @@
     <!-- Scripts personalizados del sitio -->
     <script src="scripts/script.js"></script>
 
-    <!-- Modal de inicio de sesión -->
+    <!-- Modal Login -->
     <div class="modal fade" id="loginModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header bg-brown text-white">
                     <h5 class="modal-title">🔑 Iniciar Sesión</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <!-- Formulario de login -->
                     <form id="formLogin">
                         <div class="mb-3">
-                            <input type="text" class="form-control" id="usuario" placeholder="Usuario" required>
+                            <input type="text" class="form-control" placeholder="Usuario" required>
                         </div>
                         <div class="mb-3">
-                            <input type="password" class="form-control" id="contraseña" placeholder="Contraseña" required>
+                            <input type="password" class="form-control" placeholder="Contraseña" required>
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Ingresar</button>
                         <p class="mt-3 text-center">
@@ -152,6 +153,35 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Registro -->
+    <div class="modal fade" id="registroModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">📝 Registrarse</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formRegistro">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" placeholder="Nombre completo" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="email" class="form-control" placeholder="Correo electrónico" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" class="form-control" placeholder="Contraseña" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Crear Cuenta</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="scripts/script.js"></script>
 </body>
 </html>
