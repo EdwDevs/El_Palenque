@@ -1,25 +1,27 @@
+/* Variables CSS personalizadas para el tema del sitio */
 :root {
-    --color-primary: #8B4513;  /* Marrón tierra */
-    --color-secondary: #228B22; /* Verde */
-    --color-light: rgba(255, 255, 255, 0.95);
-    --text-dark: #333;
-    --text-light: #fff;
-    --transition-speed: 0.3s;
+    --color-primary: #8B4513;  /* Color principal marrón (tierra) */
+    --color-secondary: #228B22; /* Color secundario verde (vegetación) */
+    --color-light: rgba(255, 255, 255, 0.95); /* Fondo claro semitransparente */
+    --text-dark: #333; /* Texto oscuro para contraste */
+    --text-light: #fff; /* Texto claro */
+    --transition-speed: 0.3s; /* Velocidad estándar para transiciones */
 }
 
-/* Estilos generales */
+/* Estilos base del cuerpo del documento */
 body {
     background-image: url('https://blog.redbus.co/wp-content/uploads/2020/08/tradiciones-colombianas_vacaciones_familia-768x512.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    background-size: cover; /* Cubre toda el área disponible */
+    background-position: center; /* Centra la imagen de fondo */
+    background-attachment: fixed; /* Efecto parallax */
     background-repeat: no-repeat;
-    min-height: 100vh;
+    min-height: 100vh; /* Mínimo alto de viewport */
     color: var(--text-light);
     font-family: 'Arial', sans-serif;
-    line-height: 1.6;
+    line-height: 1.6; /* Espaciado entre líneas */
 }
 
+/* Capa overlay semitransparente para mejorar legibilidad */
 body::before {
     content: '';
     position: fixed;
@@ -27,176 +29,128 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    z-index: -1;
+    background-color: rgba(0, 0, 0, 0.6); /* Oscurece el fondo */
+    z-index: -1; /* Coloca detrás del contenido */
 }
 
-/* Navbar */
+/* Estilos de la barra de navegación */
 .navbar {
-    background-color: rgba(139, 69, 19, 0.95) !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    background-color: rgba(139, 69, 19, 0.95) !important; /* Marrón con transparencia */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Sombra para profundidad */
 }
 
+/* Efectos hover para enlaces de navegación */
 .nav-link {
     transition: color var(--transition-speed) ease-in-out;
 }
-
 .nav-link:hover {
-    color: var(--color-secondary) !important;
+    color: var(--color-secondary) !important; /* Cambio color al pasar mouse */
 }
 
-/* Banner principal */
+/* Estilos del banner principal */
 .banner {
-    height: 100vh;
+    height: 100vh; /* Altura completa del viewport */
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: center; /* Centrado vertical */
+    justify-content: center; /* Centrado horizontal */
     text-align: center;
-    padding-top: 76px;
+    padding-top: 76px; /* Compensa altura navbar */
 }
 
 .banner-content {
     padding: 2.5rem;
     border-radius: 15px;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
-    max-width: 800px;
-    margin: 0 1rem;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+    backdrop-filter: blur(5px); /* Efecto de desenfoque moderno */
+    max-width: 800px; /* Ancho máximo para legibilidad */
+    margin: 0 1rem; /* Margen en móviles */
 }
 
+/* Tipografía responsiva con clamp() */
 .banner h1 {
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    margin-bottom: 1.5rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.banner p {
-    font-size: clamp(1.2rem, 2.5vw, 1.8rem);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    font-size: clamp(2.5rem, 5vw, 4rem); /* Mínimo, ideal, máximo */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Sombra para contraste */
 }
 
 /* Sección de tradiciones */
 #tradiciones {
-    background-color: var(--color-light);
+    background-color: var(--color-light); /* Usa variable CSS */
     border-radius: 15px;
-    margin: 2rem auto;
-    color: var(--text-dark);
-    padding: 2.5rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    margin: 2rem auto; /* Centrado horizontal */
+    color: var(--text-dark); /* Contraste con fondo claro */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); /* Sombra elevada */
 }
 
-/* Tarjetas */
+/* Tarjetas personalizadas */
 .card-custom {
-    transition: all var(--transition-speed) ease-in-out;
-    border: none;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    background-color: var(--color-light);
-    overflow: hidden;
+    transition: all var(--transition-speed) ease-in-out; /* Transición suave */
+    border: none; /* Elimina borde por defecto */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+    background-color: var(--color-light); /* Fondo semitransparente */
+    overflow: hidden; /* Contiene elementos hijos */
 }
 
 .card-custom:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-.card-custom img {
-    height: 250px;
-    object-fit: cover;
-    object-position: center;
+    transform: translateY(-10px); /* Efecto levitación */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
 }
 
 /* Modales */
 .modal-content {
-    border-radius: 15px;
-    border: none;
+    border-radius: 15px; /* Esquinas redondeadas */
+    border: none; /* Elimina borde por defecto */
 }
 
 .modal-header {
-    background: var(--color-primary);
-    color: var(--text-light);
-    border-radius: 15px 15px 0 0;
-    padding: 1.5rem;
+    background: var(--color-primary); /* Color principal */
+    border-radius: 15px 15px 0 0; /* Redondeo solo arriba */
+    padding: 1.5rem; /* Espaciado interno */
 }
 
-.modal-header h5 {
-    font-size: 1.5rem;
-}
-
+/* Estilos específicos para modal de registro */
 #registroModal .modal-header {
-    background: var(--color-secondary);
+    background: var(--color-secondary); /* Color secundario */
 }
 
-.modal-body {
-    padding: 2rem;
-}
-
+/* Campos de formulario */
 .form-control {
     border-radius: 8px;
-    padding: 0.75rem 1rem;
-    transition: border-color var(--transition-speed);
+    transition: border-color var(--transition-speed); /* Transición suave */
 }
-
 .form-control:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 0.25rem rgba(139, 69, 19, 0.25);
+    border-color: var(--color-primary); /* Resalta con color primario */
+    box-shadow: 0 0 0 0.25rem rgba(139, 69, 19, 0.25); /* Sombra de enfoque */
 }
 
 /* Botones */
 .btn {
     transition: all var(--transition-speed) ease-in-out;
     border-radius: 8px;
-    padding: 0.75rem 1.5rem;
-    font-weight: 600;
+    font-weight: 600; /* Grosor de fuente */
 }
-
-.btn-primary {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
-}
-
 .btn-primary:hover {
-    background-color: var(--color-secondary);
-    border-color: var(--color-secondary);
-    transform: translateY(-2px);
+    background-color: var(--color-secondary); /* Cambio color hover */
+    transform: translateY(-2px); /* Efecto elevación */
 }
 
-.btn-success {
-    background-color: var(--color-secondary);
-    border-color: var(--color-secondary);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
+/* Media Queries para responsividad */
+@media (max-width: 768px) { /* Tabletas */
     .banner-content {
-        padding: 1.5rem;
-        margin: 0 0.5rem;
+        padding: 1.5rem; /* Reduce espaciado */
     }
-    
-    .modal-dialog {
-        margin: 0.5rem;
-    }
-    
     .card-custom img {
-        height: 200px;
+        height: 200px; /* Altura menor para móviles */
     }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 576px) { /* Móviles pequeños */
     .navbar-brand {
-        font-size: 1rem;
-    }
-    
-    .modal-body {
-        padding: 1.5rem;
+        font-size: 1rem; /* Tamaño reducido de logo */
     }
 }
 
-/* Mejoras de accesibilidad */
+/* Accesibilidad */
 a:focus, button:focus {
-    outline: 3px solid var(--color-secondary);
-    outline-offset: 2px;
-}
-
-.text-dark {
-    color: var(--text-dark) !important;
+    outline: 3px solid var(--color-secondary); /* Contraste para navegación con teclado */
+    outline-offset: 2px; /* Espacio entre elemento y outline */
 }
