@@ -154,3 +154,8 @@ a:focus, button:focus {
     outline: 3px solid var(--color-secondary); /* Contraste para navegación con teclado */
     outline-offset: 2px; /* Espacio entre elemento y outline */
 }
+.card-img-top {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
