@@ -497,7 +497,7 @@ $pageDescription = "Descubre las historias, mitos y leyendas que forman parte de
             </header>
             
             <div class="story-content">
-                <img src="benkos-bioho.jpg" alt="Estatua de Benkos Biohó en San Basilio de Palenque" class="story-image">
+                <img src="https://s3.amazonaws.com/rtvc-assets-senalmemoria.gov.co/s3fs-public/styles/1200_x_675_escalado/public/field_image/WEB-Benkos-Bioh%C3%B3-y-el-Palenque-de-San-Basilio.jpg?itok=JJpcul9D" alt="Estatua de Benkos Biohó en San Basilio de Palenque" class="story-image">
                 
                 <section class="story-section">
                     <h3>Contexto Histórico</h3>
@@ -524,7 +524,7 @@ $pageDescription = "Descubre las historias, mitos y leyendas que forman parte de
                         </div>
                         <div class="col-md-6">
                             <div class="gallery-item">
-                                <img src="ilustracion-benkos.jpg" alt="Ilustración colonial de la captura de Benkos Biohó">
+                                <img src="https://assets.grok.com/users/2c8afa46-66c9-4bb2-a7a2-bf6f79368149/nQxlWtrNnca3FBMa-generated_image.jpg" alt="Ilustración colonial de la captura de Benkos Biohó">
                                 <div class="gallery-caption">El Archivo General de la Nación conserva ilustraciones coloniales de su captura (Códice de la Inquisición, 1621).</div>
                             </div>
                         </div>
@@ -555,7 +555,7 @@ $pageDescription = "Descubre las historias, mitos y leyendas que forman parte de
             </header>
             
             <div class="story-content">
-                <img src="lumbalu-ritual.jpg" alt="Ritual del Lumbalú en San Basilio de Palenque" class="story-image">
+                <img src="https://assets.grok.com/users/2c8afa46-66c9-4bb2-a7a2-bf6f79368149/mHMydyU0aTswKVao-generated_image.jpg" alt="Ritual del Lumbalú en San Basilio de Palenque" class="story-image">
                 
                 <section class="story-section">
                     <h3>La Leyenda</h3>
@@ -584,13 +584,13 @@ $pageDescription = "Descubre las historias, mitos y leyendas que forman parte de
                     <div class="row">
                         <div class="col-md-6">
                             <div class="gallery-item">
-                                <img src="lumbalu-documental.jpg" alt="Escena del documental 'Lumbalú: El Llanto que Libera'">
+                                <img src="https://assets.grok.com/users/2c8afa46-66c9-4bb2-a7a2-bf6f79368149/hZY1JNkK7wnmqbH4-generated_image.jpg" alt="Escena del documental 'Lumbalú: El Llanto que Libera'">
                                 <div class="gallery-caption">Documental "Lumbalú: El Llanto que Libera" (2022, Señal Colombia): Muestra una ceremonia completa filmada en 2021.</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="gallery-item">
-                                <img src="altar-catalina.jpg" alt="Altar con velas y retrato de Catalina Loango">
+                                <img src="https://assets.grok.com/users/2c8afa46-66c9-4bb2-a7a2-bf6f79368149/9lFoZQlMjJnHqRfC-generated_image.jpg" alt="Altar con velas y retrato de Catalina Loango">
                                 <div class="gallery-caption">La colección Memorias del Palenque (Biblioteca Luis Ángel Arango) incluye imágenes de altares con velas y retratos de Catalina dibujados por ancianas cantadoras.</div>
                             </div>
                         </div>
@@ -599,9 +599,9 @@ $pageDescription = "Descubre las historias, mitos y leyendas que forman parte de
                 
                 <div class="mt-4">
                     <div class="ratio ratio-16x9">
-                        <iframe src="https://www.youtube.com/embed/example-lumbalu" title="Fragmento del documental sobre el Lumbalú" allowfullscreen></iframe>
+                        <iframe src="https://www.youtube.com/embed/cGiG1OLwi6I" title="Fragmento del documental sobre el Lumbalú" allowfullscreen></iframe>
                     </div>
-                    <p class="text-center mt-2 text-muted">Fragmento del documental "Lumbalú: El Llanto que Libera" (2022)</p>
+                    <p class="text-center mt-2 text-muted">Fragmento del documental "Lumbalú</p>
                 </div>
             </div>
             
@@ -629,7 +629,7 @@ $pageDescription = "Descubre las historias, mitos y leyendas que forman parte de
             </header>
             
             <div class="story-content">
-                <img src="festival-tambores.jpg" alt="Festival de Tambores de San Basilio de Palenque" class="story-image">
+                <img src="https://discovercartagena.com.co/wp-content/uploads/2022/04/IMG_6605-1024x768.jpeg"alt="Festival de Tambores de San Basilio de Palenque" class="story-image">
                 
                 <section class="story-section">
                     <h3>Historia Viva</h3>
@@ -662,13 +662,13 @@ $pageDescription = "Descubre las historias, mitos y leyendas que forman parte de
                     <div class="row">
                         <div class="col-md-6">
                             <div class="gallery-item">
-                                <img src="transmision-festival.jpg" alt="Transmisión en vivo del Festival de Tambores">
+                                <img src="https://radionacional-v3.s3.amazonaws.com/s3fs-public/node/article/field_image/WhatsApp%20Image%202023-10-17%20at%206.43.00%20AM.jpeg" alt="Transmisión en vivo del Festival de Tambores">
                                 <div class="gallery-caption">Transmisión en vivo: Disponible en Radionacional.co con secuencias de bailes mapalé y entrevistas a artesanos.</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="gallery-item">
-                                <img src="mujeres-marimbula.jpg" alt="Mujeres tocando marímbula durante el festival">
+                                <img src="https://colombiavisible.com/wp-content/uploads/2023/05/Mujeres-mariimberas-1-1024x576.jpg" alt="Mujeres tocando marímbula durante el festival">
                                 <div class="gallery-caption">Fotos oficiales: La página del festival (festivaldetambores.com) muestra a mujeres tocando marímbula (instrumento de laméllas africano).</div>
                             </div>
                         </div>
@@ -684,9 +684,9 @@ $pageDescription = "Descubre las historias, mitos y leyendas que forman parte de
                 
                 <div class="mt-4">
                     <div class="ratio ratio-16x9">
-                        <iframe src="https://www.youtube.com/embed/example-festival" title="Festival de Tambores 2023" allowfullscreen></iframe>
+                        <iframe src="https://www.youtube.com/embed/Q4FxwlvZiPg" title="Festival de Tambores 2023" allowfullscreen></iframe>
                     </div>
-                    <p class="text-center mt-2 text-muted">Highlights del Festival de Tambores y Expresiones Culturales 2023</p>
+                    <p class="text-center mt-2 text-muted">Festival de Tambores y Expresiones Culturales</p>
                 </div>
             </div>
             
@@ -770,7 +770,7 @@ $pageDescription = "Descubre las historias, mitos y leyendas que forman parte de
                 </form>
             <?php else: ?>
                 <div class="alert alert-info">
-                    <p class="mb-0">Para dejar un comentario, por favor <a href="login.php">inicia sesión</a> o <a href="registro.php">regístrate</a>.</p>
+                    <p class="mb-0">Para dejar un comentario, por favor <a href="login.php">inicia sesión</a> o <a href="register.php">regístrate</a>.</p>
                 </div>
             <?php endif; ?>
             
@@ -779,7 +779,7 @@ $pageDescription = "Descubre las historias, mitos y leyendas que forman parte de
                 
                 <div class="comment-card mb-3">
                     <div class="comment-header d-flex align-items-center mb-2">
-                        <img src="user-avatar.jpg" alt="Avatar de usuario" class="rounded-circle me-2" width="40" height="40">
+                        <img src="https://assets.grok.com/users/2c8afa46-66c9-4bb2-a7a2-bf6f79368149/VnLB709d3q0UXcQK-generated_image.jpg" alt="Avatar de usuario" class="rounded-circle me-2" width="40" height="40">
                         <div>
                             <h5 class="mb-0">María Salgado</h5>
                             <small class="text-muted">Hace 2 días</small>
@@ -792,7 +792,7 @@ $pageDescription = "Descubre las historias, mitos y leyendas que forman parte de
                 
                 <div class="comment-card mb-3">
                     <div class="comment-header d-flex align-items-center mb-2">
-                        <img src="user-avatar2.jpg" alt="Avatar de usuario" class="rounded-circle me-2" width="40" height="40">
+                        <img src="https://assets.grok.com/users/2c8afa46-66c9-4bb2-a7a2-bf6f79368149/E0oGDNE7G9g63iTM-generated_image.jpg" alt="Avatar de usuario" class="rounded-circle me-2" width="40" height="40">
                         <div>
                             <h5 class="mb-0">Carlos Pérez</h5>
                             <small class="text-muted">Hace 5 días</small>

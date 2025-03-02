@@ -8,7 +8,7 @@ $username = $isLoggedIn ? htmlspecialchars($_SESSION['usuario']) : null;
 $userRole = isset($_SESSION['rol']) ? $_SESSION['rol'] : null;
 
 // Determinar la página de destino según el rol del usuario
-$dashboardLink = ($userRole === 'admin') ? 'admin_home.php' : 'home.php';
+$dashboardLink = ($userRole === 'admin') ? 'admin_home.php' : 'editar_perfil.php';
 ?>
 
 <!DOCTYPE html>

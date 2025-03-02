@@ -37,6 +37,9 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
     <!-- Font Awesome: Biblioteca de iconos para mejorar la interfaz -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Swiper CSS: Para el carrusel deslizable -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    
     <!-- Estilos personalizados: Define la apariencia específica de la aplicación -->
     <style>
         /* Variables CSS para mantener consistencia en colores y valores */
@@ -52,7 +55,8 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
             --transition-normal: all 0.3s ease;
         }
         
-        /* Estilos generales del cuerpo de la página */
+        /* ===== ESTILOS GLOBALES ===== */
+        /* Definición del fondo, fuente y estructura básica del documento */
         body {
             /* Fondo con degradado de colores que representan la bandera colombiana */
             background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
@@ -64,80 +68,104 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
             position: relative;
             padding-bottom: 60px; /* Espacio para el footer */
         }
-        
-        /* Estilos del encabezado */
+
+        /* ===== HEADER Y NAVEGACIÓN ===== */
+        /* Configuración del encabezado fijo en la parte superior */
         header {
             background: rgba(255, 255, 255, 0.95);
-            padding: 1rem 0;
+            padding: 1rem 2rem;
             box-shadow: var(--box-shadow);
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
             z-index: 1000;
+            display: flex !important; /* Fuerza la disposición en línea */
+            justify-content: space-between !important; /* Distribuye los elementos */
+            align-items: center !important; /* Alinea verticalmente */
+            box-sizing: border-box;
             transition: var(--transition-normal);
         }
         
         /* Efecto de scroll para el header */
         header.scrolled {
-            padding: 0.5rem 0;
+            padding: 0.5rem 2rem;
             background: rgba(255, 255, 255, 0.98);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
-        
-        /* Logo del sitio */
-        .navbar-brand {
-            color: var(--color-primary);
-            font-weight: 700;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: var(--transition-normal);
+
+        /* Estilo del logo y su contenedor */
+        .header-logo {
+            flex-shrink: 0; /* Evita que el logo se comprima */
         }
-        
-        .navbar-brand:hover {
-            color: var(--color-secondary);
-            transform: translateY(-2px);
+
+        .header-logo img {
+            max-width: 120px;
+            border-radius: var(--border-radius);
+            border: 3px solid var(--color-primary);
+            transition: transform 0.3s ease;
+            display: block;
         }
-        
-        .navbar-brand img {
-            max-height: 40px;
-            border-radius: 5px;
-            border: 2px solid var(--color-primary);
-            transition: var(--transition-normal);
-        }
-        
-        .navbar-brand:hover img {
-            border-color: var(--color-secondary);
+
+        .header-logo img:hover {
             transform: scale(1.05);
         }
-        
+
+        /* Contenedor de los enlaces de navegación */
+        .nav-links {
+            flex-grow: 1; /* Ocupa el espacio disponible */
+            display: flex !important; /* Fuerza la disposición en línea */
+            justify-content: center !important; /* Centra los elementos */
+        }
+
+        /* Lista de navegación */
+        .navbar-nav {
+            display: flex !important; /* Fuerza la disposición en línea */
+            flex-direction: row !important; /* Asegura que sea horizontal */
+            gap: 2rem !important; /* Espacio entre elementos */
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        /* Elementos individuales de la navegación */
+        .nav-item {
+            margin: 0;
+            padding: 0;
+            display: block !important;
+            position: relative;
+        }
+
         /* Enlaces de navegación */
-        .navbar-nav .nav-link {
+        .nav-link {
             color: var(--color-secondary);
             font-weight: 600;
-            margin-right: 1rem;
+            font-size: 1.1rem;
+            text-decoration: none;
+            transition: var(--transition-normal);
             padding: 0.5rem 1rem;
             border-radius: 5px;
-            transition: var(--transition-normal);
-            display: flex;
+            display: flex !important;
             align-items: center;
             gap: 0.5rem;
         }
-        
-        .navbar-nav .nav-link:hover {
+
+        .nav-link:hover {
             color: var(--color-primary);
             background: rgba(76, 175, 80, 0.1);
             transform: translateY(-2px);
         }
         
         /* Indicador de enlace activo */
-        .navbar-nav .nav-link.active {
+        .nav-link.active {
             color: var(--color-primary);
             background: rgba(255, 87, 34, 0.1);
             position: relative;
         }
         
-        .navbar-nav .nav-link.active::after {
+        .nav-link.active::after {
             content: '';
             position: absolute;
             bottom: 0;
@@ -148,58 +176,106 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
             background: var(--color-primary);
             border-radius: 3px;
         }
-        
-        /* Mensaje de bienvenida al usuario */
-        .user-welcome {
-            color: var(--color-primary);
-            font-weight: 600;
-            font-size: 1.1rem;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            margin-right: 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: var(--transition-normal);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .user-welcome:hover {
-            transform: translateY(-2px);
-            background-color: var(--color-hover);
-        }
-        
+
+        /* ===== BOTONES ===== */
         /* Botón de salir */
-        .btn-salir {
+        .btn-auth {
             background-color: var(--color-primary);
             color: white;
             border: none;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1.5rem;
             border-radius: var(--border-radius);
             font-weight: 600;
             transition: var(--transition-normal);
+            cursor: pointer;
+            white-space: nowrap; /* Evita que el texto se divida */
+            flex-shrink: 0; /* Evita que el botón se comprima */
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
-        
-        .btn-salir:hover {
+
+        .btn-auth:hover {
             background-color: var(--color-secondary);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         
+        /* Mensaje de bienvenida al usuario */
+        .user-welcome {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-primary);
+            font-weight: 600;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            margin-right: 1rem;
+            transition: var(--transition-normal);
+        }
+        
+        .user-welcome:hover {
+            background-color: var(--color-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Botón de información */
+        .btn-info {
+            background-color: var(--color-accent);
+            color: var(--color-text);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition-normal);
+        }
+
+        .btn-info:hover {
+            background-color: var(--color-primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Botón de servicio */
+        .btn-service {
+            background-color: var(--color-secondary);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: var(--transition-normal);
+            margin-top: 1rem;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-service:hover {
+            background-color: var(--color-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ===== SECCIÓN HERO ===== */
         /* Sección principal de bienvenida */
         .hero {
             text-align: center;
-            padding: 3rem 2rem;
+            padding: 10rem 2rem 5rem; /* Espacio superior para evitar solapamiento con header */
             background: rgba(255, 255, 255, 0.9);
-            margin: 2rem auto;
+            margin: 0 auto;
             max-width: 800px;
             border-radius: 20px;
             box-shadow: var(--box-shadow);
-            animation: fadeIn 0.8s ease-in-out;
+            animation: fadeIn 1s ease-in-out;
         }
         
         /* Animación de aparición suave */
@@ -207,7 +283,7 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         .hero h2 {
             color: var(--color-primary);
             font-size: 2.5rem;
@@ -229,7 +305,7 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
             background: linear-gradient(to right, var(--color-accent), var(--color-primary), var(--color-secondary));
             border-radius: 3px;
         }
-        
+
         .hero p {
             color: var(--color-secondary);
             font-size: 1.2rem;
@@ -239,36 +315,26 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
             margin-right: auto;
         }
         
-        /* Botón de información */
-        .btn-info {
-            background-color: var(--color-accent);
-            color: var(--color-text);
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
-            text-decoration: none;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: var(--transition-normal);
+        /* Contenedor de botones en el hero */
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
         
-        .btn-info:hover {
-            background-color: var(--color-primary);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Sección de servicios para usuarios */
-        .services {
-            padding: 2rem;
+        /* ===== SECCIÓN DE SERVICIOS ===== */
+        .features {
+            padding: 4rem 2rem;
             max-width: 1200px;
-            margin: 0 auto 2rem;
+            margin: 2rem auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: var(--box-shadow);
         }
         
-        .services-title {
-            color: var(--color-light);
+        .features h3 {
+            color: var(--color-primary);
             text-align: center;
             margin-bottom: 2rem;
             font-weight: 700;
@@ -279,84 +345,144 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
             transform: translateX(-50%);
         }
         
-        .services-title::after {
+        .features h3::after {
             content: '';
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
             height: 3px;
-            background: var(--color-light);
+            background: var(--color-primary);
             border-radius: 3px;
         }
         
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+        /* Estilos para el carrusel Swiper */
+        .swiper {
+            width: 100%;
+            padding-bottom: 50px; /* Espacio para la paginación */
         }
         
-        .service-card {
-            background: rgba(255, 255, 255, 0.9);
+        .swiper-slide {
+            height: auto; /* Permite que las tarjetas tengan altura variable */
+            display: flex;
+        }
+        
+        /* Estilos para los botones de navegación del carrusel */
+        .swiper-button-next, .swiper-button-prev {
+            color: var(--color-primary);
+            background: rgba(255, 255, 255, 0.8);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .swiper-button-next:after, .swiper-button-prev:after {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .swiper-button-next:hover, .swiper-button-prev:hover {
+            background: var(--color-light);
+            transform: scale(1.1);
+        }
+        
+        /* Estilos para la paginación del carrusel */
+        .swiper-pagination-bullet {
+            background: var(--color-secondary);
+            opacity: 0.5;
+        }
+        
+        .swiper-pagination-bullet-active {
+            background: var(--color-primary);
+            opacity: 1;
+        }
+        
+        /* Tarjetas de características */
+        .feature-card {
+            background: var(--color-light);
             padding: 2rem;
             border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             transition: var(--transition-normal);
             text-align: center;
-            height: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            height: 100%;
+            width: 100%;
         }
         
-        .service-card:hover {
+        .feature-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
-        .service-icon {
-            font-size: 3rem;
+        .feature-icon {
+            font-size: 2.5rem;
             color: var(--color-accent);
             margin-bottom: 1rem;
         }
         
-        .service-title {
+        .feature-title {
             color: var(--color-primary);
             font-weight: 600;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
         
-        .service-description {
+        .feature-description {
             color: var(--color-text);
-            margin-bottom: 1.5rem;
-            flex-grow: 1;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            flex-grow: 1; /* Hace que el texto ocupe el espacio disponible */
         }
         
-        .service-link {
-            background-color: var(--color-secondary);
-            color: white;
-            padding: 0.5rem 1rem;
+        .feature-button-container {
+            margin-top: auto; /* Empuja el botón hacia abajo */
+        }
+        
+        /* Estilos para formularios */
+        .form-container {
+            background: var(--color-light);
+            padding: 2rem;
             border-radius: var(--border-radius);
-            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+        
+        .form-label {
+            color: var(--color-primary);
             font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
+        }
+        
+        .form-control {
+            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+            padding: 0.75rem;
             transition: var(--transition-normal);
-            margin-top: auto;
         }
         
-        .service-link:hover {
-            background-color: var(--color-primary);
-            transform: translateY(-2px);
+        .form-control:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
         }
         
+        /* Estilos para el perfil */
+        .profile-options {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* ===== FOOTER ===== */
         /* Pie de página */
         footer {
             text-align: center;
             padding: 1.5rem;
             background: rgba(255, 255, 255, 0.9);
             color: var(--color-text);
+            font-size: 0.9rem;
             position: absolute;
             bottom: 0;
             width: 100%;
@@ -403,34 +529,44 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
             color: var(--color-primary);
             transform: translateY(-2px);
         }
-        
-        /* Estilos responsivos para dispositivos móviles */
+
+        /* ===== RESPONSIVE ===== */
+        /* Ajustes para dispositivos móviles */
         @media (max-width: 768px) {
+            header {
+                flex-wrap: wrap;
+                padding: 1rem;
+                gap: 1rem;
+            }
+            
+            .nav-links {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .navbar-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+            
             .hero {
-                margin: 1rem;
-                padding: 2rem 1rem;
+                padding: 8rem 1.5rem 3rem;
+                margin: 0 1rem;
             }
             
             .hero h2 {
                 font-size: 2rem;
             }
             
-            .services {
-                padding: 1rem;
+            .hero p {
+                font-size: 1rem;
             }
             
-            .services-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .user-welcome {
-                font-size: 0.9rem;
-                padding: 0.4rem 0.8rem;
-            }
-            
-            .btn-salir {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.9rem;
+            .features {
+                padding: 2rem 1rem;
+                margin: 1rem;
             }
             
             .footer-content {
@@ -441,8 +577,37 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
             .footer-links, .social-icons {
                 justify-content: center;
             }
+            
+            /* Ajustes para el carrusel en móviles */
+            .swiper-button-next, .swiper-button-prev {
+                width: 30px;
+                height: 30px;
+            }
+            
+            .swiper-button-next:after, .swiper-button-prev:after {
+                font-size: 14px;
+            }
+        }
+
+        /* ===== CORRECCIONES PARA BOOTSTRAP ===== */
+        /* Estas reglas sobrescriben los estilos de Bootstrap que podrían interferir */
+        @media all {
+            .navbar-nav {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+            }
+            
+            .nav-item {
+                display: block !important;
+            }
+            
+            .navbar-nav .nav-link {
+                padding: 0.5rem 1rem !important;
+            }
         }
         
+        /* ===== ACCESIBILIDAD ===== */
         /* Mejoras para accesibilidad */
         .visually-hidden {
             position: absolute;
@@ -466,153 +631,179 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
 <body>
     <!-- HEADER: Contiene el logo, navegación y botón de salir -->
     <header id="main-header">
-        <nav class="navbar navbar-expand-lg container">
-            <a class="navbar-brand" href="index.php" title="Página de inicio">
-                <img src="palenque.jpeg" alt="Logo Sabor Colombiano" width="40" height="40">
-                Sabor Colombiano
+        <div class="header-logo">
+            <a href="index.php" title="Página de inicio">
+                <img src="palenque.jpeg" alt="San Basilio de Palenque" width="120" height="120">
             </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="user_home.php" aria-current="page">
-                            <i class="fas fa-home"></i> Inicio
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#servicios">
-                            <i class="fas fa-utensils"></i> Servicios
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#perfil">
-                            <i class="fas fa-user-circle"></i> Mi Perfil
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#contacto">
-                            <i class="fas fa-envelope"></i> Contacto
-                        </a>
-                    </li>
-                </ul>
-                
-                <span class="user-welcome">
-                    <i class="fas fa-user"></i> ¡Hola, <?php echo $username; ?>!
-                </span>
-                
-                <a href="logout.php" title="Cerrar sesión">
-                    <button class="btn-salir ms-3">
-                        <i class="fas fa-sign-out-alt"></i> Salir
-                    </button>
-                </a>
-            </div>
+        </div>
+        
+        <nav class="nav-links" aria-label="Navegación principal">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="user_home.php" aria-current="page">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#servicios">
+                        <i class="fas fa-utensils"></i> Servicios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#perfil">
+                        <i class="fas fa-user-circle"></i> Mi Perfil
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#contacto">
+                        <i class="fas fa-envelope"></i> Contacto
+                    </a>
+                </li>
+            </ul>
         </nav>
+        
+        <div class="auth-container">
+            <span class="user-welcome">
+                <i class="fas fa-user"></i> Hola, <?php echo $username; ?>
+            </span>
+            <a href="logout.php" title="Cerrar sesión">
+                <button class="btn-auth">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </a>
+        </div>
     </header>
 
     <!-- SECCIÓN HERO: Contiene el mensaje de bienvenida -->
     <section class="hero">
         <h2>¡Bienvenido a tu Panel de Usuario!</h2>
         <p>Explora y descubre todos los servicios exclusivos que tenemos para ti. Disfruta de la esencia de nuestra tierra: alegría, color y tradición.</p>
-        <a href="#servicios" class="btn-info">
-            <i class="fas fa-arrow-down"></i> Ver Servicios
-        </a>
+        <div class="hero-buttons">
+            <a href="#servicios" class="btn-info">
+                <i class="fas fa-arrow-down"></i> Ver Servicios
+            </a>
+        </div>
     </section>
 
     <!-- SECCIÓN DE SERVICIOS: Muestra los servicios disponibles para el usuario -->
-    <section class="services" id="servicios">
-        <h3 class="services-title">Servicios Exclusivos</h3>
+    <section class="features" id="servicios">
+        <h3>Servicios Exclusivos</h3>
         
-        <div class="services-grid">
-            <div class="service-card">
-                <div class="service-icon">
-                    <i class="fas fa-book-open"></i>
+        <!-- Swiper: Carrusel deslizable para las tarjetas de servicios -->
+        <div class="swiper mySwiper">
+            <div class="swiper-wrapper">
+                <!-- Slide 1: Tradiciones -->
+                <div class="swiper-slide">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h4 class="feature-title">Tradiciones</h4>
+                        <p class="feature-description">Accede a nuestra colección exclusiva de recetas tradicionales colombianas, con instrucciones paso a paso y consejos de nuestros chefs.</p>
+                        <div class="feature-button-container">
+                            <a href="tradiciones.php" class="btn-service">
+                                <i class="fas fa-arrow-right"></i> Conoce Más
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <h4 class="service-title">Tradiciones</h4>
-                <p class="service-description">Accede a nuestra colección exclusiva de recetas tradicionales colombianas, con instrucciones paso a paso y consejos de nuestros chefs.</p>
-                <a href="#" class="service-link">
-                    <i class="fas fa-arrow-right"></i> Conoce Mas
-                </a>
+                
+                <!-- Slide 2: Productos -->
+                <div class="swiper-slide">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h4 class="feature-title">Productos</h4>
+                        <p class="feature-description">Mantente informado sobre nuestros próximos eventos culturales, talleres de cocina y celebraciones tradicionales.</p>
+                        <div class="feature-button-container">
+                            <a href="productos.php" class="btn-service">
+                                <i class="fas fa-arrow-right"></i> Ver Productos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Slide 3: Historias de la Comunidad -->
+                <div class="swiper-slide">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-edit"></i>
+                        </div>
+                        <h4 class="feature-title">Historias de la Comunidad</h4>
+                        <p class="feature-description">Actualiza tus datos personales, cambia tu contraseña y personaliza tus preferencias en nuestra plataforma.</p>
+                        <div class="feature-button-container">
+                            <a href="Historias_comunidad.php" class="btn-service">
+                                <i class="fas fa-arrow-right"></i> Cuentanos tu Historia
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <div class="service-card">
-                <div class="service-icon">
-                    <i class="fas fa-calendar-alt"></i>
-                </div>
-                <h4 class="service-title">Productos</h4>
-                <p class="service-description">Mantente informado sobre nuestros próximos eventos culturales, talleres de cocina y celebraciones tradicionales.</p>
-                <a href="#" class="service-link">
-                    <i class="fas fa-arrow-right"></i> Ver Productos
-                </a>
-            </div>
-            
-            <div class="service-card">
-                <div class="service-icon">
-                    <i class="fas fa-user-edit"></i>
-                </div>
-                <h4 class="service-title">Historias de la Comunidad</h4>
-                <p class="service-description">Actualiza tus datos personales, cambia tu contraseña y personaliza tus preferencias en nuestra plataforma.</p>
-                <a href="#perfil" class="service-link">
-                    <i class="fas fa-arrow-right"></i> Cuentanos tu Historia
-                </a>
-            </div>
+            <!-- Controles de navegación del carrusel -->
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
         </div>
     </section>
     
     <!-- SECCIÓN DE PERFIL: Permite al usuario gestionar su información -->
-    <section class="hero" id="perfil">
-        <h2>Mi Perfil</h2>
-        <p>Gestiona tu información personal y preferencias de usuario.</p>
-        
-        <div class="d-flex justify-content-center gap-3">
-            <a href="editar_perfil.php" class="btn-info">
-                <i class="fas fa-user-edit"></i> Editar Datos
-            </a>
-            <a href="cambiar_contrasena.php" class="btn-info" style="background-color: var(--color-secondary); color: white;">
-                <i class="fas fa-key"></i> Cambiar Contraseña
-            </a>
+    <section class="features" id="perfil">
+        <h3>Mi Perfil</h3>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-user-cog"></i>
+            </div>
+            <h4 class="feature-title">Gestiona tu información personal</h4>
+            <p class="feature-description">Actualiza tus datos, cambia tu contraseña y personaliza tus preferencias en nuestra plataforma.</p>
+            
+            <div class="profile-options">
+                <a href="editar_perfil.php" class="btn-info">
+                    <i class="fas fa-user-edit"></i> Editar Datos
+                </a>
+                <a href="cambiar_contrasena.php" class="btn-info" style="background-color: var(--color-secondary); color: white;">
+                    <i class="fas fa-key"></i> Cambiar Contraseña
+                </a>
+            </div>
         </div>
     </section>
     
     <!-- SECCIÓN DE CONTACTO: Información de contacto -->
-    <section class="hero" id="contacto" style="margin-bottom: 5rem;">
-        <h2>Contáctanos</h2>
-        <p>¿Tienes alguna pregunta o sugerencia? Estamos aquí para ayudarte.</p>
-        
-        <div class="row justify-content-center mb-4">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-body">
-                        <form id="contactForm">
-                            <div class="mb-3">
-                                <label for="asunto" class="form-label">Asunto</label>
-                                <input type="text" class="form-control" id="asunto" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="mensaje" class="form-label">Mensaje</label>
-                                <textarea class="form-control" id="mensaje" rows="4" required></textarea>
-                            </div>
-                            <button type="submit" class="btn-info" style="border: none;">
-                                <i class="fas fa-paper-plane"></i> Enviar Mensaje
-                            </button>
-                        </form>
+    <section class="features" id="contacto" style="margin-bottom: 5rem;">
+        <h3>Contáctanos</h3>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-envelope"></i>
+            </div>
+            <h4 class="feature-title">¿Tienes alguna pregunta o sugerencia?</h4>
+            <p class="feature-description">Estamos aquí para ayudarte. Envíanos un mensaje y te responderemos lo antes posible.</p>
+            
+            <div class="form-container">
+                <form id="contactForm">
+                    <div class="mb-3">
+                        <label for="asunto" class="form-label">Asunto</label>
+                        <input type="text" class="form-control" id="asunto" required>
                     </div>
+                    <div class="mb-3">
+                        <label for="mensaje" class="form-label">Mensaje</label>
+                        <textarea class="form-control" id="mensaje" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-service" style="margin-top: 1rem;">
+                        <i class="fas fa-paper-plane"></i> Enviar Mensaje
+                    </button>
+                </form>
+            </div>
+            
+            <div class="d-flex justify-content-center gap-4 mt-4">
+                <div class="text-center">
+                    <i class="fas fa-phone fa-2x mb-2" style="color: var(--color-secondary);"></i>
+                    <p>+57 123 456 7890</p>
                 </div>
-            </div>
-        </div>
-        
-        <div class="d-flex justify-content-center gap-4">
-            <div class="text-center">
-                <i class="fas fa-phone fa-2x mb-2" style="color: var(--color-secondary);"></i>
-                <p>+57 123 456 7890</p>
-            </div>
-            <div class="text-center">
-                <i class="fas fa-envelope fa-2x mb-2" style="color: var(--color-secondary);"></i>
-                <p>info@saborcolombiano.com</p>
+                <div class="text-center">
+                    <i class="fas fa-envelope fa-2x mb-2" style="color: var(--color-secondary);"></i>
+                    <p>info@saborcolombiano.com</p>
+                </div>
             </div>
         </div>
     </section>
@@ -646,6 +837,9 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
     <!-- Bootstrap JS: Incluye las funcionalidades de Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- Swiper JS: Para el carrusel deslizable -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    
     <!-- Script personalizado para mejorar la experiencia de usuario -->
     <script>
         // Cuando el documento esté cargado
@@ -676,6 +870,42 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
                         });
                     }
                 });
+            });
+            
+            // Inicialización del carrusel Swiper
+            var swiper = new Swiper(".mySwiper", {
+                slidesPerView: 1,
+                spaceBetween: 30,
+                loop: true,
+                pagination: {
+                    el: ".swiper-pagination",
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: ".swiper-button-next",
+                    prevEl: ".swiper-button-prev",
+                },
+                // Responsive breakpoints
+                breakpoints: {
+                    // Cuando el ancho de la ventana es >= 768px
+                    768: {
+                        slidesPerView: 2,
+                        spaceBetween: 20
+                    },
+                    // Cuando el ancho de la ventana es >= 1024px
+                    1024: {
+                        slidesPerView: 3,
+                        spaceBetween: 30
+                    }
+                },
+                // Accesibilidad
+                a11y: {
+                    prevSlideMessage: 'Slide anterior',
+                    nextSlideMessage: 'Siguiente slide',
+                    firstSlideMessage: 'Este es el primer slide',
+                    lastSlideMessage: 'Este es el último slide',
+                    paginationBulletMessage: 'Ir al slide {{index}}'
+                }
             });
             
             // Manejar el envío del formulario de contacto

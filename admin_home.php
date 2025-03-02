@@ -462,7 +462,7 @@ include('db.php');
     <!-- Encabezado fijo con logo, bienvenida y botón de salir -->
     <header>
         <div class="header-logo">
-            <a href="home.php" title="Ir a la página principal">
+            <a href="index.php" title="Ir a la página principal">
                 <img src="palenque.jpeg" alt="San Basilio de Palenque" width="120" height="120">
             </a>
         </div>
