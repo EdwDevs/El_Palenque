@@ -8,23 +8,23 @@ if (!isset($_SESSION['usuario'])) {
     exit();
 }
 
-// Verificar si el usuario tiene rol de administrador
+// Verificar si el usuario tiene rol de administrador; si no, redirigir a la página de usuario estándar
 if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'admin') {
-    // Redirigir a usuarios sin privilegios de administrador
     header("Location: user_home.php");
     exit();
 }
 
-// Almacenar el nombre del usuario logueado en una variable con seguridad
-$username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para prevenir XSS
+// Almacenar el nombre del usuario logueado en una variable con seguridad contra XSS
+$username = htmlspecialchars($_SESSION['usuario']);
 
-// Incluir el archivo de conexión a la base de datos
+// Incluir el archivo de conexión a la base de datos (asegúrate de que db.php esté configurado correctamente)
 include('db.php');
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Configuración básica del documento -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Panel de administración para gestionar usuarios de Sabor Colombiano">
@@ -43,20 +43,19 @@ include('db.php');
     <style>
         /* Variables CSS para mantener consistencia en colores y valores */
         :root {
-            --color-primary: #FF5722;
-            --color-secondary: #4CAF50;
-            --color-accent: #FFC107;
-            --color-text: #333333;
-            --color-light: #FFFFFF;
-            --color-hover: #FFF3E0;
-            --border-radius: 10px;
-            --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            --transition-normal: all 0.3s ease;
+            --color-primary: #FF5722; /* Naranja vibrante */
+            --color-secondary: #4CAF50; /* Verde natural */
+            --color-accent: #FFC107; /* Amarillo cálido */
+            --color-text: #333333; /* Gris oscuro para texto */
+            --color-light: #FFFFFF; /* Blanco puro */
+            --color-hover: #FFF3E0; /* Fondo claro para hover */
+            --border-radius: 10px; /* Bordes redondeados */
+            --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Sombra suave */
+            --transition-normal: all 0.3s ease; /* Transición estándar */
         }
         
         /* Estilos generales del cuerpo de la página */
         body {
-            /* Fondo con degradado de colores que representan la bandera colombiana */
             background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
             min-height: 100vh;
             font-family: 'Montserrat', sans-serif;
@@ -65,7 +64,7 @@ include('db.php');
             position: relative;
         }
         
-        /* Estilos del encabezado fijo en la parte superior */
+        /* Estilos del encabezado fijo */
         header {
             background: rgba(255, 255, 255, 0.95);
             padding: 1rem 0;
@@ -93,9 +92,8 @@ include('db.php');
             transition: transform 0.3s ease;
         }
         
-        /* Efecto hover para la imagen del logo */
         .header-logo img:hover {
-            transform: scale(1.05);
+            transform: scale(1.05); /* Efecto de aumento al pasar el ratón */
         }
         
         /* Mensaje de bienvenida al usuario */
@@ -113,13 +111,11 @@ include('db.php');
             align-items: center;
         }
         
-        /* Icono de usuario en el mensaje de bienvenida */
         .user-welcome i {
             margin-right: 0.5rem;
             color: var(--color-secondary);
         }
         
-        /* Efecto hover para el mensaje de bienvenida */
         .user-welcome:hover {
             transform: scale(1.05);
             background-color: rgba(255, 255, 255, 1);
@@ -140,9 +136,29 @@ include('db.php');
             gap: 0.5rem;
         }
         
-        /* Efecto hover para el botón de salir */
         .btn-salir:hover {
             background-color: var(--color-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Botón para ir a la sección de productos */
+        .btn-productos {
+            background-color: var(--color-accent);
+            color: var(--color-text);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            transition: var(--transition-normal);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-productos:hover {
+            background-color: var(--color-primary);
+            color: var(--color-light);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
@@ -154,17 +170,16 @@ include('db.php');
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
             box-shadow: var(--box-shadow);
-            max-width: 1200px; /* Aumentado para mejor visualización en pantallas grandes */
+            max-width: 1200px;
             animation: fadeIn 0.5s ease-in-out;
         }
         
-        /* Animación de aparición suave */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Título principal de la página */
+        /* Título principal */
         h1 {
             color: var(--color-primary);
             font-weight: 700;
@@ -174,7 +189,6 @@ include('db.php');
             padding-bottom: 0.5rem;
         }
         
-        /* Línea decorativa debajo del título */
         h1::after {
             content: '';
             position: absolute;
@@ -195,7 +209,6 @@ include('db.php');
             flex-wrap: wrap;
         }
         
-        /* Campo de búsqueda */
         .search-input {
             flex: 1;
             min-width: 200px;
@@ -211,7 +224,6 @@ include('db.php');
             outline: none;
         }
         
-        /* Botón de búsqueda */
         .btn-search {
             background-color: var(--color-secondary);
             color: var(--color-light);
@@ -227,7 +239,7 @@ include('db.php');
             transform: translateY(-2px);
         }
         
-        /* Estilos de la tabla de usuarios */
+        /* Estilos de la tabla */
         .table {
             width: 100%;
             border-collapse: separate;
@@ -235,7 +247,6 @@ include('db.php');
             margin-bottom: 2rem;
         }
         
-        /* Encabezados de la tabla */
         .table thead th {
             background-color: var(--color-secondary);
             color: var(--color-light);
@@ -247,28 +258,23 @@ include('db.php');
             top: 0;
         }
         
-        /* Primera columna con esquinas redondeadas a la izquierda */
         .table thead th:first-child {
             border-top-left-radius: var(--border-radius);
         }
         
-        /* Última columna con esquinas redondeadas a la derecha */
         .table thead th:last-child {
             border-top-right-radius: var(--border-radius);
         }
         
-        /* Filas de la tabla */
         .table tbody tr {
             transition: var(--transition-normal);
         }
         
-        /* Efecto hover para las filas */
         .table tbody tr:hover {
             background-color: var(--color-hover);
             transform: scale(1.01);
         }
         
-        /* Celdas de la tabla */
         .table td {
             padding: 1rem;
             border-bottom: 1px solid var(--color-accent);
@@ -276,7 +282,6 @@ include('db.php');
             vertical-align: middle;
         }
         
-        /* Celda de estado con indicador visual */
         .status-cell {
             font-weight: 600;
         }
@@ -289,7 +294,6 @@ include('db.php');
             color: var(--color-primary);
         }
         
-        /* Celda de acciones con botones */
         .actions-cell {
             display: flex;
             justify-content: center;
@@ -298,7 +302,6 @@ include('db.php');
             flex-wrap: wrap;
         }
         
-        /* Estilos comunes para los botones de acción */
         .btn-action {
             text-decoration: none;
             padding: 0.5rem 1rem;
@@ -311,7 +314,6 @@ include('db.php');
             white-space: nowrap;
         }
         
-        /* Botón para editar/asignar rol */
         .btn-editar {
             background-color: var(--color-accent);
             color: var(--color-text);
@@ -324,31 +326,28 @@ include('db.php');
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         
-        /* Botón para inhabilitar usuarios */
         .btn-inhabilitar {
             background-color: var(--color-primary);
             color: var(--color-light);
         }
         
         .btn-inhabilitar:hover {
-            background-color: #F44336; /* Rojo más intenso */
+            background-color: #F44336;
             transform: translateY(-2px);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         
-        /* Botón para habilitar usuarios */
         .btn-habilitar {
             background-color: var(--color-secondary);
             color: var(--color-light);
         }
         
         .btn-habilitar:hover {
-            background-color: #388E3C; /* Verde más intenso */
+            background-color: #388E3C;
             transform: translateY(-2px);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         
-        /* Botón para modificar usuarios */
         .btn-modificar {
             background-color: var(--color-secondary);
             color: var(--color-light);
@@ -360,7 +359,6 @@ include('db.php');
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         
-        /* Paginación de la tabla */
         .pagination {
             display: flex;
             justify-content: center;
@@ -385,7 +383,6 @@ include('db.php');
             color: var(--color-light);
         }
         
-        /* Pie de página */
         footer {
             text-align: center;
             padding: 1rem;
@@ -398,68 +395,26 @@ include('db.php');
             border-top: 1px solid rgba(255, 193, 7, 0.3);
         }
         
-        /* Estilos responsivos para dispositivos móviles */
         @media (max-width: 768px) {
-            .header-logo {
-                margin-left: 1rem;
-            }
-            
-            .header-logo img {
-                max-width: 80px;
-            }
-            
-            .user-welcome {
-                font-size: 1rem;
-                padding: 0.4rem 0.8rem;
-            }
-            
-            .btn-salir {
-                margin-right: 1rem;
-                padding: 0.5rem 1rem;
-            }
-            
-            .container {
-                padding: 1.5rem;
-                margin-top: 7rem;
-            }
-            
-            h1 {
-                font-size: 1.5rem;
-            }
-            
-            .actions-cell {
-                flex-direction: column;
-                gap: 0.3rem;
-            }
-            
-            .btn-action {
-                width: 100%;
-                justify-content: center;
-                padding: 0.4rem 0.8rem;
-                font-size: 0.9rem;
-            }
-            
-            /* Hacer la tabla responsive en móviles */
-            .table-responsive {
-                overflow-x: auto;
-            }
+            .header-logo { margin-left: 1rem; }
+            .header-logo img { max-width: 80px; }
+            .user-welcome { font-size: 1rem; padding: 0.4rem 0.8rem; }
+            .btn-salir, .btn-productos { margin-right: 1rem; padding: 0.5rem 1rem; }
+            .container { padding: 1.5rem; margin-top: 7rem; }
+            h1 { font-size: 1.5rem; }
+            .actions-cell { flex-direction: column; gap: 0.3rem; }
+            .btn-action { width: 100%; justify-content: center; padding: 0.4rem 0.8rem; font-size: 0.9rem; }
+            .table-responsive { overflow-x: auto; }
         }
         
-        /* Estilos para pantallas muy pequeñas */
         @media (max-width: 576px) {
-            .container {
-                padding: 1rem;
-                margin-top: 6rem;
-            }
-            
-            .search-bar {
-                flex-direction: column;
-            }
+            .container { padding: 1rem; margin-top: 6rem; }
+            .search-bar { flex-direction: column; }
         }
     </style>
 </head>
 <body>
-    <!-- Encabezado fijo con logo, bienvenida y botón de salir -->
+    <!-- Encabezado fijo con logo, bienvenida y botones -->
     <header>
         <div class="header-logo">
             <a href="index.php" title="Ir a la página principal">
@@ -469,11 +424,20 @@ include('db.php');
         <span class="user-welcome">
             <i class="fas fa-user-shield"></i>¡Hola, <?php echo $username; ?>!
         </span>
-        <a href="logout.php" title="Cerrar sesión">
-            <button class="btn-salir">
-                <i class="fas fa-sign-out-alt"></i>Salir
-            </button>
-        </a>
+        <div>
+            <!-- Botón para ir a la sección de productos -->
+            <a href="productos.php" title="Ir a la gestión de productos">
+                <button class="btn-productos">
+                    <i class="fas fa-shopping-cart"></i>Productos
+                </button>
+            </a>
+            <!-- Botón para cerrar sesión -->
+            <a href="logout.php" title="Cerrar sesión">
+                <button class="btn-salir">
+                    <i class="fas fa-sign-out-alt"></i>Salir
+                </button>
+            </a>
+        </div>
     </header>
 
     <!-- Contenedor principal con la tabla de gestión de usuarios -->
@@ -505,11 +469,8 @@ include('db.php');
                     // Consultar todos los usuarios de la base de datos
                     $sel = $conexion->query("SELECT * FROM usuarios ORDER BY id ASC");
                     
-                    // Verificar si hay usuarios para mostrar
                     if ($sel->num_rows > 0) {
-                        // Iterar sobre los resultados y mostrarlos en la tabla
                         while ($fila = $sel->fetch_assoc()) {
-                            // Determinar la clase CSS según el estado del usuario
                             $statusClass = $fila['habilitado'] == 1 ? 'status-enabled' : 'status-disabled';
                     ?>
                     <tr>
@@ -533,11 +494,9 @@ include('db.php');
                                     <i class="fas fa-user-check"></i> Habilitar
                                 </a>
                             <?php endif; ?>
-                            
                             <a href="modificar_usuario.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-editar" title="Asignar rol al usuario">
                                 <i class="fas fa-user-tag"></i> Asignar Rol
                             </a>
-                            
                             <a href="editar_usuario.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-modificar" title="Modificar datos del usuario">
                                 <i class="fas fa-user-edit"></i> Modificar
                             </a>
@@ -546,7 +505,6 @@ include('db.php');
                     <?php
                         }
                     } else {
-                        // Mostrar mensaje si no hay usuarios
                     ?>
                     <tr>
                         <td colspan="5" class="text-center">No hay usuarios registrados en el sistema.</td>
@@ -580,39 +538,34 @@ include('db.php');
         </nav>
     </div>
 
-    <!-- Pie de página con información de copyright -->
+    <!-- Pie de página -->
     <footer>
         <p>© 2025 Sabor Colombiano - Gestión con raíces y tradición.</p>
     </footer>
 
-    <!-- Bootstrap JS: Incluye las funcionalidades de Bootstrap -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Script personalizado para funcionalidades adicionales -->
+    <!-- Script personalizado -->
     <script>
         // Función para buscar usuarios en la tabla
         function searchUsers() {
-            // Obtener el valor de búsqueda
             const searchValue = document.getElementById('searchUser').value.toLowerCase();
             const table = document.getElementById('usersTable');
             const rows = table.getElementsByTagName('tr');
             
-            // Recorrer todas las filas de la tabla (excepto el encabezado)
             for (let i = 1; i < rows.length; i++) {
                 const cells = rows[i].getElementsByTagName('td');
                 let found = false;
                 
-                // Buscar en cada celda de la fila
-                for (let j = 0; j < cells.length - 1; j++) { // Excluir la celda de acciones
+                for (let j = 0; j < cells.length - 1; j++) {
                     const cellText = cells[j].textContent.toLowerCase();
-                    
                     if (cellText.includes(searchValue)) {
                         found = true;
                         break;
                     }
                 }
                 
-                // Mostrar u ocultar la fila según el resultado de la búsqueda
                 rows[i].style.display = found ? '' : 'none';
             }
         }
@@ -622,18 +575,13 @@ include('db.php');
         
         // Confirmar antes de inhabilitar o habilitar un usuario
         document.addEventListener('DOMContentLoaded', function() {
-            // Seleccionar todos los botones de inhabilitar y habilitar
             const actionButtons = document.querySelectorAll('.btn-inhabilitar, .btn-habilitar');
             
-            // Añadir evento de clic a cada botón
             actionButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
-                    // Determinar el tipo de acción
                     const action = this.classList.contains('btn-inhabilitar') ? 'inhabilitar' : 'habilitar';
-                    
-                    // Mostrar confirmación
                     if (!confirm(`¿Estás seguro de que deseas ${action} este usuario?`)) {
-                        e.preventDefault(); // Cancelar la acción si el usuario no confirma
+                        e.preventDefault();
                     }
                 });
             });
