@@ -28,13 +28,13 @@ if (!$usuario_id) {
 }
 
 // Verificar si se proporcionó un ID de pedido
+$isAdmin = isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin';
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: gestion_pedidos.php?mensaje=ID de pedido inválido");
+    header("Location: user_home.php?mensaje=Por favor selecciona un pedido específico");
     exit();
 }
 
 $pedido_id = intval($_GET['id']);
-$isAdmin = isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin';
 
 // Obtener el pedido específico
 if ($isAdmin) {
@@ -60,7 +60,7 @@ $pedido = $result_pedido->fetch_assoc();
 $stmt->close();
 
 if (!$pedido) {
-    header("Location: gestion_pedidos.php?mensaje=Pedido no encontrado o no tienes permiso");
+    header("Location: user_home.php?mensaje=Pedido no encontrado o no tienes permiso");
     exit();
 }
 
@@ -92,26 +92,21 @@ $result_entrega = $stmt->get_result();
 $entrega = $result_entrega->fetch_assoc();
 $stmt->close();
 
-// Generar PDF y actualizar estado si se solicita facturar
-if (isset($_GET['facturar']) && $_GET['facturar'] == '1') {
-    // Actualizar el estado del pedido a "confirmado"
+// Generar PDF y actualizar estado si se solicita facturar (solo para admins)
+if ($isAdmin && isset($_GET['facturar']) && $_GET['facturar'] == '1') {
     $stmt = $conexion->prepare("UPDATE pedidos SET estado = 'confirmado' WHERE id = ?");
     $stmt->bind_param("i", $pedido_id);
     $stmt->execute();
     $stmt->close();
 
-    // Generar el PDF
     $pdf = new FPDF();
     $pdf->AddPage();
     $pdf->SetFont('Arial', 'B', 16);
-
-    // Título
     $pdf->Cell(0, 10, 'Factura - Sabor Colombiano', 0, 1, 'C');
     $pdf->SetFont('Arial', '', 12);
     $pdf->Cell(0, 10, 'Fecha: ' . date('d/m/Y'), 0, 1, 'R');
     $pdf->Ln(10);
 
-    // Información del pedido
     $pdf->SetFont('Arial', 'B', 12);
     $pdf->Cell(0, 10, "Detalles del Pedido #{$pedido['id']}", 0, 1);
     $pdf->SetFont('Arial', '', 12);
@@ -120,7 +115,6 @@ if (isset($_GET['facturar']) && $_GET['facturar'] == '1') {
     $pdf->Cell(0, 10, "Estado: Confirmado", 0, 1);
     $pdf->Ln(10);
 
-    // Datos de entrega
     $pdf->SetFont('Arial', 'B', 12);
     $pdf->Cell(0, 10, "Datos de Entrega", 0, 1);
     $pdf->SetFont('Arial', '', 12);
@@ -130,7 +124,6 @@ if (isset($_GET['facturar']) && $_GET['facturar'] == '1') {
     $pdf->Cell(0, 10, "Teléfono: " . ($entrega['telefono'] ?? 'No especificado'), 0, 1);
     $pdf->Ln(10);
 
-    // Tabla de productos
     $pdf->SetFont('Arial', 'B', 12);
     $pdf->Cell(80, 10, 'Producto', 1);
     $pdf->Cell(30, 10, 'Cantidad', 1);
@@ -148,13 +141,11 @@ if (isset($_GET['facturar']) && $_GET['facturar'] == '1') {
         $pdf->Ln();
     }
 
-    // Total
     $pdf->Ln(10);
     $pdf->SetFont('Arial', 'B', 12);
     $pdf->Cell(150, 10, 'Total:', 0);
     $pdf->Cell(40, 10, '$' . number_format($pedido['total'], 2), 0, 1, 'R');
 
-    // Descargar el PDF
     $pdf->Output('D', "factura_pedido_{$pedido_id}.pdf");
     exit();
 }
@@ -272,7 +263,10 @@ if (isset($_GET['facturar']) && $_GET['facturar'] == '1') {
         </div>
         <div>
             <span class="user-welcome"><i class="fas fa-user"></i> Hola, <?php echo htmlspecialchars($_SESSION['usuario']); ?></span>
-            <a href="<?php echo $isAdmin ? 'gestion_pedidos.php' : 'ver_pedido.php'; ?>" class="btn-auth"><i class="fas fa-list"></i> Mis Pedidos</a>
+            <a href="user_home.php" class="btn-auth"><i class="fas fa-list"></i> Mis Pedidos</a>
+            <?php if ($isAdmin): ?>
+                <a href="gestion_pedidos.php" class="btn-auth"><i class="fas fa-cogs"></i> Gestionar Pedidos</a>
+            <?php endif; ?>
             <a href="index.php" class="btn-auth"><i class="fas fa-home"></i> Inicio</a>
             <a href="logout.php" class="btn-auth"><i class="fas fa-sign-out-alt"></i> Salir</a>
         </div>
@@ -315,9 +309,13 @@ if (isset($_GET['facturar']) && $_GET['facturar'] == '1') {
             </table>
 
             <div class="mt-3 d-flex justify-content-between">
-                <a href="<?php echo $isAdmin ? 'gestion_pedidos.php' : 'ver_pedido.php'; ?>" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Volver</a>
+                <a href="user_home.php" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Volver</a>
                 <?php if ($pedido['estado'] !== 'confirmado'): ?>
-                    <a href="ver_pedido.php?id=<?php echo $pedido_id; ?>&facturar=1" class="btn btn-success"><i class="fas fa-file-pdf"></i> Facturar</a>
+                    <?php if ($isAdmin): ?>
+                        <a href="ver_pedido.php?id=<?php echo $pedido_id; ?>&facturar=1" class="btn btn-success"><i class="fas fa-file-pdf"></i> Facturar</a>
+                    <?php else: ?>
+                        <button class="btn btn-success" disabled><i class="fas fa-file-pdf"></i> Facturar (Solo Admins)</button>
+                    <?php endif; ?>
                 <?php else: ?>
                     <button class="btn btn-secondary" disabled><i class="fas fa-file-pdf"></i> Ya Facturado</button>
                 <?php endif; ?>

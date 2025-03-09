@@ -4,30 +4,38 @@ session_start();
 
 // Verificar si el usuario está autenticado
 if (!isset($_SESSION['usuario'])) {
-    // Si no hay sesión activa, redirigir al login
     header("Location: index.php");
     exit();
 }
 
-// Verificar si el usuario tiene rol de usuario regular (no admin)
-if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
-    // Si es admin, redirigir al panel de administración
-    header("Location: admin_home.php");
-    exit();
-}
+// Incluir la conexión a la base de datos
+include('db.php');
 
-// Almacenar el nombre del usuario en una variable con seguridad
-$username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para prevenir XSS
-if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
+// Almacenar el nombre del usuario con seguridad
+$username = htmlspecialchars($_SESSION['usuario']);
+
+// Obtener el ID del usuario si no está en la sesión
+if (!isset($_SESSION['usuario_id'])) {
     $stmt = $conexion->prepare("SELECT id FROM usuarios WHERE nombre = ?");
     $stmt->bind_param("s", $_SESSION['usuario']);
     $stmt->execute();
     $result = $stmt->get_result();
     if ($row = $result->fetch_assoc()) {
         $_SESSION['usuario_id'] = $row['id'];
+    } else {
+        die("Error: No se pudo encontrar el ID del usuario en la base de datos.");
     }
     $stmt->close();
 }
+
+$usuario_id = $_SESSION['usuario_id'];
+$isAdmin = isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin';
+
+// Obtener los pedidos del usuario
+$stmt = $conexion->prepare("SELECT id, fecha_pedido, total, estado FROM pedidos WHERE usuario_id = ?");
+$stmt->bind_param("i", $usuario_id);
+$stmt->execute();
+$result_pedidos = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -35,24 +43,23 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Panel de usuario de Sabor Colombiano - Accede a servicios exclusivos">
+    <meta name="description" content="Panel de usuario de Sabor Colombiano - Accede a servicios exclusivos y tus pedidos">
     <title>Panel de Usuario - Sabor Colombiano</title>
     
-    <!-- Bootstrap CSS: Framework para diseño responsive -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- Google Fonts - Montserrat: Tipografía principal del sitio -->
+    <!-- Google Fonts - Montserrat -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <!-- Font Awesome: Biblioteca de iconos para mejorar la interfaz -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Swiper CSS: Para el carrusel deslizable -->
+    <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
     
-    <!-- Estilos personalizados: Define la apariencia específica de la aplicación -->
+    <!-- Estilos personalizados -->
     <style>
-        /* Variables CSS para mantener consistencia en colores y valores */
         :root {
             --color-primary: #FF5722;
             --color-secondary: #4CAF50;
@@ -65,10 +72,7 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             --transition-normal: all 0.3s ease;
         }
         
-        /* ===== ESTILOS GLOBALES ===== */
-        /* Definición del fondo, fuente y estructura básica del documento */
         body {
-            /* Fondo con degradado de colores que representan la bandera colombiana */
             background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
             min-height: 100vh;
             font-family: 'Montserrat', sans-serif;
@@ -76,11 +80,9 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             margin: 0;
             padding: 0;
             position: relative;
-            padding-bottom: 60px; /* Espacio para el footer */
+            padding-bottom: 60px;
         }
 
-        /* ===== HEADER Y NAVEGACIÓN ===== */
-        /* Configuración del encabezado fijo en la parte superior */
         header {
             background: rgba(255, 255, 255, 0.95);
             padding: 1rem 2rem;
@@ -91,23 +93,21 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             right: 0;
             width: 100%;
             z-index: 1000;
-            display: flex !important; /* Fuerza la disposición en línea */
-            justify-content: space-between !important; /* Distribuye los elementos */
-            align-items: center !important; /* Alinea verticalmente */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             box-sizing: border-box;
             transition: var(--transition-normal);
         }
         
-        /* Efecto de scroll para el header */
         header.scrolled {
             padding: 0.5rem 2rem;
             background: rgba(255, 255, 255, 0.98);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        /* Estilo del logo y su contenedor */
         .header-logo {
-            flex-shrink: 0; /* Evita que el logo se comprima */
+            flex-shrink: 0;
         }
 
         .header-logo img {
@@ -122,33 +122,29 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             transform: scale(1.05);
         }
 
-        /* Contenedor de los enlaces de navegación */
         .nav-links {
-            flex-grow: 1; /* Ocupa el espacio disponible */
-            display: flex !important; /* Fuerza la disposición en línea */
-            justify-content: center !important; /* Centra los elementos */
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
         }
 
-        /* Lista de navegación */
         .navbar-nav {
-            display: flex !important; /* Fuerza la disposición en línea */
-            flex-direction: row !important; /* Asegura que sea horizontal */
-            gap: 2rem !important; /* Espacio entre elementos */
+            display: flex;
+            flex-direction: row;
+            gap: 2rem;
             list-style: none;
             margin: 0;
             padding: 0;
             align-items: center;
         }
 
-        /* Elementos individuales de la navegación */
         .nav-item {
             margin: 0;
             padding: 0;
-            display: block !important;
+            display: block;
             position: relative;
         }
 
-        /* Enlaces de navegación */
         .nav-link {
             color: var(--color-secondary);
             font-weight: 600;
@@ -157,7 +153,7 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             transition: var(--transition-normal);
             padding: 0.5rem 1rem;
             border-radius: 5px;
-            display: flex !important;
+            display: flex;
             align-items: center;
             gap: 0.5rem;
         }
@@ -168,7 +164,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             transform: translateY(-2px);
         }
         
-        /* Indicador de enlace activo */
         .nav-link.active {
             color: var(--color-primary);
             background: rgba(255, 87, 34, 0.1);
@@ -187,8 +182,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             border-radius: 3px;
         }
 
-        /* ===== BOTONES ===== */
-        /* Botón de salir */
         .btn-auth {
             background-color: var(--color-primary);
             color: white;
@@ -198,8 +191,8 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             font-weight: 600;
             transition: var(--transition-normal);
             cursor: pointer;
-            white-space: nowrap; /* Evita que el texto se divida */
-            flex-shrink: 0; /* Evita que el botón se comprima */
+            white-space: nowrap;
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -211,7 +204,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         
-        /* Mensaje de bienvenida al usuario */
         .user-welcome {
             display: flex;
             align-items: center;
@@ -230,7 +222,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             transform: translateY(-2px);
         }
 
-        /* Botón de información */
         .btn-info {
             background-color: var(--color-accent);
             color: var(--color-text);
@@ -251,7 +242,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         
-        /* Botón de servicio */
         .btn-service {
             background-color: var(--color-secondary);
             color: white;
@@ -275,11 +265,9 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
-        /* ===== SECCIÓN HERO ===== */
-        /* Sección principal de bienvenida */
         .hero {
             text-align: center;
-            padding: 10rem 2rem 5rem; /* Espacio superior para evitar solapamiento con header */
+            padding: 10rem 2rem 5rem;
             background: rgba(255, 255, 255, 0.9);
             margin: 0 auto;
             max-width: 800px;
@@ -288,7 +276,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             animation: fadeIn 1s ease-in-out;
         }
         
-        /* Animación de aparición suave */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -303,7 +290,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             padding-bottom: 0.5rem;
         }
         
-        /* Línea decorativa debajo del título */
         .hero h2::after {
             content: '';
             position: absolute;
@@ -325,7 +311,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             margin-right: auto;
         }
         
-        /* Contenedor de botones en el hero */
         .hero-buttons {
             display: flex;
             justify-content: center;
@@ -333,7 +318,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             flex-wrap: wrap;
         }
         
-        /* ===== SECCIÓN DE SERVICIOS ===== */
         .features {
             padding: 4rem 2rem;
             max-width: 1200px;
@@ -366,18 +350,16 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             border-radius: 3px;
         }
         
-        /* Estilos para el carrusel Swiper */
         .swiper {
             width: 100%;
-            padding-bottom: 50px; /* Espacio para la paginación */
+            padding-bottom: 50px;
         }
         
         .swiper-slide {
-            height: auto; /* Permite que las tarjetas tengan altura variable */
+            height: auto;
             display: flex;
         }
         
-        /* Estilos para los botones de navegación del carrusel */
         .swiper-button-next, .swiper-button-prev {
             color: var(--color-primary);
             background: rgba(255, 255, 255, 0.8);
@@ -397,7 +379,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             transform: scale(1.1);
         }
         
-        /* Estilos para la paginación del carrusel */
         .swiper-pagination-bullet {
             background: var(--color-secondary);
             opacity: 0.5;
@@ -408,7 +389,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             opacity: 1;
         }
         
-        /* Tarjetas de características */
         .feature-card {
             background: var(--color-light);
             padding: 2rem;
@@ -443,14 +423,13 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             color: var(--color-text);
             font-size: 0.95rem;
             margin-bottom: 1rem;
-            flex-grow: 1; /* Hace que el texto ocupe el espacio disponible */
+            flex-grow: 1;
         }
         
         .feature-button-container {
-            margin-top: auto; /* Empuja el botón hacia abajo */
+            margin-top: auto;
         }
         
-        /* Estilos para formularios */
         .form-container {
             background: var(--color-light);
             padding: 2rem;
@@ -476,7 +455,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.25);
         }
         
-        /* Estilos para el perfil */
         .profile-options {
             display: flex;
             justify-content: center;
@@ -485,8 +463,37 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             flex-wrap: wrap;
         }
 
-        /* ===== FOOTER ===== */
-        /* Pie de página */
+        .pedidos-section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 2rem auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: var(--box-shadow);
+        }
+        .pedidos-section h3 {
+            color: var(--color-primary);
+            text-align: center;
+            margin-bottom: 2rem;
+            font-weight: 700;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        .pedidos-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: var(--color-primary);
+            border-radius: 3px;
+        }
+        .table-responsive {
+            margin-top: 1rem;
+        }
+
         footer {
             text-align: center;
             padding: 1.5rem;
@@ -540,8 +547,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             transform: translateY(-2px);
         }
 
-        /* ===== RESPONSIVE ===== */
-        /* Ajustes para dispositivos móviles */
         @media (max-width: 768px) {
             header {
                 flex-wrap: wrap;
@@ -562,7 +567,7 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             }
             
             .hero {
-                padding: 8rem 1.5rem 3rem;
+                padding:orek 8rem 1.5rem 3rem;
                 margin: 0 1rem;
             }
             
@@ -574,7 +579,7 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
                 font-size: 1rem;
             }
             
-            .features {
+            .features, .pedidos-section {
                 padding: 2rem 1rem;
                 margin: 1rem;
             }
@@ -588,7 +593,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
                 justify-content: center;
             }
             
-            /* Ajustes para el carrusel en móviles */
             .swiper-button-next, .swiper-button-prev {
                 width: 30px;
                 height: 30px;
@@ -599,8 +603,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             }
         }
 
-        /* ===== CORRECCIONES PARA BOOTSTRAP ===== */
-        /* Estas reglas sobrescriben los estilos de Bootstrap que podrían interferir */
         @media all {
             .navbar-nav {
                 display: flex !important;
@@ -617,8 +619,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             }
         }
         
-        /* ===== ACCESIBILIDAD ===== */
-        /* Mejoras para accesibilidad */
         .visually-hidden {
             position: absolute;
             width: 1px;
@@ -631,7 +631,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             border: 0;
         }
         
-        /* Enfoque visible para navegación por teclado */
         a:focus, button:focus {
             outline: 3px solid var(--color-accent);
             outline-offset: 2px;
@@ -639,7 +638,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
     </style>
 </head>
 <body>
-    <!-- HEADER: Contiene el logo, navegación y botón de salir -->
     <header id="main-header">
         <div class="header-logo">
             <a href="index.php" title="Página de inicio">
@@ -652,6 +650,11 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
                 <li class="nav-item">
                     <a class="nav-link active" href="user_home.php" aria-current="page">
                         <i class="fas fa-home"></i> Inicio
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#pedidos">
+                        <i class="fas fa-list"></i> Mis Pedidos
                     </a>
                 </li>
                 <li class="nav-item">
@@ -676,6 +679,11 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             <span class="user-welcome">
                 <i class="fas fa-user"></i> Hola, <?php echo $username; ?>
             </span>
+            <?php if ($isAdmin): ?>
+                <a href="gestion_pedidos.php" class="btn-auth">
+                    <i class="fas fa-cogs"></i> Gestionar Pedidos
+                </a>
+            <?php endif; ?>
             <a href="logout.php" title="Cerrar sesión">
                 <button class="btn-auth">
                     <i class="fas fa-sign-out-alt"></i> Salir
@@ -684,25 +692,64 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
         </div>
     </header>
 
-    <!-- SECCIÓN HERO: Contiene el mensaje de bienvenida -->
     <section class="hero">
         <h2>¡Bienvenido a tu Panel de Usuario!</h2>
         <p>Explora y descubre todos los servicios exclusivos que tenemos para ti. Disfruta de la esencia de nuestra tierra: alegría, color y tradición.</p>
         <div class="hero-buttons">
+            <a href="#pedidos" class="btn-info">
+                <i class="fas fa-list"></i> Mis Pedidos
+            </a>
             <a href="#servicios" class="btn-info">
                 <i class="fas fa-arrow-down"></i> Ver Servicios
             </a>
         </div>
     </section>
 
-    <!-- SECCIÓN DE SERVICIOS: Muestra los servicios disponibles para el usuario -->
+    <section class="pedidos-section" id="pedidos">
+        <h3>Mis Pedidos</h3>
+        <?php if (isset($_GET['mensaje'])): ?>
+            <div class="alert alert-info"><?php echo htmlspecialchars($_GET['mensaje']); ?></div>
+        <?php endif; ?>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ($result_pedidos->num_rows > 0): ?>
+                        <?php while ($pedido = $result_pedidos->fetch_assoc()): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($pedido['id']); ?></td>
+                                <td><?php echo date('d/m/Y H:i', strtotime($pedido['fecha_pedido'])); ?></td>
+                                <td>$<?php echo number_format($pedido['total'], 2); ?></td>
+                                <td><?php echo ucfirst(htmlspecialchars($pedido['estado'])); ?></td>
+                                <td>
+                                    <a href="ver_pedido.php?id=<?php echo $pedido['id']; ?>" class="btn btn-info btn-sm">
+                                        <i class="fas fa-eye"></i> Ver
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="5" class="text-center">No tienes pedidos aún.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
     <section class="features" id="servicios">
         <h3>Servicios Exclusivos</h3>
-        
-        <!-- Swiper: Carrusel deslizable para las tarjetas de servicios -->
         <div class="swiper mySwiper">
             <div class="swiper-wrapper">
-                <!-- Slide 1: Tradiciones -->
                 <div class="swiper-slide">
                     <div class="feature-card">
                         <div class="feature-icon">
@@ -717,15 +764,13 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
                         </div>
                     </div>
                 </div>
-                
-                <!-- Slide 2: Productos -->
                 <div class="swiper-slide">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-calendar-alt"></i>
+                            <i class="fas fa-shopping-cart"></i>
                         </div>
                         <h4 class="feature-title">Productos</h4>
-                        <p class="feature-description">Mantente informado sobre nuestros próximos eventos culturales, talleres de cocina y celebraciones tradicionales.</p>
+                        <p class="feature-description">Explora y compra productos auténticos de nuestra cultura.</p>
                         <div class="feature-button-container">
                             <a href="productos_compra.php" class="btn-service">
                                 <i class="fas fa-arrow-right"></i> Ver Productos
@@ -733,32 +778,27 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
                         </div>
                     </div>
                 </div>
-                
-                <!-- Slide 3: Historias de la Comunidad -->
                 <div class="swiper-slide">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-user-edit"></i>
+                            <i class="fas fa-users"></i>
                         </div>
                         <h4 class="feature-title">Historias de la Comunidad</h4>
-                        <p class="feature-description">Actualiza tus datos personales, cambia tu contraseña y personaliza tus preferencias en nuestra plataforma.</p>
+                        <p class="feature-description">Comparte y lee historias de nuestra comunidad.</p>
                         <div class="feature-button-container">
                             <a href="Historias_comunidad.php" class="btn-service">
-                                <i class="fas fa-arrow-right"></i> Cuentanos tu Historia
+                                <i class="fas fa-arrow-right"></i> Cuéntanos tu Historia
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Controles de navegación del carrusel -->
             <div class="swiper-button-next"></div>
             <div class="swiper-button-prev"></div>
             <div class="swiper-pagination"></div>
         </div>
     </section>
-    
-    <!-- SECCIÓN DE PERFIL: Permite al usuario gestionar su información -->
+
     <section class="features" id="perfil">
         <h3>Mi Perfil</h3>
         <div class="feature-card">
@@ -767,7 +807,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             </div>
             <h4 class="feature-title">Gestiona tu información personal</h4>
             <p class="feature-description">Actualiza tus datos, cambia tu contraseña y personaliza tus preferencias en nuestra plataforma.</p>
-            
             <div class="profile-options">
                 <a href="editar_perfil.php" class="btn-info">
                     <i class="fas fa-user-edit"></i> Editar Datos
@@ -778,8 +817,7 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             </div>
         </div>
     </section>
-    
-    <!-- SECCIÓN DE CONTACTO: Información de contacto -->
+
     <section class="features" id="contacto" style="margin-bottom: 5rem;">
         <h3>Contáctanos</h3>
         <div class="feature-card">
@@ -788,7 +826,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             </div>
             <h4 class="feature-title">¿Tienes alguna pregunta o sugerencia?</h4>
             <p class="feature-description">Estamos aquí para ayudarte. Envíanos un mensaje y te responderemos lo antes posible.</p>
-            
             <div class="form-container">
                 <form id="contactForm">
                     <div class="mb-3">
@@ -804,7 +841,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
                     </button>
                 </form>
             </div>
-            
             <div class="d-flex justify-content-center gap-4 mt-4">
                 <div class="text-center">
                     <i class="fas fa-phone fa-2x mb-2" style="color: var(--color-secondary);"></i>
@@ -818,18 +854,15 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
         </div>
     </section>
 
-    <!-- FOOTER: Contiene información de copyright y enlaces adicionales -->
     <footer>
         <div class="footer-content">
             <div class="copyright">
                 <p>© 2025 Sabor Colombiano - Todos los derechos reservados.</p>
             </div>
-            
             <div class="footer-links">
                 <a href="#" class="footer-link">Términos y Condiciones</a>
                 <a href="#" class="footer-link">Política de Privacidad</a>
             </div>
-            
             <div class="social-icons">
                 <a href="#" class="social-icon" title="Facebook" aria-label="Visita nuestra página de Facebook">
                     <i class="fab fa-facebook"></i>
@@ -844,17 +877,10 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
         </div>
     </footer>
 
-    <!-- Bootstrap JS: Incluye las funcionalidades de Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Swiper JS: Para el carrusel deslizable -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
-    
-    <!-- Script personalizado para mejorar la experiencia de usuario -->
     <script>
-        // Cuando el documento esté cargado
         document.addEventListener('DOMContentLoaded', function() {
-            // Efecto de scroll para el header
             window.addEventListener('scroll', function() {
                 const header = document.getElementById('main-header');
                 if (window.scrollY > 50) {
@@ -864,14 +890,11 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
                 }
             });
             
-            // Navegación suave al hacer clic en los enlaces
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function(e) {
                     e.preventDefault();
-                    
                     const targetId = this.getAttribute('href');
                     if (targetId === '#') return;
-                    
                     const targetElement = document.querySelector(targetId);
                     if (targetElement) {
                         window.scrollTo({
@@ -882,7 +905,6 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
                 });
             });
             
-            // Inicialización del carrusel Swiper
             var swiper = new Swiper(".mySwiper", {
                 slidesPerView: 1,
                 spaceBetween: 30,
@@ -895,20 +917,10 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
                     nextEl: ".swiper-button-next",
                     prevEl: ".swiper-button-prev",
                 },
-                // Responsive breakpoints
                 breakpoints: {
-                    // Cuando el ancho de la ventana es >= 768px
-                    768: {
-                        slidesPerView: 2,
-                        spaceBetween: 20
-                    },
-                    // Cuando el ancho de la ventana es >= 1024px
-                    1024: {
-                        slidesPerView: 3,
-                        spaceBetween: 30
-                    }
+                    768: { slidesPerView: 2, spaceBetween: 20 },
+                    1024: { slidesPerView: 3, spaceBetween: 30 }
                 },
-                // Accesibilidad
                 a11y: {
                     prevSlideMessage: 'Slide anterior',
                     nextSlideMessage: 'Siguiente slide',
@@ -918,14 +930,10 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
                 }
             });
             
-            // Manejar el envío del formulario de contacto
             const contactForm = document.getElementById('contactForm');
             if (contactForm) {
                 contactForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    
-                    // Aquí normalmente enviarías los datos mediante AJAX
-                    // Para este ejemplo, solo mostraremos un mensaje de éxito
                     alert('¡Mensaje enviado con éxito! Nos pondremos en contacto contigo pronto.');
                     this.reset();
                 });
@@ -934,3 +942,7 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
     </script>
 </body>
 </html>
+<?php
+$stmt->close();
+$conexion->close();
+?>
