@@ -27,7 +27,7 @@ include('db.php');
     <!-- Configuración básica del documento -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Panel de administración para gestionar usuarios de Sabor Colombiano">
+    <meta name="description" content="Panel de administración para gestionar usuarios y pedidos de Sabor Colombiano">
     <title>Panel de Administración - Sabor Colombiano</title>
     
     <!-- Bootstrap CSS: Framework para diseño responsive -->
@@ -159,6 +159,26 @@ include('db.php');
         .btn-productos:hover {
             background-color: var(--color-primary);
             color: var(--color-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Nuevo botón para gestionar pedidos */
+        .btn-pedidos {
+            background-color: var(--color-secondary);
+            color: var(--color-light);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            transition: var(--transition-normal);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-pedidos:hover {
+            background-color: var(--color-primary);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
@@ -399,7 +419,7 @@ include('db.php');
             .header-logo { margin-left: 1rem; }
             .header-logo img { max-width: 80px; }
             .user-welcome { font-size: 1rem; padding: 0.4rem 0.8rem; }
-            .btn-salir, .btn-productos { margin-right: 1rem; padding: 0.5rem 1rem; }
+            .btn-salir, .btn-productos, .btn-pedidos { margin-right: 1rem; padding: 0.5rem 1rem; }
             .container { padding: 1.5rem; margin-top: 7rem; }
             h1 { font-size: 1.5rem; }
             .actions-cell { flex-direction: column; gap: 0.3rem; }
@@ -429,6 +449,12 @@ include('db.php');
             <a href="productos.php" title="Ir a la gestión de productos">
                 <button class="btn-productos">
                     <i class="fas fa-shopping-cart"></i>Productos
+                </button>
+            </a>
+            <!-- Nuevo botón para gestionar pedidos -->
+            <a href="gestion_pedidos.php" title="Gestionar pedidos">
+                <button class="btn-pedidos">
+                    <i class="fas fa-box"></i>Pedidos
                 </button>
             </a>
             <!-- Botón para cerrar sesión -->

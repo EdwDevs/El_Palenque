@@ -30,10 +30,7 @@ $dashboardLink = ($userRole === 'admin') ? 'admin_home.php' : 'editar_perfil.php
     
 <!-- Swiper CSS: Para el carrusel deslizable -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
-
-<!-- Swiper JS: Para el carrusel deslizable (antes de cerrar el body) -->
-<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
-    
+   
     <!-- Estilos personalizados: Define la apariencia específica de la aplicación -->
     <style>
         /* Variables CSS para mantener consistencia en colores y valores */
@@ -631,25 +628,26 @@ $dashboardLink = ($userRole === 'admin') ? 'admin_home.php' : 'editar_perfil.php
         </nav>
         
         <?php if ($isLoggedIn): ?>
-            <!-- Si el usuario está logueado, mostrar su nombre y botón de salir -->
-            <div class="auth-container">
-                <span class="user-welcome">
-                    <i class="fas fa-user"></i> Hola, <?php echo $username; ?>
-                </span>
-                <a href="logout.php" title="Cerrar sesión">
-                    <button class="btn-auth">
-                        <i class="fas fa-sign-out-alt"></i> Salir
-                    </button>
-                </a>
-            </div>
-        <?php else: ?>
-            <!-- Si no está logueado, mostrar botón de iniciar sesión -->
-            <a href="login.php" title="Iniciar sesión">
-                <button class="btn-auth">
-                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-                </button>
-            </a>
-        <?php endif; ?>
+<!-- Si el usuario está logueado, mostrar su nombre, carrito y botón de salir -->
+<span class="user-welcome">
+            <i class="fas fa-user"></i> Hola, <?php echo $username; ?>
+        </span>
+        <a href="carrito.php" title="Ver carrito de compras" aria-label="Carrito de compras">
+            <i class="fas fa-shopping-cart" style="font-size: 1.5rem; color: var(--color-primary); margin-right: 1rem;"></i>
+        </a>
+        <a href="logout.php" title="Cerrar sesión">
+            <button class="btn-auth">
+                <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+        </a>
+    <?php else: ?>
+        <!-- Si no está logueado, mostrar botón de iniciar sesión -->
+        <a href="login.php" title="Iniciar sesión">
+            <button class="btn-auth">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </button>
+        </a>
+    <?php endif; ?>
     </header>
 
     <!-- SECCIÓN HERO: Contiene el mensaje de bienvenida y botones de acción -->
@@ -706,7 +704,7 @@ $dashboardLink = ($userRole === 'admin') ? 'admin_home.php' : 'editar_perfil.php
                     <h4 class="feature-title">Productos</h4>
                     <p class="feature-description">Explora nuestra selección de productos artesanales colombianos, desde alimentos hasta artesanías, todos elaborados con técnicas tradicionales.</p>
                     <div class="feature-button-container">
-                        <a href="productos.php" class="btn-service">
+                        <a href="productos_compra.php" class="btn-service">
                             <i class="fas fa-arrow-right"></i> Ver Productos
                         </a>
                     </div>
@@ -796,81 +794,36 @@ $dashboardLink = ($userRole === 'admin') ? 'admin_home.php' : 'editar_perfil.php
     <!-- Scripts de Bootstrap para funcionalidades interactivas -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Swiper JS: Para el carrusel deslizable -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
-    
-    <!-- Script personalizado para mejorar la experiencia de usuario -->
-    <script>
-        // Cuando el documento esté cargado
-        document.addEventListener('DOMContentLoaded', function() {
-            // Efecto de scroll para el header
-            window.addEventListener('scroll', function() {
-                const header = document.getElementById('main-header');
-                if (window.scrollY > 50) {
-                    header.classList.add('scrolled');} else {
-                    header.classList.remove('scrolled');
-                }
-            });
-            
-            // Navegación suave al hacer clic en los enlaces
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    const targetId = this.getAttribute('href');
-                    if (targetId === '#') return;
-                    
-                    const targetElement = document.querySelector(targetId);
-                    if (targetElement) {
-                        window.scrollTo({
-                            top: targetElement.offsetTop - 100,
-                            behavior: 'smooth'
-                        });
-                    }
-                });
-            });
-            
-            // Inicialización del carrusel Swiper
-            var swiper = new Swiper(".mySwiper", {
-                slidesPerView: 1,
-                spaceBetween: 30,
-                loop: true,
-                pagination: {
-                    el: ".swiper-pagination",
-                    clickable: true,
-                },
-                navigation: {
-                    nextEl: ".swiper-button-next",
-                    prevEl: ".swiper-button-prev",
-                },
-                // Responsive breakpoints
-                breakpoints: {
-                    // Cuando el ancho de la ventana es >= 768px
-                    768: {
-                        slidesPerView: 2,
-                        spaceBetween: 20
-                    },
-                    // Cuando el ancho de la ventana es >= 1024px
-                    1024: {
-                        slidesPerView: 3,
-                        spaceBetween: 30
-                    }
-                },
-                // Accesibilidad
-                a11y: {
-                    prevSlideMessage: 'Slide anterior',
-                    nextSlideMessage: 'Siguiente slide',
-                    firstSlideMessage: 'Este es el primer slide',
-                    lastSlideMessage: 'Este es el último slide',
-                    paginationBulletMessage: 'Ir al slide {{index}}'
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Efecto de scroll para el header
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('main-header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+        
+        // Navegación suave al hacer clic en los enlaces
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
                 }
             });
         });
-    </script>
-
-<script>
-    // Inicialización del carrusel Swiper
-    document.addEventListener('DOMContentLoaded', function() {
+        
+        // Inicialización del carrusel Swiper
         var swiper = new Swiper(".mySwiper", {
             slidesPerView: 1,
             spaceBetween: 30,
@@ -883,20 +836,16 @@ $dashboardLink = ($userRole === 'admin') ? 'admin_home.php' : 'editar_perfil.php
                 nextEl: ".swiper-button-next",
                 prevEl: ".swiper-button-prev",
             },
-            // Responsive breakpoints
             breakpoints: {
-                // Cuando el ancho de la ventana es >= 768px
                 768: {
                     slidesPerView: 2,
                     spaceBetween: 20
                 },
-                // Cuando el ancho de la ventana es >= 1024px
                 1024: {
                     slidesPerView: 3,
                     spaceBetween: 30
                 }
             },
-            // Accesibilidad
             a11y: {
                 prevSlideMessage: 'Slide anterior',
                 nextSlideMessage: 'Siguiente slide',
