@@ -1,56 +1,84 @@
 <?php
-// Iniciar la sesión
 session_start();
 
 // Verificar si el usuario está autenticado
-if (!isset($_SESSION['usuario_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Debes estar autenticado para realizar un pedido']);
+if (!isset($_SESSION['usuario'])) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Usuario no autenticado']);
     exit();
 }
 
-// Conectar a la base de datos
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "el_palenque";
+include('db.php');
 
-try {
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname;charset=utf8", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    // Recibir datos del pedido
-    $data = json_decode(file_get_contents('php://input'), true);
-    
-    // Validar datos
-    if (!isset($data['usuario_id']) || !isset($data['productos']) || !isset($data['total'])) {
-        echo json_encode(['success' => false, 'message' => 'Datos del pedido incompletos']);
+// Obtener los datos enviados desde el carrito
+$input = file_get_contents('php://input');
+$data = json_decode($input, true);
+
+if (!isset($data['cart']) || empty($data['cart'])) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Carrito vacío']);
+    exit();
+}
+
+// Obtener el ID del usuario
+$usuario_id = isset($_SESSION['usuario_id']) ? intval($_SESSION['usuario_id']) : null;
+if (!$usuario_id) {
+    $usuario = htmlspecialchars($_SESSION['usuario']);
+    $stmt = $conexion->prepare("SELECT id FROM usuarios WHERE nombre = ?"); // Cambiar 'usuario' a 'nombre'
+    $stmt->bind_param("s", $usuario);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $usuario_id = $row['id'];
+        $_SESSION['usuario_id'] = $usuario_id; // Guardar en la sesión para evitar consultas futuras
+    } else {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Usuario no encontrado en la base de datos: ' . $usuario]);
         exit();
     }
-    
-    // Insertar pedido principal
-    $stmt = $conn->prepare("INSERT INTO pedidos (usuario_id, total) VALUES (:usuario_id, :total)");
-    $stmt->bindParam(':usuario_id', $data['usuario_id']);
-    $stmt->bindParam(':total', $data['total']);
+    $stmt->close();
+}
+
+$cart = $data['cart'];
+$total = 0;
+
+foreach ($cart as $item) {
+    $total += floatval($item['price']); // Total basado en precio unitario (asumimos cantidad 1 por ahora)
+}
+
+// Iniciar transacción para asegurar consistencia
+$conexion->begin_transaction();
+
+try {
+    // Insertar el pedido con usuario_id
+    $stmt = $conexion->prepare("INSERT INTO pedidos (usuario_id, total, fecha_pedido, estado) VALUES (?, ?, NOW(), 'pendiente')");
+    $stmt->bind_param("id", $usuario_id, $total);
     $stmt->execute();
-    
-    $pedido_id = $conn->lastInsertId();
-    
-    // Insertar detalles del pedido
-    foreach ($data['productos'] as $producto) {
-        $stmtDetalle = $conn->prepare("INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, precio_unitario) VALUES (:pedido_id, :producto_id, :cantidad, :precio_unitario)");
-        
-        // Aquí asumimos que el producto_id es el mismo que el id en el carrito
-        // En una implementación real, deberías validar esto
-        $stmtDetalle->bindParam(':pedido_id', $pedido_id);
-        $stmtDetalle->bindParam(':producto_id', $producto['id']);
-        $stmtDetalle->bindParam(':cantidad', 1); // Aquí asumimos 1 unidad por producto en el carrito
-        $stmtDetalle->bindParam(':precio_unitario', $producto['price']);
-        $stmtDetalle->execute();
+    $pedido_id = $conexion->insert_id;
+    $stmt->close();
+
+    // Insertar los detalles del pedido
+    $stmt = $conexion->prepare("INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, precio_unitario) VALUES (?, ?, ?, ?)");
+    foreach ($cart as $item) {
+        $producto_id = intval($item['id']);
+        $cantidad = 1; // Asumimos 1 unidad por producto; ajusta si necesitas manejar cantidades
+        $precio_unitario = floatval($item['price']);
+        $stmt->bind_param("iiid", $pedido_id, $producto_id, $cantidad, $precio_unitario);
+        $stmt->execute();
     }
-    
-    // Respuesta de éxito
-    echo json_encode(['success' => true, 'message' => '¡Pedido realizado con éxito!']);
-} catch(PDOException $e) {
+    $stmt->close();
+
+    // Confirmar transacción
+    $conexion->commit();
+
+    header('Content-Type: application/json');
+    echo json_encode(['success' => true, 'message' => 'Pedido procesado correctamente']);
+} catch (Exception $e) {
+    // Revertir transacción en caso de error
+    $conexion->rollback();
+    header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Error al procesar el pedido: ' . $e->getMessage()]);
 }
+
+$conexion->close();
 ?>

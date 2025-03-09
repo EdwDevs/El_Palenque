@@ -1,16 +1,13 @@
 <?php
-// Iniciar sesión para gestionar datos del usuario
 session_start();
 
-// Verificar si el usuario está autenticado
+// Definir $isLoggedIn basado en la sesión
 $isLoggedIn = isset($_SESSION['usuario']);
-$username = $isLoggedIn ? htmlspecialchars($_SESSION['usuario']) : null;
-$userRole = isset($_SESSION['rol']) ? $_SESSION['rol'] : null;
+$username = $isLoggedIn ? htmlspecialchars($_SESSION['usuario']) : '';
+$dashboardLink = (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') ? "admin_home.php" : "user_home.php";
 
-// Determinar la página de destino según el rol del usuario
-$dashboardLink = ($userRole === 'admin') ? 'admin_home.php' : 'editar_perfil.php';
+include('db.php');
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -635,6 +632,9 @@ $dashboardLink = ($userRole === 'admin') ? 'admin_home.php' : 'editar_perfil.php
         <a href="carrito.php" title="Ver carrito de compras" aria-label="Carrito de compras">
             <i class="fas fa-shopping-cart" style="font-size: 1.5rem; color: var(--color-primary); margin-right: 1rem;"></i>
         </a>
+        <a href="ver_pedido.php" title="Ver mis pedidos" aria-label="Ver pedidos">
+    <i class="fas fa-list" style="font-size: 1.5rem; color: var(--color-primary); margin-right: 1rem;"></i>
+</a>
         <a href="logout.php" title="Cerrar sesión">
             <button class="btn-auth">
                 <i class="fas fa-sign-out-alt"></i> Salir

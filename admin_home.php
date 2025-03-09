@@ -16,6 +16,16 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'admin') {
 
 // Almacenar el nombre del usuario logueado en una variable con seguridad contra XSS
 $username = htmlspecialchars($_SESSION['usuario']);
+if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
+    $stmt = $conexion->prepare("SELECT id FROM usuarios WHERE nombre = ?");
+    $stmt->bind_param("s", $_SESSION['usuario']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $_SESSION['usuario_id'] = $row['id'];
+    }
+    $stmt->close();
+}
 
 // Incluir el archivo de conexión a la base de datos (asegúrate de que db.php esté configurado correctamente)
 include('db.php');

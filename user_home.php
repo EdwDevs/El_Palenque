@@ -18,6 +18,16 @@ if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') {
 
 // Almacenar el nombre del usuario en una variable con seguridad
 $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para prevenir XSS
+if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
+    $stmt = $conexion->prepare("SELECT id FROM usuarios WHERE nombre = ?");
+    $stmt->bind_param("s", $_SESSION['usuario']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $_SESSION['usuario_id'] = $row['id'];
+    }
+    $stmt->close();
+}
 ?>
 
 <!DOCTYPE html>
@@ -717,7 +727,7 @@ $username = htmlspecialchars($_SESSION['usuario']); // Escapar caracteres para p
                         <h4 class="feature-title">Productos</h4>
                         <p class="feature-description">Mantente informado sobre nuestros próximos eventos culturales, talleres de cocina y celebraciones tradicionales.</p>
                         <div class="feature-button-container">
-                            <a href="productos.php" class="btn-service">
+                            <a href="productos_user.php" class="btn-service">
                                 <i class="fas fa-arrow-right"></i> Ver Productos
                             </a>
                         </div>

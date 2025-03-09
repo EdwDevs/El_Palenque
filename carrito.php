@@ -10,6 +10,13 @@ if (!isset($_SESSION['usuario'])) {
 
 // Almacenar el nombre del usuario logueado con seguridad contra XSS
 $username = htmlspecialchars($_SESSION['usuario']);
+
+// Asegurarse de que usuario_id esté disponible en la sesión
+if (!isset($_SESSION['usuario_id'])) {
+    // En una implementación real, obtendrías esto de la base de datos durante el inicio de sesión
+    // Por ahora, asignamos un valor de ejemplo
+    $_SESSION['usuario_id'] = 1;
+}
 ?>
 
 <!DOCTYPE html>
@@ -295,123 +302,114 @@ $username = htmlspecialchars($_SESSION['usuario']);
 
     <!-- Scripts personalizados -->
     <script>
-        // Cargar productos del carrito desde localStorage
-        function loadCart() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            const cartContainer = document.getElementById('cartContainer');
-            cartContainer.innerHTML = '';
-
-            if (cart.length === 0) {
-                cartContainer.innerHTML = '<p class="empty-cart">Tu carrito está vacío. ¡Agrega algunos productos!</p>';
-                return;
-            }
-
-            let total = 0;
-
-            cart.forEach((item, index) => {
-                const itemElement = document.createElement('div');
-                itemElement.classList.add('cart-item');
-                itemElement.innerHTML = `
-                    <div class="cart-item-image">
-                        <img src="${item.imagen || 'https://via.placeholder.com/50'}" alt="${item.name}">
-                    </div>
-                    <div class="cart-item-info">
-                        <h4>${item.name}</h4>
-                        <p>ID: ${item.id}</p>
-                    </div>
-                    <span class="cart-item-price">$${parseFloat(item.price).toFixed(2)}</span>
-                    <button class="btn-remove" onclick="removeFromCart(${index})"><i class="fas fa-trash"></i> Eliminar</button>
-                `;
-                cartContainer.appendChild(itemElement);
-                total += parseFloat(item.price);
-            });
-
-            const summary = document.createElement('div');
-            summary.classList.add('cart-summary');
-            summary.innerHTML = `
-                <p>Total: <span class="total">$${total.toFixed(2)}</span></p>
-                <button class="btn-clear" onclick="clearCart()">Vaciar Carrito</button>
-                <button class="btn-checkout" onclick="checkout()">Finalizar Compra</button>
-            `;
-            cartContainer.appendChild(summary);
-        }
-
-        // Eliminar un producto del carrito
-        function removeFromCart(index) {
-            let cart = JSON.parse(localStorage.getItem('cart')) || [];
-            cart.splice(index, 1);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            loadCart();
-        }
-
-        // Vaciar el carrito completo
-        function clearCart() {
-            if (confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
-                localStorage.removeItem('cart');
-                loadCart();
-            }
-        }
-
-        // Finalizar compra
-function checkout() {
+    // Cargar productos del carrito desde localStorage
+    function loadCart() {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const cartContainer = document.getElementById('cartContainer');
+    cartContainer.innerHTML = '';
+
     if (cart.length === 0) {
-        showNotification('El carrito está vacío', 'error');
+        cartContainer.innerHTML = '<p class="empty-cart">Tu carrito está vacío. ¡Agrega algunos productos!</p>';
         return;
     }
-    
-    if (confirm('¿Confirmas la compra?')) {
-        // Preparar los datos del pedido
-        const pedidoData = {
-            usuario_id: <?php echo $_SESSION['usuario_id']; ?>, // Asegúrate de tener el ID del usuario en la sesión
-            productos: cart,
-            total: calcularTotal(cart)
-        };
-        
-        // Enviar datos al servidor
-        fetch('procesar_pedido.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(pedidoData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Limpiar el carrito local
-                localStorage.removeItem('cart');
-                // Mostrar notificación de éxito
-                showNotification(data.message, 'success');
-                // Recargar el carrito vacío
-                setTimeout(() => loadCart(), 1500);
-            } else {
-                showNotification(data.message, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Ocurrió un error al procesar el pedido', 'error');
-        });
+
+    let total = 0;
+
+    cart.forEach((item, index) => {
+        const cantidad = item.cantidad || 1; // Cantidad por defecto 1 si no está definida
+        const subtotal = parseFloat(item.price) * cantidad;
+        const itemElement = document.createElement('div');
+        itemElement.classList.add('cart-item');
+        itemElement.innerHTML = `
+            <div class="cart-item-image">
+                <img src="${item.imagen || 'https://via.placeholder.com/50'}" alt="${item.name}">
+            </div>
+            <div class="cart-item-info">
+                <h4>${item.name}</h4>
+                <p>ID: ${item.id}</p>
+                <input type="number" min="1" value="${cantidad}" onchange="updateQuantity(${index}, this.value)" style="width: 60px;">
+            </div>
+            <span class="cart-item-price">$${subtotal.toFixed(2)}</span>
+            <button class="btn-remove" onclick="removeFromCart(${index})"><i class="fas fa-trash"></i> Eliminar</button>
+        `;
+        cartContainer.appendChild(itemElement);
+        total += subtotal;
+    });
+
+    const summary = document.createElement('div');
+    summary.classList.add('cart-summary');
+    summary.innerHTML = `
+        <p>Total: <span class="total">$${total.toFixed(2)}</span></p>
+        <button class="btn-clear" onclick="clearCart()">Vaciar Carrito</button>
+        <button class="btn-checkout" onclick="checkout()">Finalizar Compra</button>
+    `;
+    cartContainer.appendChild(summary);
+}
+
+function updateQuantity(index, newQuantity) {
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    cart[index].cantidad = parseInt(newQuantity);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    loadCart(); // Recargar para actualizar el total
+}
+
+    // Eliminar un producto del carrito
+    function removeFromCart(index) {
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        cart.splice(index, 1);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        loadCart();
     }
-}
 
-// Calcular el total del pedido
-function calcularTotal(cart) {
-    return cart.reduce((total, item) => total + parseFloat(item.price), 0);
-}
+    // Vaciar el carrito completo
+    function clearCart() {
+        if (confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
+            localStorage.removeItem('cart');
+            loadCart();
+        }
+    }
 
-        // Mostrar notificaciones
-        function showNotification(message, type) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type}`;
-            notification.style.display = 'block';
-            setTimeout(() => notification.style.display = 'none', 3000);
+    // Finalizar compra enviando datos a procesar_pedido.php
+    function checkout() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        if (cart.length === 0) {
+            showNotification('El carrito está vacío', 'error');
+            return;
         }
 
-        // Cargar el carrito al iniciar la página
-        document.addEventListener('DOMContentLoaded', loadCart);
-    </script>
+        if (confirm('¿Confirmas la compra?')) {
+            fetch('procesar_pedido.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cart: cart })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.removeItem('cart');
+                    showNotification('¡Compra realizada con éxito! Gracias por tu pedido.', 'success');
+                    setTimeout(() => loadCart(), 1500);
+                } else {
+                    showNotification('Error al procesar el pedido: ' + data.message, 'error');
+                }
+            })
+            .catch(error => showNotification('Error de conexión: ' + error, 'error'));
+        }
+    }
+
+    // Mostrar notificaciones
+    function showNotification(message, type) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.className = `notification ${type}`;
+        notification.style.display = 'block';
+        setTimeout(() => notification.style.display = 'none', 3000);
+    }
+
+    // Cargar el carrito al iniciar la página
+    document.addEventListener('DOMContentLoaded', loadCart);
+</script>
 </body>
 </html>

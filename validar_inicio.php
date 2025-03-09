@@ -2,20 +2,27 @@
 // Iniciar la sesión para gestionar datos del usuario logueado
 session_start();
 
-// Obtener los datos del formulario
-$correo = $_POST['correo'];
-$contraseña = $_POST['contraseña'];
-
-// Conexión a la base de datos
-$conexion = mysqli_connect("localhost", "root", "", "usuarios");
-
-// Verificar si la conexión fue exitosa
-if (!$conexion) {
-    die("Error de conexión: " . mysqli_connect_error());
+// Verificar que sea una solicitud POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: login.php");
+    exit();
 }
 
-// Consulta para obtener el estado, nombre, rol y contraseña del usuario
-$consulta = "SELECT nombre, rol, habilitado, contraseña FROM usuarios WHERE correo = ?";
+// Incluir la conexión a la base de datos desde db.php
+include('db.php');
+
+// Obtener los datos del formulario
+$correo = $_POST['correo'] ?? '';
+$contraseña = $_POST['contraseña'] ?? '';
+
+// Validar que los campos no estén vacíos
+if (empty($correo) || empty($contraseña)) {
+    echo "<script>alert('Por favor, completa todos los campos'); window.location.href='login.php';</script>";
+    exit();
+}
+
+// Consulta para obtener id, nombre, rol, habilitado y contraseña del usuario
+$consulta = "SELECT id, nombre, rol, habilitado, contraseña FROM usuarios WHERE correo = ?";
 $stmt = $conexion->prepare($consulta);
 
 if (!$stmt) {
@@ -27,19 +34,18 @@ $stmt->execute();
 $resultado = $stmt->get_result();
 
 // Verificar si existe el usuario
-if ($resultado && mysqli_num_rows($resultado) > 0) {
-    $user = mysqli_fetch_assoc($resultado);
+if ($resultado && $resultado->num_rows > 0) {
+    $user = $resultado->fetch_assoc();
 
     // Verificar la contraseña usando password_verify
     if (password_verify($contraseña, $user['contraseña'])) {
         // Verificar si el usuario está habilitado
         if ($user['habilitado'] == 0) {
-            // Mostrar mensaje de usuario inhabilitado y redirigir después de 5 segundos
             echo "<script>
-                alert('El usuario está inhabilitado. Por favor, contacta a un administrador con permisos.');
+                alert('El usuario está inhabilitado. Por favor, contacta a un administrador.');
                 setTimeout(function() {
                     window.location.href = 'login.php';
-                }, 5000); // Redirige después de 5 segundos
+                }, 5000);
             </script>";
             exit();
         }
@@ -47,10 +53,11 @@ if ($resultado && mysqli_num_rows($resultado) > 0) {
         // Si el usuario está habilitado, iniciar sesión
         $_SESSION['correo'] = $correo;
         $_SESSION['usuario'] = $user['nombre'];
+        $_SESSION['usuario_id'] = $user['id']; // Guardar el ID del usuario
         $_SESSION['rol'] = $user['rol'];
 
         // Redirigir según el rol
-        if ($user['rol'] == 'admin') {
+        if ($user['rol'] === 'admin') {
             header("Location: admin_home.php");
         } else {
             header("Location: user_home.php");

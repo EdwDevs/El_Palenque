@@ -428,13 +428,18 @@ $category_result = $conexion->query($category_query);
         document.getElementById('categoryFilter').addEventListener('change', filterProducts);
         document.getElementById('sortFilter').addEventListener('change', filterProducts);
 
-        // Función para agregar al carrito (simulada)
+        // Función para agregar al carrito
         function addToCart(id, name, price, imagen) {
-        alert(`Producto "${name}" ($ ${price}) agregado al carrito.`);
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        cart.push({ id, name, price, imagen });
-        localStorage.setItem('cart', JSON.stringify(cart));
+    alert(`Producto "${name}" ($ ${price}) agregado al carrito.`);
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const existingItem = cart.find(item => item.id === id);
+    if (existingItem) {
+        existingItem.cantidad = (existingItem.cantidad || 1) + 1; // Incrementar cantidad si ya existe
+    } else {
+        cart.push({ id, name, price, imagen, cantidad: 1 });
     }
+    localStorage.setItem('cart', JSON.stringify(cart));
+}
 
         // Navegación suave para enlaces de categorías
         document.querySelectorAll('.nav-links a').forEach(anchor => {
