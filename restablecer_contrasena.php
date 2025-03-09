@@ -1,9 +1,10 @@
 <?php
+
 // Incluir la conexión a la base de datos
 include('db.php');
 
 // Iniciar un log para depuración
-error_log("Inicio de restablecer_contraseña.php - " . date('Y-m-d H:i:s'));
+error_log("Inicio de restablecer_contrasena.php - " . date('Y-m-d H:i:s'));
 
 // Verificar si se recibió un token válido
 if (isset($_GET['token'])) {
@@ -43,7 +44,7 @@ if (isset($_GET['token'])) {
         if ($nueva_contraseña !== $confirmar_contraseña) {
             echo "<script>alert('Las contraseñas no coinciden. Por favor, inténtalo de nuevo.');</script>";
         } else {
-            // Hashear la nueva contraseña (recomendado para producción)
+            // Hashear la nueva contraseña
             $hashed_password = password_hash($nueva_contraseña, PASSWORD_BCRYPT);
 
             // Actualizar la contraseña en la base de datos
@@ -55,6 +56,12 @@ if (isset($_GET['token'])) {
             }
             $stmt_update->bind_param("ss", $hashed_password, $correo);
             $stmt_update->execute();
+            
+            // Verificar si se actualizó correctamente
+            if ($stmt_update->affected_rows === 0) {
+                error_log("Error al actualizar contraseña para: $correo");
+                die("Error crítico. Por favor contacte al administrador.");
+            }
             
             // Eliminar el token usado
             $eliminar = "DELETE FROM password_resets WHERE token = ?";
@@ -72,7 +79,7 @@ if (isset($_GET['token'])) {
     }
 } else {
     // Si no hay token, redirigir al usuario
-    error_log("Intento de acceso a restablecer_contraseña.php sin token");
+    error_log("Intento de acceso a restablecer_contrasena.php sin token");
     echo "<script>
         alert('Acceso inválido. Por favor, solicita un enlace de recuperación de contraseña.');
         window.location.href='recuperar_contraseña.php';
@@ -95,6 +102,7 @@ if (isset($_GET['token'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Estilos globales */
+        
         body {
             background: linear-gradient(135deg, #FFC107, #FF5722, #4CAF50);
             min-height: 100vh;
@@ -190,7 +198,7 @@ if (isset($_GET['token'])) {
         <h2>Restablecer Contraseña</h2>
         
         <!-- Formulario de restablecimiento -->
-        <form action="restablecer_contrasena.php?token=<?php echo htmlspecialchars($token); ?>" method="post">
+        <form action="restablecer_contrasena.php?token=<?php echo urlencode($token); ?>" method="post">
             <div class="mb-3">
                 <label for="nueva_contraseña" class="form-label">Nueva Contraseña</label>
                 <div class="password-container">

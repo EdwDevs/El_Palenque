@@ -91,6 +91,7 @@ if (isset($_POST['correo'])) {
 
         try {
             $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+            $mail->CharSet = 'UTF-8'; // <-- AÑADIR ESTA LÍNEA
             $mail->isSMTP();
             $mail->SMTPDebug = 0; // 0 = off, 1 = client messages, 2 = client and server messages
             
@@ -113,7 +114,7 @@ if (isset($_POST['correo'])) {
             // URL base del sitio (ajusta según tu configuración)
             $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
             // CAMBIO AQUÍ: Actualización del nombre del archivo en la URL
-            $reset_url = $base_url . "/usuarios_roles/usuarios_roles/restablecer_contrasena.php?token=" . $token;
+            $reset_url = $base_url . "/el_Palenque/restablecer_contrasena.php?token=" . urlencode($token);
             
             // Cuerpo del correo en HTML para mejor presentación
             $mail->Body = "
@@ -354,7 +355,7 @@ if (isset($_POST['correo'])) {
 <body>
     <!-- Header con logo -->
     <header>
-        <a href="home.php">
+        <a href="index.php">
             <img src="palenque.jpeg" alt="Palenquera Colombiana">
         </a>
     </header>

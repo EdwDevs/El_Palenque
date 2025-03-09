@@ -727,7 +727,7 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
                         <h4 class="feature-title">Productos</h4>
                         <p class="feature-description">Mantente informado sobre nuestros próximos eventos culturales, talleres de cocina y celebraciones tradicionales.</p>
                         <div class="feature-button-container">
-                            <a href="productos_user.php" class="btn-service">
+                            <a href="productos_compra.php" class="btn-service">
                                 <i class="fas fa-arrow-right"></i> Ver Productos
                             </a>
                         </div>
