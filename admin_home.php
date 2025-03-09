@@ -14,8 +14,13 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'admin') {
     exit();
 }
 
+// Incluir el archivo de conexión a la base de datos ANTES de usarlo
+include('db.php');
+
 // Almacenar el nombre del usuario logueado en una variable con seguridad contra XSS
 $username = htmlspecialchars($_SESSION['usuario']);
+
+// Verificar si existe el ID de usuario en la sesión
 if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
     $stmt = $conexion->prepare("SELECT id FROM usuarios WHERE nombre = ?");
     $stmt->bind_param("s", $_SESSION['usuario']);
@@ -26,58 +31,51 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
     }
     $stmt->close();
 }
-
-// Incluir el archivo de conexión a la base de datos (asegúrate de que db.php esté configurado correctamente)
-include('db.php');
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Configuración básica del documento -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Panel de administración para gestionar usuarios y pedidos de Sabor Colombiano">
     <title>Panel de Administración - Sabor Colombiano</title>
     
-    <!-- Bootstrap CSS: Framework para diseño responsive -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- Google Fonts - Montserrat: Tipografía principal del sitio -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Font Awesome: Biblioteca de iconos para mejorar la interfaz -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Estilos personalizados: Define la apariencia específica de la aplicación -->
     <style>
-        /* Variables CSS para mantener consistencia en colores y valores */
         :root {
-            --color-primary: #FF5722; /* Naranja vibrante */
-            --color-secondary: #4CAF50; /* Verde natural */
-            --color-accent: #FFC107; /* Amarillo cálido */
-            --color-text: #333333; /* Gris oscuro para texto */
-            --color-light: #FFFFFF; /* Blanco puro */
-            --color-hover: #FFF3E0; /* Fondo claro para hover */
-            --border-radius: 10px; /* Bordes redondeados */
-            --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Sombra suave */
-            --transition-normal: all 0.3s ease; /* Transición estándar */
+            --color-primary: #FF5722;
+            --color-secondary: #4CAF50;
+            --color-accent: #FFC107;
+            --color-text: #333333;
+            --color-light: #FFFFFF;
+            --color-hover: #FFF3E0;
+            --border-radius: 10px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition-normal: all 0.3s ease;
         }
         
-        /* Estilos generales del cuerpo de la página */
         body {
             background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
             min-height: 100vh;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Poppins', sans-serif;
             color: var(--color-text);
-            padding-bottom: 60px; /* Espacio para el footer */
+            padding-bottom: 60px;
             position: relative;
         }
         
-        /* Estilos del encabezado fijo */
+        /* Header modernizado */
         header {
             background: rgba(255, 255, 255, 0.95);
-            padding: 1rem 0;
+            backdrop-filter: blur(10px);
+            padding: 0.8rem 0;
             box-shadow: var(--box-shadow);
             position: fixed;
             top: 0;
@@ -89,33 +87,31 @@ include('db.php');
             transition: var(--transition-normal);
         }
         
-        /* Contenedor del logo en el encabezado */
         .header-logo {
             margin-left: 2rem;
         }
         
-        /* Estilos de la imagen del logo */
         .header-logo img {
             max-width: 120px;
-            border-radius: var(--border-radius);
+            border-radius: 50%;
             border: 3px solid var(--color-primary);
             transition: transform 0.3s ease;
+            object-fit: cover;
         }
         
         .header-logo img:hover {
-            transform: scale(1.05); /* Efecto de aumento al pasar el ratón */
+            transform: scale(1.05);
         }
         
-        /* Mensaje de bienvenida al usuario */
         .user-welcome {
             color: var(--color-primary);
-            font-weight: bold;
-            font-size: 1.2rem;
+            font-weight: 600;
+            font-size: 1.1rem;
             background-color: rgba(255, 255, 255, 0.8);
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
             margin-right: 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             transition: var(--transition-normal);
             display: flex;
             align-items: center;
@@ -126,78 +122,52 @@ include('db.php');
             color: var(--color-secondary);
         }
         
-        .user-welcome:hover {
-            transform: scale(1.05);
-            background-color: rgba(255, 255, 255, 1);
+        .header-actions {
+            display: flex;
+            gap: 0.8rem;
+            margin-right: 2rem;
         }
         
-        /* Botón para cerrar sesión */
-        .btn-salir {
-            background-color: var(--color-primary);
-            color: var(--color-light);
+        /* Botones modernizados */
+        .btn-nav {
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            margin-right: 2rem;
+            padding: 0.7rem 1.2rem;
+            border-radius: 30px;
+            font-weight: 500;
+            font-family: 'Montserrat', sans-serif;
             transition: var(--transition-normal);
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            text-decoration: none;
         }
         
-        .btn-salir:hover {
-            background-color: var(--color-secondary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Botón para ir a la sección de productos */
         .btn-productos {
             background-color: var(--color-accent);
             color: var(--color-text);
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            transition: var(--transition-normal);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
         
-        .btn-productos:hover {
-            background-color: var(--color-primary);
-            color: var(--color-light);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Nuevo botón para gestionar pedidos */
         .btn-pedidos {
             background-color: var(--color-secondary);
             color: var(--color-light);
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            transition: var(--transition-normal);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
         
-        .btn-pedidos:hover {
+        .btn-salir {
             background-color: var(--color-primary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: var(--color-light);
         }
         
-        /* Contenedor principal del contenido */
+        .btn-nav:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            filter: brightness(1.05);
+        }
+        
+        /* Contenedor principal mejorado */
         .container {
             margin-top: 8rem;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.97);
             border-radius: 20px;
             box-shadow: var(--box-shadow);
             max-width: 1200px;
@@ -209,14 +179,16 @@ include('db.php');
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Título principal */
+        /* Título con diseño moderno */
         h1 {
             color: var(--color-primary);
             font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
             position: relative;
-            padding-bottom: 0.5rem;
+            padding-bottom: 0.8rem;
+            font-size: 2.2rem;
         }
         
         h1::after {
@@ -225,32 +197,38 @@ include('db.php');
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 100px;
-            height: 3px;
+            width: 80px;
+            height: 4px;
             background: linear-gradient(to right, var(--color-accent), var(--color-primary), var(--color-secondary));
-            border-radius: 3px;
+            border-radius: 4px;
         }
         
-        /* Barra de búsqueda y filtros */
+        /* Barra de búsqueda mejorada */
         .search-bar {
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 1.2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
         }
         
         .search-input {
             flex: 1;
             min-width: 200px;
-            padding: 0.75rem;
-            border: 2px solid var(--color-accent);
-            border-radius: var(--border-radius);
+            padding: 0.8rem 1.2rem;
+            border: 2px solid rgba(255, 193, 7, 0.3);
+            border-radius: 30px;
             transition: var(--transition-normal);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
         }
         
         .search-input:focus {
             border-color: var(--color-primary);
-            box-shadow: 0 0 8px rgba(255, 87, 34, 0.3);
+            box-shadow: 0 0 12px rgba(255, 87, 34, 0.2);
             outline: none;
         }
         
@@ -258,34 +236,46 @@ include('db.php');
             background-color: var(--color-secondary);
             color: var(--color-light);
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
-            font-weight: 600;
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            font-weight: 500;
             transition: var(--transition-normal);
+            font-family: 'Montserrat', sans-serif;
         }
         
         .btn-search:hover {
             background-color: var(--color-primary);
             transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         
-        /* Estilos de la tabla */
+        /* Tabla modernizada */
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
         .table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            margin-bottom: 2rem;
+            margin-bottom: 0;
         }
         
         .table thead th {
             background-color: var(--color-secondary);
             color: var(--color-light);
             font-weight: 600;
-            padding: 1rem;
+            padding: 1.2rem 1rem;
             border: none;
             text-align: center;
             position: sticky;
             top: 0;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.5px;
         }
         
         .table thead th:first-child {
@@ -300,146 +290,247 @@ include('db.php');
             transition: var(--transition-normal);
         }
         
+        .table tbody tr:nth-child(even) {
+            background-color: rgba(76, 175, 80, 0.05);
+        }
+        
         .table tbody tr:hover {
             background-color: var(--color-hover);
             transform: scale(1.01);
         }
         
         .table td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--color-accent);
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid rgba(255, 193, 7, 0.2);
             text-align: center;
             vertical-align: middle;
+            font-size: 0.95rem;
         }
         
         .status-cell {
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
         }
         
         .status-enabled {
+            background-color: rgba(76, 175, 80, 0.15);
             color: var(--color-secondary);
         }
         
         .status-disabled {
+            background-color: rgba(255, 87, 34, 0.15);
             color: var(--color-primary);
         }
         
+        /* Botones de acción modernizados */
         .actions-cell {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.6rem;
             flex-wrap: wrap;
         }
         
         .btn-action {
             text-decoration: none;
             padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 600;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.85rem;
             transition: var(--transition-normal);
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
             white-space: nowrap;
+            border: none;
         }
         
         .btn-editar {
-            background-color: var(--color-accent);
+            background-color: rgba(255, 193, 7, 0.2);
             color: var(--color-text);
         }
         
         .btn-editar:hover {
-            background-color: var(--color-primary);
-            color: var(--color-light);
+            background-color: var(--color-accent);
+            color: var(--color-text);
             transform: translateY(-2px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .btn-inhabilitar {
-            background-color: var(--color-primary);
-            color: var(--color-light);
+            background-color: rgba(255, 87, 34, 0.2);
+            color: var(--color-primary);
         }
         
         .btn-inhabilitar:hover {
-            background-color: #F44336;
+            background-color: var(--color-primary);
+            color: var(--color-light);
             transform: translateY(-2px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .btn-habilitar {
-            background-color: var(--color-secondary);
-            color: var(--color-light);
+            background-color: rgba(76, 175, 80, 0.2);
+            color: var(--color-secondary);
         }
         
         .btn-habilitar:hover {
-            background-color: #388E3C;
+            background-color: var(--color-secondary);
+            color: var(--color-light);
             transform: translateY(-2px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .btn-modificar {
-            background-color: var(--color-secondary);
-            color: var(--color-light);
+            background-color: rgba(76, 175, 80, 0.2);
+            color: var(--color-secondary);
         }
         
         .btn-modificar:hover {
-            background-color: var(--color-primary);
+            background-color: var(--color-secondary);
+            color: var(--color-light);
             transform: translateY(-2px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
+        /* Paginación modernizada */
         .pagination {
             display: flex;
             justify-content: center;
             gap: 0.5rem;
-            margin-top: 1rem;
+            margin-top: 2rem;
         }
         
         .pagination .page-item .page-link {
             color: var(--color-text);
-            border: 1px solid var(--color-accent);
+            border: 1px solid rgba(255, 193, 7, 0.3);
             transition: var(--transition-normal);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-family: 'Montserrat', sans-serif;
         }
         
         .pagination .page-item.active .page-link {
             background-color: var(--color-secondary);
             border-color: var(--color-secondary);
             color: var(--color-light);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
         }
         
         .pagination .page-item .page-link:hover {
             background-color: var(--color-primary);
             color: var(--color-light);
+            border-color: var(--color-primary);
         }
         
+        /* Footer modernizado */
         footer {
             text-align: center;
-            padding: 1rem;
+            padding: 1.2rem;
             color: var(--color-text);
             font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
             position: absolute;
             bottom: 0;
             width: 100%;
-            border-top: 1px solid rgba(255, 193, 7, 0.3);
+            border-top: 1px solid rgba(255, 193, 7, 0.2);
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .container {
+                padding: 2rem;
+                margin-top: 7.5rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
         }
         
         @media (max-width: 768px) {
-            .header-logo { margin-left: 1rem; }
-            .header-logo img { max-width: 80px; }
-            .user-welcome { font-size: 1rem; padding: 0.4rem 0.8rem; }
-            .btn-salir, .btn-productos, .btn-pedidos { margin-right: 1rem; padding: 0.5rem 1rem; }
-            .container { padding: 1.5rem; margin-top: 7rem; }
-            h1 { font-size: 1.5rem; }
-            .actions-cell { flex-direction: column; gap: 0.3rem; }
-            .btn-action { width: 100%; justify-content: center; padding: 0.4rem 0.8rem; font-size: 0.9rem; }
-            .table-responsive { overflow-x: auto; }
+            header {
+                flex-direction: column;
+                padding: 0.8rem 0;
+            }
+            
+            .header-logo {
+                margin: 0.5rem 0;
+            }
+            
+            .header-logo img {
+                max-width: 80px;
+            }
+            
+            .user-welcome {
+                margin: 0.5rem 0;
+                font-size: 1rem;
+            }
+            
+            .header-actions {
+                margin: 0.5rem 0;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .container {
+                margin-top: 12rem;
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .btn-nav {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .actions-cell {
+                flex-direction: column;
+                gap: 0.4rem;
+            }
+            
+            .btn-action {
+                width: 100%;
+                justify-content: center;
+            }
         }
         
         @media (max-width: 576px) {
-            .container { padding: 1rem; margin-top: 6rem; }
-            .search-bar { flex-direction: column; }
+            .container {
+                padding: 1rem;
+                margin-top: 14rem;
+            }
+            
+            .search-bar {
+                flex-direction: column;
+                padding: 1rem;
+            }
+            
+            .search-input, .btn-search {
+                width: 100%;
+            }
+            
+            .table td, .table th {
+                padding: 0.8rem 0.5rem;
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
@@ -454,24 +545,18 @@ include('db.php');
         <span class="user-welcome">
             <i class="fas fa-user-shield"></i>¡Hola, <?php echo $username; ?>!
         </span>
-        <div>
+        <div class="header-actions">
             <!-- Botón para ir a la sección de productos -->
-            <a href="productos.php" title="Ir a la gestión de productos">
-                <button class="btn-productos">
-                    <i class="fas fa-shopping-cart"></i>Productos
-                </button>
+            <a href="productos.php" class="btn-nav btn-productos" title="Ir a la gestión de productos">
+                <i class="fas fa-shopping-cart"></i>Productos
             </a>
-            <!-- Nuevo botón para gestionar pedidos -->
-            <a href="gestion_pedidos.php" title="Gestionar pedidos">
-                <button class="btn-pedidos">
-                    <i class="fas fa-box"></i>Pedidos
-                </button>
+            <!-- Botón para gestionar pedidos -->
+            <a href="gestion_pedidos.php" class="btn-nav btn-pedidos" title="Gestionar pedidos">
+                <i class="fas fa-box"></i>Pedidos
             </a>
             <!-- Botón para cerrar sesión -->
-            <a href="logout.php" title="Cerrar sesión">
-                <button class="btn-salir">
-                    <i class="fas fa-sign-out-alt"></i>Salir
-                </button>
+            <a href="logout.php" class="btn-nav btn-salir" title="Cerrar sesión">
+                <i class="fas fa-sign-out-alt"></i>Salir
             </a>
         </div>
     </header>
@@ -482,81 +567,89 @@ include('db.php');
         
         <!-- Barra de búsqueda y filtros -->
         <div class="search-bar">
-            <input type="text" class="search-input" id="searchUser" placeholder="Buscar usuario..." aria-label="Buscar usuario">
+            <input type="text" class="search-input" id="searchUser" placeholder="Buscar usuario por nombre, correo o rol..." aria-label="Buscar usuario">
             <button class="btn-search" onclick="searchUsers()">
                 <i class="fas fa-search"></i> Buscar
             </button>
         </div>
         
         <!-- Tabla responsive de usuarios -->
-        <div class="table-responsive">
-            <table class="table" id="usersTable">
-                <thead>
-                    <tr>
-                        <th>Nombre Usuario</th>
-                        <th>Correo</th>
-                        <th>Rol</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    // Consultar todos los usuarios de la base de datos
-                    $sel = $conexion->query("SELECT * FROM usuarios ORDER BY id ASC");
-                    
-                    if ($sel->num_rows > 0) {
-                        while ($fila = $sel->fetch_assoc()) {
-                            $statusClass = $fila['habilitado'] == 1 ? 'status-enabled' : 'status-disabled';
-                    ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($fila['nombre']); ?></td>
-                        <td><?php echo htmlspecialchars($fila['correo']); ?></td>
-                        <td><?php echo htmlspecialchars($fila['rol']); ?></td>
-                        <td class="status-cell <?php echo $statusClass; ?>">
-                            <?php if ($fila['habilitado'] == 1): ?>
-                                <i class="fas fa-check-circle"></i> Habilitado
-                            <?php else: ?>
-                                <i class="fas fa-times-circle"></i> Inhabilitado
-                            <?php endif; ?>
-                        </td>
-                        <td class="actions-cell">
-                            <?php if ($fila['habilitado'] == 1): ?>
-                                <a href="inhabilitar.php?correo=<?php echo urlencode($fila['correo']); ?>" class="btn-action btn-inhabilitar" title="Inhabilitar usuario">
-                                    <i class="fas fa-user-slash"></i> Inhabilitar
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Nombre Usuario</th>
+                            <th>Correo</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        // Consultar todos los usuarios de la base de datos
+                        $sel = $conexion->query("SELECT * FROM usuarios ORDER BY id ASC");
+                        
+                        if ($sel->num_rows > 0) {
+                            while ($fila = $sel->fetch_assoc()) {
+                                $statusClass = $fila['habilitado'] == 1 ? 'status-enabled' : 'status-disabled';
+                        ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($fila['nombre']); ?></td>
+                            <td><?php echo htmlspecialchars($fila['correo']); ?></td>
+                            <td><?php echo htmlspecialchars($fila['rol']); ?></td>
+                            <td>
+                                <div class="status-cell">
+                                    <span class="status-badge <?php echo $statusClass; ?>">
+                                        <?php if ($fila['habilitado'] == 1): ?>
+                                            <i class="fas fa-check-circle"></i> Habilitado
+                                        <?php else: ?>
+                                            <i class="fas fa-times-circle"></i> Inhabilitado
+                                        <?php endif; ?>
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="actions-cell">
+                                <?php if ($fila['habilitado'] == 1): ?>
+                                    <a href="inhabilitar.php?correo=<?php echo urlencode($fila['correo']); ?>" class="btn-action btn-inhabilitar" title="Inhabilitar usuario">
+                                        <i class="fas fa-user-slash"></i> Inhabilitar
+                                    </a>
+                                <?php else: ?>
+                                    <a href="habilitar.php?correo=<?php echo urlencode($fila['correo']); ?>" class="btn-action btn-habilitar" title="Habilitar usuario">
+                                        <i class="fas fa-user-check"></i> Habilitar
+                                    </a>
+                                <?php endif; ?>
+                                <a href="modificar_usuario.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-editar" title="Asignar rol al usuario">
+                                    <i class="fas fa-user-tag"></i> Asignar Rol
                                 </a>
-                            <?php else: ?>
-                                <a href="habilitar.php?correo=<?php echo urlencode($fila['correo']); ?>" class="btn-action btn-habilitar" title="Habilitar usuario">
-                                    <i class="fas fa-user-check"></i> Habilitar
+                                <a href="editar_usuario.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-modificar" title="Modificar datos del usuario">
+                                    <i class="fas fa-user-edit"></i> Modificar
                                 </a>
-                            <?php endif; ?>
-                            <a href="modificar_usuario.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-editar" title="Asignar rol al usuario">
-                                <i class="fas fa-user-tag"></i> Asignar Rol
-                            </a>
-                            <a href="editar_usuario.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-modificar" title="Modificar datos del usuario">
-                                <i class="fas fa-user-edit"></i> Modificar
-                            </a>
-                        </td>
-                    </tr>
-                    <?php
+                            </td>
+                        </tr>
+                        <?php
+                            }
+                        } else {
+                        ?>
+                        <tr>
+                            <td colspan="5" class="text-center">No hay usuarios registrados en el sistema.</td>
+                        </tr>
+                        <?php
                         }
-                    } else {
-                    ?>
-                    <tr>
-                        <td colspan="5" class="text-center">No hay usuarios registrados en el sistema.</td>
-                    </tr>
-                    <?php
-                    }
-                    ?>
-                </tbody>
-            </table>
+                        ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
         
         <!-- Paginación para tablas con muchos registros -->
         <nav aria-label="Paginación de usuarios">
             <ul class="pagination">
                 <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </a>
                 </li>
                 <li class="page-item active" aria-current="page">
                     <a class="page-link" href="#">1</a>
@@ -568,7 +661,9 @@ include('db.php');
                     <a class="page-link" href="#">3</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="#">Siguiente</a>
+                    <a class="page-link" href="#">
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </a>
                 </li>
             </ul>
         </nav>
