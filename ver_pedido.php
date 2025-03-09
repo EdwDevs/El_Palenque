@@ -8,18 +8,19 @@ if (!isset($_SESSION['usuario'])) {
 }
 
 include('db.php');
+require('fpdf/fpdf.php'); // Incluir FPDF
 
 // Obtener el ID del usuario desde la sesión
 $usuario_id = isset($_SESSION['usuario_id']) ? intval($_SESSION['usuario_id']) : null;
 if (!$usuario_id) {
     $usuario = htmlspecialchars($_SESSION['usuario']);
-    $stmt = $conexion->prepare("SELECT id FROM usuarios WHERE nombre = ?"); // Corregido de 'usuario' a 'nombre'
+    $stmt = $conexion->prepare("SELECT id FROM usuarios WHERE nombre = ?");
     $stmt->bind_param("s", $usuario);
     $stmt->execute();
     $result = $stmt->get_result();
     if ($row = $result->fetch_assoc()) {
         $usuario_id = $row['id'];
-        $_SESSION['usuario_id'] = $usuario_id; // Guardar en sesión para futuras consultas
+        $_SESSION['usuario_id'] = $usuario_id;
     } else {
         die("Usuario no encontrado en la base de datos.");
     }
@@ -73,6 +74,90 @@ $stmt = $conexion->prepare("
 $stmt->bind_param("i", $pedido_id);
 $stmt->execute();
 $result_detalles = $stmt->get_result();
+$detalles = [];
+while ($row = $result_detalles->fetch_assoc()) {
+    $detalles[] = $row;
+}
+$stmt->close();
+
+// Obtener datos de entrega
+$stmt = $conexion->prepare("
+    SELECT forma_pago, direccion, ciudad, telefono 
+    FROM entregas 
+    WHERE pedido_id = ?
+");
+$stmt->bind_param("i", $pedido_id);
+$stmt->execute();
+$result_entrega = $stmt->get_result();
+$entrega = $result_entrega->fetch_assoc();
+$stmt->close();
+
+// Generar PDF y actualizar estado si se solicita facturar
+if (isset($_GET['facturar']) && $_GET['facturar'] == '1') {
+    // Actualizar el estado del pedido a "confirmado"
+    $stmt = $conexion->prepare("UPDATE pedidos SET estado = 'confirmado' WHERE id = ?");
+    $stmt->bind_param("i", $pedido_id);
+    $stmt->execute();
+    $stmt->close();
+
+    // Generar el PDF
+    $pdf = new FPDF();
+    $pdf->AddPage();
+    $pdf->SetFont('Arial', 'B', 16);
+
+    // Título
+    $pdf->Cell(0, 10, 'Factura - Sabor Colombiano', 0, 1, 'C');
+    $pdf->SetFont('Arial', '', 12);
+    $pdf->Cell(0, 10, 'Fecha: ' . date('d/m/Y'), 0, 1, 'R');
+    $pdf->Ln(10);
+
+    // Información del pedido
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 10, "Detalles del Pedido #{$pedido['id']}", 0, 1);
+    $pdf->SetFont('Arial', '', 12);
+    $pdf->Cell(0, 10, "Cliente: {$pedido['usuario_nombre']}", 0, 1);
+    $pdf->Cell(0, 10, "Fecha del Pedido: " . date('d/m/Y H:i', strtotime($pedido['fecha_pedido'])), 0, 1);
+    $pdf->Cell(0, 10, "Estado: Confirmado", 0, 1);
+    $pdf->Ln(10);
+
+    // Datos de entrega
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 10, "Datos de Entrega", 0, 1);
+    $pdf->SetFont('Arial', '', 12);
+    $pdf->Cell(0, 10, "Forma de Pago: " . ucfirst($entrega['forma_pago'] ?? 'No especificado'), 0, 1);
+    $pdf->Cell(0, 10, "Dirección: " . ($entrega['direccion'] ?? 'No especificado'), 0, 1);
+    $pdf->Cell(0, 10, "Ciudad: " . ($entrega['ciudad'] ?? 'No especificado'), 0, 1);
+    $pdf->Cell(0, 10, "Teléfono: " . ($entrega['telefono'] ?? 'No especificado'), 0, 1);
+    $pdf->Ln(10);
+
+    // Tabla de productos
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(80, 10, 'Producto', 1);
+    $pdf->Cell(30, 10, 'Cantidad', 1);
+    $pdf->Cell(40, 10, 'Precio Unitario', 1);
+    $pdf->Cell(40, 10, 'Subtotal', 1);
+    $pdf->Ln();
+
+    $pdf->SetFont('Arial', '', 12);
+    foreach ($detalles as $detalle) {
+        $subtotal = $detalle['precio_unitario'] * $detalle['cantidad'];
+        $pdf->Cell(80, 10, $detalle['nombre'] ?: "Producto ID: {$detalle['producto_id']}", 1);
+        $pdf->Cell(30, 10, $detalle['cantidad'], 1, 0, 'C');
+        $pdf->Cell(40, 10, '$' . number_format($detalle['precio_unitario'], 2), 1, 0, 'R');
+        $pdf->Cell(40, 10, '$' . number_format($subtotal, 2), 1, 0, 'R');
+        $pdf->Ln();
+    }
+
+    // Total
+    $pdf->Ln(10);
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(150, 10, 'Total:', 0);
+    $pdf->Cell(40, 10, '$' . number_format($pedido['total'], 2), 0, 1, 'R');
+
+    // Descargar el PDF
+    $pdf->Output('D', "factura_pedido_{$pedido_id}.pdf");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -164,6 +249,20 @@ $result_detalles = $stmt->get_result();
             bottom: 0;
             width: 100%;
         }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            color: var(--color-light);
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+        .success {
+            background-color: var(--color-secondary);
+        }
     </style>
 </head>
 <body>
@@ -198,7 +297,7 @@ $result_detalles = $stmt->get_result();
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($detalle = $result_detalles->fetch_assoc()): ?>
+                    <?php foreach ($detalles as $detalle): ?>
                         <tr>
                             <td>
                                 <?php if ($detalle['nombre']): ?>
@@ -211,19 +310,47 @@ $result_detalles = $stmt->get_result();
                             <td>$<?php echo number_format($detalle['precio_unitario'], 2); ?></td>
                             <td>$<?php echo number_format($detalle['precio_unitario'] * $detalle['cantidad'], 2); ?></td>
                         </tr>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
-            <?php $stmt->close(); ?>
-            <a href="<?php echo $isAdmin ? 'gestion_pedidos.php' : 'ver_pedido.php'; ?>" class="btn btn-primary mt-3"><i class="fas fa-arrow-left"></i> Volver</a>
+
+            <div class="mt-3 d-flex justify-content-between">
+                <a href="<?php echo $isAdmin ? 'gestion_pedidos.php' : 'ver_pedido.php'; ?>" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Volver</a>
+                <?php if ($pedido['estado'] !== 'confirmado'): ?>
+                    <a href="ver_pedido.php?id=<?php echo $pedido_id; ?>&facturar=1" class="btn btn-success"><i class="fas fa-file-pdf"></i> Facturar</a>
+                <?php else: ?>
+                    <button class="btn btn-secondary" disabled><i class="fas fa-file-pdf"></i> Ya Facturado</button>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
+
+    <!-- Notificación para mensajes -->
+    <?php if (isset($_GET['mensaje'])): ?>
+        <div id="notification" class="notification success">
+            <?php echo htmlspecialchars($_GET['mensaje']); ?>
+        </div>
+    <?php endif; ?>
 
     <footer>
         <p>© 2025 Sabor Colombiano - Todos los derechos reservados.</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mostrar notificación y ocultarla después de 3 segundos
+        <?php if (isset($_GET['mensaje'])): ?>
+            document.getElementById('notification').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('notification').style.display = 'none';
+            }, 3000);
+        <?php endif; ?>
+
+        // Limpiar localStorage si clear_cart=1 está en la URL
+        <?php if (isset($_GET['clear_cart']) && $_GET['clear_cart'] == '1'): ?>
+            localStorage.removeItem('cart');
+        <?php endif; ?>
+    </script>
 </body>
 </html>
 <?php $conexion->close(); ?>

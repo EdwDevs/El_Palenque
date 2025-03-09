@@ -25,8 +25,8 @@ include('db.php');
     <!-- Font Awesome: Biblioteca de iconos para mejorar la interfaz -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-<!-- Swiper CSS: Para el carrusel deslizable -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <!-- Swiper CSS: Para el carrusel deslizable -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
    
     <!-- Estilos personalizados: Define la apariencia específica de la aplicación -->
     <style>
@@ -44,9 +44,7 @@ include('db.php');
         }
         
         /* ===== ESTILOS GLOBALES ===== */
-        /* Definición del fondo, fuente y estructura básica del documento */
         body {
-            /* Fondo con degradado de colores que representan la bandera colombiana */
             background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
             min-height: 100vh;
             font-family: 'Montserrat', sans-serif;
@@ -54,11 +52,10 @@ include('db.php');
             margin: 0;
             padding: 0;
             position: relative;
-            padding-bottom: 60px; /* Espacio para el footer */
+            padding-bottom: 60px;
         }
 
         /* ===== HEADER Y NAVEGACIÓN ===== */
-        /* Configuración del encabezado fijo en la parte superior */
         header {
             background: rgba(255, 255, 255, 0.95);
             padding: 1rem 2rem;
@@ -69,23 +66,21 @@ include('db.php');
             right: 0;
             width: 100%;
             z-index: 1000;
-            display: flex !important; /* Fuerza la disposición en línea */
-            justify-content: space-between !important; /* Distribuye los elementos */
-            align-items: center !important; /* Alinea verticalmente */
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
             box-sizing: border-box;
             transition: var(--transition-normal);
         }
         
-        /* Efecto de scroll para el header */
         header.scrolled {
             padding: 0.5rem 2rem;
             background: rgba(255, 255, 255, 0.98);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        /* Estilo del logo y su contenedor */
         .header-logo {
-            flex-shrink: 0; /* Evita que el logo se comprima */
+            flex-shrink: 0;
         }
 
         .header-logo img {
@@ -100,25 +95,22 @@ include('db.php');
             transform: scale(1.05);
         }
 
-        /* Contenedor de los enlaces de navegación */
         .nav-links {
-            flex-grow: 1; /* Ocupa el espacio disponible */
-            display: flex !important; /* Fuerza la disposición en línea */
-            justify-content: center !important; /* Centra los elementos */
+            flex-grow: 1;
+            display: flex !important;
+            justify-content: center !important;
         }
 
-        /* Lista de navegación */
         .navbar-nav {
-            display: flex !important; /* Fuerza la disposición en línea */
-            flex-direction: row !important; /* Asegura que sea horizontal */
-            gap: 2rem !important; /* Espacio entre elementos */
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 2rem !important;
             list-style: none;
             margin: 0;
             padding: 0;
             align-items: center;
         }
 
-        /* Elementos individuales de la navegación */
         .nav-item {
             margin: 0;
             padding: 0;
@@ -126,7 +118,6 @@ include('db.php');
             position: relative;
         }
 
-        /* Enlaces de navegación */
         .nav-link {
             color: var(--color-secondary);
             font-weight: 600;
@@ -146,7 +137,6 @@ include('db.php');
             transform: translateY(-2px);
         }
         
-        /* Indicador de enlace activo */
         .nav-link.active {
             color: var(--color-primary);
             background: rgba(255, 87, 34, 0.1);
@@ -166,7 +156,6 @@ include('db.php');
         }
 
         /* ===== BOTONES ===== */
-        /* Botón de salir/iniciar sesión */
         .btn-auth {
             background-color: var(--color-primary);
             color: white;
@@ -176,8 +165,8 @@ include('db.php');
             font-weight: 600;
             transition: var(--transition-normal);
             cursor: pointer;
-            white-space: nowrap; /* Evita que el texto se divida */
-            flex-shrink: 0; /* Evita que el botón se comprima */
+            white-space: nowrap;
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -189,7 +178,6 @@ include('db.php');
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         
-        /* Botón de usuario logueado */
         .user-welcome {
             display: flex;
             align-items: center;
@@ -208,7 +196,6 @@ include('db.php');
             transform: translateY(-2px);
         }
 
-        /* Botón de información */
         .btn-info {
             background-color: var(--color-accent);
             color: var(--color-text);
@@ -229,7 +216,6 @@ include('db.php');
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         
-        /* Botón de servicio */
         .btn-service {
             background-color: var(--color-secondary);
             color: white;
@@ -254,10 +240,9 @@ include('db.php');
         }
 
         /* ===== SECCIÓN HERO ===== */
-        /* Sección principal de bienvenida */
         .hero {
             text-align: center;
-            padding: 10rem 2rem 5rem; /* Espacio superior para evitar solapamiento con header */
+            padding: 10rem 2rem 5rem;
             background: rgba(255, 255, 255, 0.9);
             margin: 0 auto;
             max-width: 800px;
@@ -266,7 +251,6 @@ include('db.php');
             animation: fadeIn 1s ease-in-out;
         }
         
-        /* Animación de aparición suave */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -281,7 +265,6 @@ include('db.php');
             padding-bottom: 0.5rem;
         }
         
-        /* Línea decorativa debajo del título */
         .hero h2::after {
             content: '';
             position: absolute;
@@ -303,7 +286,6 @@ include('db.php');
             margin-right: auto;
         }
         
-        /* Contenedor de botones en el hero */
         .hero-buttons {
             display: flex;
             justify-content: center;
@@ -328,18 +310,16 @@ include('db.php');
             font-weight: 700;
         }
         
-        /* Estilos para el carrusel Swiper */
         .swiper {
             width: 100%;
-            padding-bottom: 50px; /* Espacio para la paginación */
+            padding-bottom: 50px;
         }
         
         .swiper-slide {
-            height: auto; /* Permite que las tarjetas tengan altura variable */
+            height: auto;
             display: flex;
         }
         
-        /* Estilos para los botones de navegación del carrusel */
         .swiper-button-next, .swiper-button-prev {
             color: var(--color-primary);
             background: rgba(255, 255, 255, 0.8);
@@ -359,7 +339,6 @@ include('db.php');
             transform: scale(1.1);
         }
         
-        /* Estilos para la paginación del carrusel */
         .swiper-pagination-bullet {
             background: var(--color-secondary);
             opacity: 0.5;
@@ -370,7 +349,6 @@ include('db.php');
             opacity: 1;
         }
         
-        /* Tarjetas de características */
         .feature-card {
             background: var(--color-light);
             padding: 2rem;
@@ -405,14 +383,13 @@ include('db.php');
             color: var(--color-text);
             font-size: 0.95rem;
             margin-bottom: 1rem;
-            flex-grow: 1; /* Hace que el texto ocupe el espacio disponible */
+            flex-grow: 1;
         }
         
         .feature-button-container {
-            margin-top: auto; /* Empuja el botón hacia abajo */
+            margin-top: auto;
         }
         
-        /* Estilos para la lista de tradiciones */
         .tradition-list {
             text-align: left;
             margin-bottom: 1rem;
@@ -436,7 +413,6 @@ include('db.php');
         }
 
         /* ===== FOOTER ===== */
-        /* Pie de página */
         footer {
             text-align: center;
             padding: 1.5rem;
@@ -491,7 +467,6 @@ include('db.php');
         }
 
         /* ===== RESPONSIVE ===== */
-        /* Ajustes para dispositivos móviles */
         @media (max-width: 768px) {
             header {
                 flex-wrap: wrap;
@@ -538,7 +513,6 @@ include('db.php');
                 justify-content: center;
             }
             
-            /* Ajustes para el carrusel en móviles */
             .swiper-button-next, .swiper-button-prev {
                 width: 30px;
                 height: 30px;
@@ -550,7 +524,6 @@ include('db.php');
         }
 
         /* ===== CORRECCIONES PARA BOOTSTRAP ===== */
-        /* Estas reglas sobrescriben los estilos de Bootstrap que podrían interferir */
         @media all {
             .navbar-nav {
                 display: flex !important;
@@ -568,7 +541,6 @@ include('db.php');
         }
         
         /* ===== ACCESIBILIDAD ===== */
-        /* Mejoras para accesibilidad */
         .visually-hidden {
             position: absolute;
             width: 1px;
@@ -581,15 +553,30 @@ include('db.php');
             border: 0;
         }
         
-        /* Enfoque visible para navegación por teclado */
         a:focus, button:focus {
             outline: 3px solid var(--color-accent);
             outline-offset: 2px;
         }
+
+        /* ===== NOTIFICACIÓN ===== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            color: var(--color-light);
+            z-index: 1000;
+            box-shadow: var(--box-shadow);
+            display: none;
+        }
+        .success {
+            background-color: var(--color-secondary);
+        }
     </style>
 </head>
 <body>
-    <!-- HEADER: Contiene el logo, navegación y botón de inicio de sesión -->
+    <!-- HEADER -->
     <header id="main-header">
         <div class="header-logo">
             <a href="index.php" title="Página de inicio">
@@ -625,32 +612,30 @@ include('db.php');
         </nav>
         
         <?php if ($isLoggedIn): ?>
-<!-- Si el usuario está logueado, mostrar su nombre, carrito y botón de salir -->
-<span class="user-welcome">
-            <i class="fas fa-user"></i> Hola, <?php echo $username; ?>
-        </span>
-        <a href="carrito.php" title="Ver carrito de compras" aria-label="Carrito de compras">
-            <i class="fas fa-shopping-cart" style="font-size: 1.5rem; color: var(--color-primary); margin-right: 1rem;"></i>
-        </a>
-        <a href="ver_pedido.php" title="Ver mis pedidos" aria-label="Ver pedidos">
-    <i class="fas fa-list" style="font-size: 1.5rem; color: var(--color-primary); margin-right: 1rem;"></i>
-</a>
-        <a href="logout.php" title="Cerrar sesión">
-            <button class="btn-auth">
-                <i class="fas fa-sign-out-alt"></i> Salir
-            </button>
-        </a>
-    <?php else: ?>
-        <!-- Si no está logueado, mostrar botón de iniciar sesión -->
-        <a href="login.php" title="Iniciar sesión">
-            <button class="btn-auth">
-                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-            </button>
-        </a>
-    <?php endif; ?>
+            <span class="user-welcome">
+                <i class="fas fa-user"></i> Hola, <?php echo $username; ?>
+            </span>
+            <a href="carrito.php" title="Ver carrito de compras" aria-label="Carrito de compras">
+                <i class="fas fa-shopping-cart" style="font-size: 1.5rem; color: var(--color-primary); margin-right: 1rem;"></i>
+            </a>
+            <a href="ver_pedido.php" title="Ver mis pedidos" aria-label="Ver pedidos">
+                <i class="fas fa-list" style="font-size: 1.5rem; color: var(--color-primary); margin-right: 1rem;"></i>
+            </a>
+            <a href="logout.php" title="Cerrar sesión">
+                <button class="btn-auth">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </a>
+        <?php else: ?>
+            <a href="login.php" title="Iniciar sesión">
+                <button class="btn-auth">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+            </a>
+        <?php endif; ?>
     </header>
 
-    <!-- SECCIÓN HERO: Contiene el mensaje de bienvenida y botones de acción -->
+    <!-- SECCIÓN HERO -->
     <section class="hero">
         <h2>¡Bienvenido a Sabor Colombiano!</h2>
         <p>Explora y descubre la esencia de nuestra tierra: alegría, color y tradición. Sumérgete en una experiencia gastronómica única que celebra la diversidad cultural de Colombia.</p>
@@ -667,75 +652,66 @@ include('db.php');
         </div>
     </section>
     
-    <!-- SECCIÓN DE CARACTERÍSTICAS: Muestra los principales servicios o características con carrusel deslizable -->
+    <!-- SECCIÓN DE CARACTERÍSTICAS -->
     <section class="features" id="servicios">
-    <h3>Nuestros Servicios</h3>
-    
-    <!-- Swiper: Carrusel deslizable para las tarjetas de servicios -->
-    <div class="swiper mySwiper">
-        <div class="swiper-wrapper">
-            <!-- Slide 1: Tradiciones -->
-            <div class="swiper-slide">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-music"></i>
+        <h3>Nuestros Servicios</h3>
+        <div class="swiper mySwiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        <h4 class="feature-title">Tradiciones</h4>
+                        <p class="feature-description">Descubre las ricas tradiciones culturales de San Basilio de Palenque, el primer pueblo libre de América:</p>
+                        <ul class="tradition-list">
+                            <li><strong>Música</strong></li>
+                            <li><strong>Rituales</strong></li>
+                            <li><strong>Medicina Tradicional</strong></li>
+                        </ul>
+                        <div class="feature-button-container">
+                            <a href="tradiciones.php" class="btn-service">
+                                <i class="fas fa-arrow-right"></i> Explorar Tradiciones
+                            </a>
+                        </div>
                     </div>
-                    <h4 class="feature-title">Tradiciones</h4>
-                    <p class="feature-description">Descubre las ricas tradiciones culturales de San Basilio de Palenque, el primer pueblo libre de América:</p>
-                    <ul class="tradition-list">
-                        <li><strong>Música</strong></li>
-                        <li><strong>Rituales</strong></li>
-                        <li><strong>Medicina Tradicional</strong></li>
-                    </ul>
-                    <div class="feature-button-container">
-                        <a href="tradiciones.php" class="btn-service">
-                            <i class="fas fa-arrow-right"></i> Explorar Tradiciones
-                        </a>
+                </div>
+                <div class="swiper-slide">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shopping-basket"></i>
+                        </div>
+                        <h4 class="feature-title">Productos</h4>
+                        <p class="feature-description">Explora nuestra selección de productos artesanales colombianos, desde alimentos hasta artesanías, todos elaborados con técnicas tradicionales.</p>
+                        <div class="feature-button-container">
+                            <a href="productos_compra.php" class="btn-service">
+                                <i class="fas fa-arrow-right"></i> Ver Productos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4 class="feature-title">Historias de la Comunidad</h4>
+                        <p class="feature-description">Conoce las historias inspiradoras de nuestra comunidad y cómo mantenemos vivas nuestras tradiciones a través de generaciones.</p>
+                        <div class="feature-button-container">
+                            <a href="Historias_comunidad.php" class="btn-service">
+                                <i class="fas fa-arrow-right"></i> Ver Historias
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Slide 2: Productos -->
-            <div class="swiper-slide">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shopping-basket"></i>
-                    </div>
-                    <h4 class="feature-title">Productos</h4>
-                    <p class="feature-description">Explora nuestra selección de productos artesanales colombianos, desde alimentos hasta artesanías, todos elaborados con técnicas tradicionales.</p>
-                    <div class="feature-button-container">
-                        <a href="productos_compra.php" class="btn-service">
-                            <i class="fas fa-arrow-right"></i> Ver Productos
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Slide 3: Historias de la Comunidad -->
-            <div class="swiper-slide">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h4 class="feature-title">Historias de la Comunidad</h4>
-                    <p class="feature-description">Conoce las historias inspiradoras de nuestra comunidad y cómo mantenemos vivas nuestras tradiciones a través de generaciones.</p>
-                    <div class="feature-button-container">
-                        <a href="Historias_comunidad.php" class="btn-service">
-                            <i class="fas fa-arrow-right"></i> Ver Historias
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
         </div>
-        
-        <!-- Controles de navegación del carrusel -->
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
-        <div class="swiper-pagination"></div>
-    </div>
-</section>
+    </section>
 
-    <!-- SECCIÓN DE CONTACTO: Información de contacto -->
+    <!-- SECCIÓN DE CONTACTO -->
     <section class="features" id="contacto">
         <h3>Contáctanos</h3>
         <div class="features-grid">
@@ -746,7 +722,6 @@ include('db.php');
                 <h4 class="feature-title">Ubicación</h4>
                 <p class="feature-description">Calle Principal #123, Bogotá, Colombia</p>
             </div>
-            
             <div class="feature-card">
                 <div class="feature-icon">
                     <i class="fas fa-phone"></i>
@@ -754,7 +729,6 @@ include('db.php');
                 <h4 class="feature-title">Teléfono</h4>
                 <p class="feature-description">+57 123 456 7890</p>
             </div>
-            
             <div class="feature-card">
                 <div class="feature-icon">
                     <i class="fas fa-envelope"></i>
@@ -765,18 +739,16 @@ include('db.php');
         </div>
     </section>
 
-    <!-- FOOTER: Contiene información de copyright y enlaces adicionales -->
+    <!-- FOOTER -->
     <footer>
         <div class="footer-content">
             <div class="copyright">
                 <p>© 2025 Sabor Colombiano - Todos los derechos reservados.</p>
             </div>
-            
             <div class="footer-links">
                 <a href="#" class="footer-link">Términos y Condiciones</a>
                 <a href="#" class="footer-link">Política de Privacidad</a>
             </div>
-            
             <div class="social-icons">
                 <a href="#" class="social-icon" title="Facebook" aria-label="Visita nuestra página de Facebook">
                     <i class="fab fa-facebook"></i>
@@ -791,70 +763,89 @@ include('db.php');
         </div>
     </footer>
 
-    <!-- Scripts de Bootstrap para funcionalidades interactivas -->
+    <!-- Notificación para mensajes -->
+    <?php if (isset($_GET['mensaje'])): ?>
+        <div id="notification" class="notification success">
+            <?php echo htmlspecialchars($_GET['mensaje']); ?>
+        </div>
+    <?php endif; ?>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Efecto de scroll para el header
-        window.addEventListener('scroll', function() {
-            const header = document.getElementById('main-header');
-            if (window.scrollY > 50) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
-        });
-        
-        // Navegación suave al hacer clic en los enlaces
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 100,
-                        behavior: 'smooth'
-                    });
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Efecto de scroll para el header
+            window.addEventListener('scroll', function() {
+                const header = document.getElementById('main-header');
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
                 }
             });
-        });
-        
-        // Inicialización del carrusel Swiper
-        var swiper = new Swiper(".mySwiper", {
-            slidesPerView: 1,
-            spaceBetween: 30,
-            loop: true,
-            pagination: {
-                el: ".swiper-pagination",
-                clickable: true,
-            },
-            navigation: {
-                nextEl: ".swiper-button-next",
-                prevEl: ".swiper-button-prev",
-            },
-            breakpoints: {
-                768: {
-                    slidesPerView: 2,
-                    spaceBetween: 20
+            
+            // Navegación suave al hacer clic en los enlaces
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+            
+            // Inicialización del carrusel Swiper
+            var swiper = new Swiper(".mySwiper", {
+                slidesPerView: 1,
+                spaceBetween: 30,
+                loop: true,
+                pagination: {
+                    el: ".swiper-pagination",
+                    clickable: true,
                 },
-                1024: {
-                    slidesPerView: 3,
-                    spaceBetween: 30
+                navigation: {
+                    nextEl: ".swiper-button-next",
+                    prevEl: ".swiper-button-prev",
+                },
+                breakpoints: {
+                    768: {
+                        slidesPerView: 2,
+                        spaceBetween: 20
+                    },
+                    1024: {
+                        slidesPerView: 3,
+                        spaceBetween: 30
+                    }
+                },
+                a11y: {
+                    prevSlideMessage: 'Slide anterior',
+                    nextSlideMessage: 'Siguiente slide',
+                    firstSlideMessage: 'Este es el primer slide',
+                    lastSlideMessage: 'Este es el último slide',
+                    paginationBulletMessage: 'Ir al slide {{index}}'
                 }
-            },
-            a11y: {
-                prevSlideMessage: 'Slide anterior',
-                nextSlideMessage: 'Siguiente slide',
-                firstSlideMessage: 'Este es el primer slide',
-                lastSlideMessage: 'Este es el último slide',
-                paginationBulletMessage: 'Ir al slide {{index}}'
-            }
+            });
+
+            // Mostrar notificación y ocultarla después de 3 segundos
+            <?php if (isset($_GET['mensaje'])): ?>
+                document.getElementById('notification').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('notification').style.display = 'none';
+                }, 3000);
+            <?php endif; ?>
+
+            // Limpiar localStorage si clear_cart=1 está en la URL
+            <?php if (isset($_GET['clear_cart']) && $_GET['clear_cart'] == '1'): ?>
+                localStorage.removeItem('cart');
+            <?php endif; ?>
         });
-    });
-</script>
+    </script>
 </body>
 </html>
