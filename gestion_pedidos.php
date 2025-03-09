@@ -56,7 +56,6 @@ $sel = $conexion->query("
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Configuración básica del documento -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Panel de administración para gestionar pedidos de Sabor Colombiano">
@@ -65,13 +64,12 @@ $sel = $conexion->query("
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- Google Fonts - Montserrat -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Font Awesome para íconos -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Estilos personalizados -->
     <style>
         :root {
             --color-primary: #FF5722;
@@ -80,23 +78,27 @@ $sel = $conexion->query("
             --color-text: #333333;
             --color-light: #FFFFFF;
             --color-hover: #FFF3E0;
+            --color-danger: #f44336;
+            --color-danger-dark: #d32f2f;
             --border-radius: 10px;
-            --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             --transition-normal: all 0.3s ease;
         }
         
         body {
             background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
             min-height: 100vh;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Poppins', sans-serif;
             color: var(--color-text);
             padding-bottom: 60px;
             position: relative;
         }
         
+        /* Header modernizado */
         header {
             background: rgba(255, 255, 255, 0.95);
-            padding: 1rem 0;
+            backdrop-filter: blur(10px);
+            padding: 0.8rem 0;
             box-shadow: var(--box-shadow);
             position: fixed;
             top: 0;
@@ -108,11 +110,16 @@ $sel = $conexion->query("
             transition: var(--transition-normal);
         }
         
+        .header-logo {
+            margin-left: 2rem;
+        }
+        
         .header-logo img {
             max-width: 120px;
-            border-radius: var(--border-radius);
+            border-radius: 50%;
             border: 3px solid var(--color-primary);
             transition: transform 0.3s ease;
+            object-fit: cover;
         }
         
         .header-logo img:hover {
@@ -121,13 +128,13 @@ $sel = $conexion->query("
         
         .user-welcome {
             color: var(--color-primary);
-            font-weight: bold;
-            font-size: 1.2rem;
+            font-weight: 600;
+            font-size: 1.1rem;
             background-color: rgba(255, 255, 255, 0.8);
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
             margin-right: 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             transition: var(--transition-normal);
             display: flex;
             align-items: center;
@@ -138,35 +145,40 @@ $sel = $conexion->query("
             color: var(--color-secondary);
         }
         
-        .user-welcome:hover {
-            transform: scale(1.05);
-            background-color: rgba(255, 255, 255, 1);
+        .header-actions {
+            display: flex;
+            gap: 0.8rem;
+            margin-right: 2rem;
         }
         
-        .btn-salir, .btn-productos, .btn-usuarios {
-            background-color: var(--color-primary);
-            color: var(--color-light);
+        /* Botones modernizados */
+        .btn-nav {
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            margin-right: 1rem;
+            padding: 0.7rem 1.2rem;
+            border-radius: 30px;
+            font-weight: 500;
+            font-family: 'Montserrat', sans-serif;
             transition: var(--transition-normal);
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            text-decoration: none;
+            color: var(--color-light);
+            background-color: var(--color-primary);
         }
         
-        .btn-salir:hover, .btn-productos:hover, .btn-usuarios:hover {
+        .btn-nav:hover {
             background-color: var(--color-secondary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            color: var(--color-light);
         }
         
+        /* Contenedor principal mejorado */
         .container {
             margin-top: 8rem;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.97);
             border-radius: 20px;
             box-shadow: var(--box-shadow);
             max-width: 1200px;
@@ -178,13 +190,16 @@ $sel = $conexion->query("
             to { opacity: 1; transform: translateY(0); }
         }
         
+        /* Título con diseño moderno */
         h1 {
             color: var(--color-primary);
             font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
             position: relative;
-            padding-bottom: 0.5rem;
+            padding-bottom: 0.8rem;
+            font-size: 2.2rem;
         }
         
         h1::after {
@@ -193,28 +208,65 @@ $sel = $conexion->query("
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 100px;
-            height: 3px;
+            width: 80px;
+            height: 4px;
             background: linear-gradient(to right, var(--color-accent), var(--color-primary), var(--color-secondary));
-            border-radius: 3px;
+            border-radius: 4px;
+        }
+        
+        /* Alerta mejorada */
+        .alert {
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .alert-success {
+            background-color: rgba(76, 175, 80, 0.15);
+            color: var(--color-secondary);
+            border-left: 4px solid var(--color-secondary);
+        }
+        
+        .alert-success::before {
+            content: '\f058';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: var(--color-secondary);
+        }
+        
+        /* Tabla modernizada */
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 2rem;
         }
         
         .table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            margin-bottom: 2rem;
+            margin-bottom: 0;
         }
         
         .table thead th {
             background-color: var(--color-secondary);
             color: var(--color-light);
             font-weight: 600;
-            padding: 1rem;
+            padding: 1.2rem 1rem;
             border: none;
             text-align: center;
             position: sticky;
             top: 0;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.5px;
         }
         
         .table thead th:first-child {
@@ -229,19 +281,37 @@ $sel = $conexion->query("
             transition: var(--transition-normal);
         }
         
+        .table tbody tr:nth-child(even) {
+            background-color: rgba(76, 175, 80, 0.05);
+        }
+        
         .table tbody tr:hover {
             background-color: var(--color-hover);
             transform: scale(1.01);
         }
         
         .table td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--color-accent);
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid rgba(255, 193, 7, 0.2);
             text-align: center;
             vertical-align: middle;
+            font-size: 0.95rem;
         }
         
-        /* Estilo mejorado para la columna de usuario */
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Celdas especiales */
+        .id-cell {
+            font-weight: 600;
+            color: var(--color-primary);
+            background-color: rgba(255, 87, 34, 0.05);
+            border-radius: 8px;
+            padding: 0.4rem 0.8rem;
+            display: inline-block;
+        }
+        
         .user-cell {
             font-weight: 600;
             color: var(--color-primary);
@@ -253,101 +323,235 @@ $sel = $conexion->query("
         
         .user-cell i {
             color: var(--color-secondary);
+            background-color: rgba(76, 175, 80, 0.1);
+            padding: 0.5rem;
+            border-radius: 50%;
+        }
+        
+        .date-cell {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .price-cell {
+            font-weight: 700;
+            color: var(--color-primary);
         }
         
         .status-cell {
             font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
         }
         
         .status-pendiente {
+            background-color: rgba(255, 87, 34, 0.1);
             color: var(--color-primary);
         }
         
+        .status-pendiente::before {
+            content: '\f017';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 0.5rem;
+        }
+        
         .status-confirmado {
+            background-color: rgba(76, 175, 80, 0.1);
             color: var(--color-secondary);
+        }
+        
+        .status-confirmado::before {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 0.5rem;
         }
         
         .status-enviado {
+            background-color: rgba(255, 193, 7, 0.1);
             color: var(--color-accent);
         }
         
+        .status-enviado::before {
+            content: '\f0d1';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 0.5rem;
+        }
+        
         .status-entregado {
+            background-color: rgba(76, 175, 80, 0.1);
             color: var(--color-secondary);
         }
         
+        .status-entregado::before {
+            content: '\f5b0';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 0.5rem;
+        }
+        
         .status-cancelado {
-            color: #f44336;
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--color-danger);
+        }
+        
+        .status-cancelado::before {
+            content: '\f00d';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 0.5rem;
         }
         
         .actions-cell {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.6rem;
             flex-wrap: wrap;
         }
         
         .btn-action {
             text-decoration: none;
             padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 600;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.85rem;
             transition: var(--transition-normal);
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
             white-space: nowrap;
+            border: none;
         }
         
-        .btn-editar {
+        .btn-ver {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--color-accent);
+        }
+        
+        .btn-ver:hover {
             background-color: var(--color-accent);
             color: var(--color-text);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
-        .btn-editar:hover {
-            background-color: var(--color-primary);
+        .btn-estado {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--color-secondary);
+        }
+        
+        .btn-estado:hover {
+            background-color: var(--color-secondary);
             color: var(--color-light);
             transform: translateY(-2px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
         .btn-eliminar {
-            background-color: #f44336;
-            color: var(--color-light);
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--color-danger);
         }
         
         .btn-eliminar:hover {
-            background-color: #d32f2f;
+            background-color: var(--color-danger);
+            color: var(--color-light);
             transform: translateY(-2px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
+        /* Footer modernizado */
         footer {
             text-align: center;
-            padding: 1rem;
+            padding: 1.2rem;
             color: var(--color-text);
             font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
             position: absolute;
             bottom: 0;
             width: 100%;
-            border-top: 1px solid rgba(255, 193, 7, 0.3);
+            border-top: 1px solid rgba(255, 193, 7, 0.2);
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .container {
+                padding: 2rem;
+                margin-top: 7.5rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
         }
         
         @media (max-width: 768px) {
-            .header-logo { margin-left: 1rem; }
-            .header-logo img { max-width: 80px; }
-            .user-welcome { font-size: 1rem; padding: 0.4rem 0.8rem; }
-            .btn-salir, .btn-productos, .btn-usuarios { margin-right: 0.5rem; padding: 0.5rem 1rem; }
-            .container { padding: 1.5rem; margin-top: 7rem; }
-            h1 { font-size: 1.5rem; }
-            .actions-cell { flex-direction: column; gap: 0.3rem; }
-            .btn-action { width: 100%; justify-content: center; padding: 0.4rem 0.8rem; font-size: 0.9rem; }
-            .table-responsive { overflow-x: auto; }
+            header {
+                flex-direction: column;
+                padding: 0.8rem 0;
+            }
+            
+            .header-logo {
+                margin: 0.5rem 0;
+            }
+            
+            .header-logo img {
+                max-width: 80px;
+            }
+            
+            .user-welcome {
+                margin: 0.5rem 0;
+                font-size: 1rem;
+            }
+            
+            .header-actions {
+                margin: 0.5rem 0;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .container {
+                margin-top: 12rem;
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .btn-nav {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .actions-cell {
+                flex-direction: column;
+                gap: 0.4rem;
+            }
+            
+            .btn-action {
+                width: 100%;
+                justify-content: center;
+            }
         }
         
         @media (max-width: 576px) {
-            .container { padding: 1rem; margin-top: 6rem; }
+            .container {
+                padding: 1rem;
+                margin-top: 14rem;
+            }
+            
+            .table td, .table th {
+                padding: 0.8rem 0.5rem;
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
@@ -362,24 +566,18 @@ $sel = $conexion->query("
         <span class="user-welcome">
             <i class="fas fa-user-shield"></i>¡Hola, <?php echo $username; ?>!
         </span>
-        <div>
+        <div class="header-actions">
             <!-- Botón para ir a la sección de usuarios -->
-            <a href="admin_home.php" title="Gestionar usuarios">
-                <button class="btn-usuarios">
-                    <i class="fas fa-users"></i>Usuarios
-                </button>
+            <a href="admin_home.php" class="btn-nav" title="Gestionar usuarios">
+                <i class="fas fa-users"></i>Usuarios
             </a>
             <!-- Botón para ir a la sección de productos -->
-            <a href="productos.php" title="Gestionar productos">
-                <button class="btn-product HALLARos">
-                    <i class="fas fa-shopping-cart"></i>Productos
-                </button>
+            <a href="productos.php" class="btn-nav" title="Gestionar productos">
+                <i class="fas fa-shopping-cart"></i>Productos
             </a>
             <!-- Botón para cerrar sesión -->
-            <a href="logout.php" title="Cerrar sesión">
-                <button class="btn-salir">
-                    <i class="fas fa-sign-out-alt"></i>Salir
-                </button>
+            <a href="logout.php" class="btn-nav" title="Cerrar sesión">
+                <i class="fas fa-sign-out-alt"></i>Salir
             </a>
         </div>
     </header>
@@ -396,76 +594,83 @@ $sel = $conexion->query("
         <?php endif; ?>
         
         <!-- Tabla responsive de pedidos -->
-        <div class="table-responsive">
-            <table class="table" id="pedidosTable">
-                <thead>
-                    <tr>
-                        <th>ID Pedido</th>
-                        <th>Usuario</th>
-                        <th>Fecha</th>
-                        <th>Total</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    if ($sel->num_rows > 0) {
-                        while ($fila = $sel->fetch_assoc()) {
-                            $estadoClass = '';
-                            switch ($fila['estado']) {
-                                case 'pendiente':
-                                    $estadoClass = 'status-pendiente';
-                                    break;
-                                case 'confirmado':
-                                    $estadoClass = 'status-confirmado';
-                                    break;
-                                case 'enviado':
-                                    $estadoClass = 'status-enviado';
-                                    break;
-                                case 'entregado':
-                                    $estadoClass = 'status-entregado';
-                                    break;
-                                case 'cancelado':
-                                    $estadoClass = 'status-cancelado';
-                                    break;
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table" id="pedidosTable">
+                    <thead>
+                        <tr>
+                            <th>ID Pedido</th>
+                            <th>Usuario</th>
+                            <th>Fecha</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        if ($sel->num_rows > 0) {
+                            while ($fila = $sel->fetch_assoc()) {
+                                $estadoClass = '';
+                                switch ($fila['estado']) {
+                                    case 'pendiente':
+                                        $estadoClass = 'status-pendiente';
+                                        break;
+                                    case 'confirmado':
+                                        $estadoClass = 'status-confirmado';
+                                        break;
+                                    case 'enviado':
+                                        $estadoClass = 'status-enviado';
+                                        break;
+                                    case 'entregado':
+                                        $estadoClass = 'status-entregado';
+                                        break;
+                                    case 'cancelado':
+                                        $estadoClass = 'status-cancelado';
+                                        break;
+                                }
+                        ?>
+                        <tr>
+                            <td><span class="id-cell">#<?php echo htmlspecialchars($fila['id']); ?></span></td>
+                            <td class="user-cell">
+                                <i class="fas fa-user"></i>
+                                <?php echo htmlspecialchars($fila['usuario_nombre']); ?>
+                            </td>
+                            <td class="date-cell"><?php echo htmlspecialchars(date('d/m/Y H:i', strtotime($fila['fecha_pedido']))); ?></td>
+                            <td class="price-cell">$<?php echo number_format($fila['total'], 2, ',', '.'); ?></td>
+                            <td>
+                                <span class="status-cell <?php echo $estadoClass; ?>">
+                                    <?php echo ucfirst(htmlspecialchars($fila['estado'])); ?>
+                                </span>
+                            </td>
+                            <td class="actions-cell">
+                                <a href="ver_pedido.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-ver" title="Ver detalles del pedido">
+                                    <i class="fas fa-eye"></i> Ver detalles
+                                </a>
+                                <a href="modificar_estado_pedido.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-estado" title="Modificar estado del pedido">
+                                    <i class="fas fa-edit"></i> Cambiar estado
+                                </a>
+                                <a href="gestion_pedidos.php?eliminar_pedido=<?php echo $fila['id']; ?>" class="btn-action btn-eliminar" title="Eliminar pedido" onclick="return confirm('¿Estás seguro de que deseas eliminar este pedido? Esta acción no se puede deshacer.')">
+                                    <i class="fas fa-trash-alt"></i> Eliminar
+                                </a>
+                            </td>
+                        </tr>
+                        <?php
                             }
-                    ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($fila['id']); ?></td>
-                        <td class="user-cell">
-                            <i class="fas fa-user"></i>
-                            <?php echo htmlspecialchars($fila['usuario_nombre']); ?>
-                        </td>
-                        <td><?php echo htmlspecialchars(date('d/m/Y H:i', strtotime($fila['fecha_pedido']))); ?></td>
-                        <td>$<?php echo number_format($fila['total'], 2); ?></td>
-                        <td class="status-cell <?php echo $estadoClass; ?>">
-                            <?php echo ucfirst(htmlspecialchars($fila['estado'])); ?>
-                        </td>
-                        <td class="actions-cell">
-                            <a href="ver_pedido.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-editar" title="Ver detalles del pedido">
-                                <i class="fas fa-eye"></i> Ver
-                            </a>
-                            <a href="modificar_estado_pedido.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-editar" title="Modificar estado del pedido">
-                                <i class="fas fa-edit"></i> Estado
-                            </a>
-                            <a href="gestion_pedidos.php?eliminar_pedido=<?php echo $fila['id']; ?>" class="btn-action btn-eliminar" title="Eliminar pedido" onclick="return confirm('¿Estás seguro de que deseas eliminar este pedido?')">
-                                <i class="fas fa-trash-alt"></i> Eliminar
-                            </a>
-                        </td>
-                    </tr>
-                    <?php
+                        } else {
+                        ?>
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem;">
+                                <i class="fas fa-shopping-basket" style="font-size: 2rem; color: #ccc; margin-bottom: 1rem; display: block;"></i>
+                                No hay pedidos registrados en el sistema.
+                            </td>
+                        </tr>
+                        <?php
                         }
-                    } else {
-                    ?>
-                    <tr>
-                        <td colspan="6" class="text-center">No hay pedidos registrados en el sistema.</td>
-                    </tr>
-                    <?php
-                    }
-                    ?>
-                </tbody>
-            </table>
+                        ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -481,15 +686,19 @@ $sel = $conexion->query("
     <script>
         // Confirmación antes de eliminar un pedido
         document.addEventListener('DOMContentLoaded', function() {
-            const eliminarButtons = document.querySelectorAll('.btn-eliminar');
+            // Auto-ocultar alertas después de 5 segundos
+            const alertas = document.querySelectorAll('.alert');
+            if (alertas.length > 0) {
+                setTimeout(function() {
+                    alertas.forEach(alerta => {
+                        alerta.style.opacity = '0';
+                        alerta.style.transition = 'opacity 0.5s ease';
+                        setTimeout(() => alerta.remove(), 500);
+                    });
+                }, 5000);
+            }
             
-            eliminarButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    if (!confirm('¿Estás seguro de que deseas eliminar este pedido? Esta acción no se puede deshacer.')) {
-                        e.preventDefault();
-                    }
-                });
-            });
+            // Confirmación de eliminación (ya implementada en el enlace con onclick)
         });
     </script>
 </body>

@@ -24,7 +24,6 @@ $info_debug = [
 
 // No hay salida visible en la página
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -35,249 +34,908 @@ $info_debug = [
     <meta name="author" content="San Basilio de Palenque">
     <title><?php echo $pageTitle; ?></title>
     
-    <!-- Preconectar a dominios externos para mejorar rendimiento -->
+    <!-- Preconectar a dominios externos -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://unpkg.com">
     <link rel="preconnect" href="https://images.unsplash.com">
     
-    <!-- Enlace a Bootstrap para estilos responsivos -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome para iconos -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- AOS para animaciones de scroll -->
+    <!-- AOS para animaciones -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <!-- Enlace a la hoja de estilos principal -->
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Estilos personalizados -->
     <link rel="stylesheet" href="styles.css">
-    <!-- Estilos específicos para la página de tradiciones -->
-    <link rel="stylesheet" href="css/tradiciones.css">
+    
+    <style>
+        :root {
+            --color-primary: #4CAF50;
+            --color-secondary: #FF5722;
+            --color-accent: #e74c3c;
+            --color-light: #ecf0f1;
+            --color-dark: #34495e;
+            --color-text: #333;
+            --color-bg: #f9f9f9;
+            --font-main: 'Poppins', sans-serif;
+            --font-heading: 'Montserrat', sans-serif;
+            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 6px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-full: 9999px;
+        }
+
+        body {
+            font-family: var(--font-main);
+            color: var(--color-text);
+            background-color: var(--color-bg);
+            padding-top: 100px;
+            scroll-behavior: smooth;
+            line-height: 1.6;
+        }
+
+        /* Header modernizado */
+        .fixed-top {
+            background-color: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .navbar {
+            padding: 0.5rem 1.5rem;
+        }
+
+        .header-logo img {
+            border-radius: 50%;
+            border: 3px solid var(--color-primary);
+            transition: transform 0.3s ease;
+            object-fit: cover;
+        }
+
+        .header-logo img:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: #495057;
+            margin: 0 5px;
+            padding: 10px 16px;
+            border-radius: var(--radius-full);
+            transition: var(--transition);
+            font-family: var(--font-heading);
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--color-primary);
+        }
+
+        .nav-link.active {
+            color: white;
+            background-color: var(--color-primary);
+        }
+
+        .admin-link {
+            color: #28a745;
+            border: 1px dashed #28a745;
+        }
+
+        .admin-link:hover {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+
+        /* Autenticación modernizada */
+        .auth-section {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-left: auto;
+        }
+
+        .user-welcome {
+            display: flex;
+            align-items: center;
+            background-color: rgba(76, 175, 80, 0.1);
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .user-welcome:hover {
+            background-color: rgba(76, 175, 80, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-name i {
+            font-size: 1.2rem;
+            margin-right: 8px;
+            color: var(--color-primary);
+        }
+
+        .logout-btn {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--color-accent);
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--color-accent);
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .logout-btn i {
+            margin-right: 5px;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .login-btn, .register-btn {
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .login-btn {
+            background-color: transparent;
+            color: #007bff;
+            border: 1px solid #007bff;
+        }
+
+        .login-btn:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+
+        .register-btn {
+            background-color: #007bff;
+            color: white;
+            border: 1px solid #007bff;
+        }
+
+        .register-btn:hover {
+            background-color: #0069d9;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .login-btn i, .register-btn i {
+            margin-right: 5px;
+        }
+
+        /* Banner principal modernizado */
+        .tradition-banner {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+                        url('https://images.unsplash.com/photo-1518019671582-55004f1bc9ab?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 120px 0;
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .tradition-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.4), rgba(255, 87, 34, 0.4));
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            z-index: 0;
+        }
+
+        .tradition-banner .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .tradition-banner h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-family: var(--font-heading);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .tradition-banner p {
+            font-size: 1.3rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Secciones modernizadas */
+        .tradition-section {
+            padding: 70px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .tradition-section:last-child {
+            border-bottom: none;
+        }
+
+        .tradition-section h2 {
+            color: var(--color-primary);
+            margin-bottom: 30px;
+            position: relative;
+            padding-bottom: 15px;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 2.2rem;
+        }
+
+        .tradition-section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+            border-radius: 2px;
+        }
+
+        .tradition-section h3 {
+            color: var(--color-secondary);
+            margin: 30px 0 20px;
+            font-weight: 600;
+            font-family: var(--font-heading);
+            font-size: 1.6rem;
+        }
+
+        .lead {
+            font-size: 1.2rem;
+            color: #555;
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+        }
+
+        /* Tarjetas de información modernizadas */
+        .info-card {
+            background-color: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: var(--transition);
+            border-top: 4px solid var(--color-primary);
+        }
+
+        .info-card:hover, .info-card:focus-within {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .info-card h4 {
+            color: var(--color-primary);
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-family: var(--font-heading);
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .info-card h4::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: var(--color-primary);
+            border-radius: 2px;
+        }
+
+        .info-card ul {
+            padding-left: 20px;
+        }
+
+        .info-card ul li {
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .info-card ul li strong {
+            color: var(--color-secondary);
+        }
+
+        /* Galería modernizada */
+        .tradition-gallery {
+            margin: 50px 0;
+        }
+
+        .gallery-item {
+            margin-bottom: 30px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .gallery-item:hover img, .gallery-item:focus img {
+            transform: scale(1.05);
+        }
+
+        .gallery-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            color: white;
+            padding: 15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .gallery-item:hover .gallery-caption, .gallery-item:focus .gallery-caption {
+            opacity: 1;
+        }
+
+        /* Citas modernizadas */
+        .quote-block {
+            background-color: rgba(76, 175, 80, 0.05);
+            border-left: 5px solid var(--color-primary);
+            padding: 25px;
+            margin: 40px 0;
+            position: relative;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+        }
+
+        .quote-block blockquote {
+            font-style: italic;
+            margin: 0;
+            padding: 0 0 0 30px;
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        .quote-block blockquote::before {
+            content: '"';
+            font-size: 70px;
+            color: rgba(76, 175, 80, 0.2);
+            position: absolute;
+            top: -20px;
+            left: 15px;
+            font-family: Georgia, serif;
+        }
+
+        .quote-block figcaption {
+            margin-top: 15px;
+            text-align: right;
+            font-weight: 500;
+            color: var(--color-secondary);
+        }
+
+        /* Tabs modernizados */
+        .tradition-tabs {
+            margin: 50px 0;
+        }
+
+        .nav-tabs {
+            border-bottom: none;
+            gap: 10px;
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--color-dark);
+            border: none;
+            padding: 12px 20px;
+            font-weight: 500;
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            background-color: rgba(76, 175, 80, 0.05);
+            transition: var(--transition);
+        }
+
+        .nav-tabs .nav-link:hover {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--color-primary);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: white;
+            background-color: var(--color-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-content {
+            padding: 35px;
+            background: white;
+            border-radius: 0 var(--radius-md) var(--radius-md) var(--radius-md);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Línea de tiempo modernizada */
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 50px auto;
+        }
+
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--color-primary), var(--color-secondary));
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -2px;
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            padding: 15px 40px;
+            position: relative;
+            width: 50%;
+            box-sizing: border-box;
+        }
+
+        .timeline-item:nth-child(odd) {
+            left: 0;
+        }
+
+        .timeline-item:nth-child(even) {
+            left: 50%;
+        }
+
+        .timeline-content {
+            padding: 25px;
+            background-color: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+
+        .timeline-content:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .timeline-content h4 {
+            color: var(--color-primary);
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-family: var(--font-heading);
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border: 4px solid var(--color-primary);
+            border-radius: 50%;
+            top: 20px;
+            z-index: 1;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .timeline-item:nth-child(odd)::after {
+            right: -10px;
+        }
+
+        .timeline-item:nth-child(even)::after {
+            left: -10px;
+        }
+
+        /* Iconos de características */
+        .feature-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .feature-icon i {
+            font-size: 2.5rem;
+            color: var(--color-primary);
+            margin-bottom: 15px;
+            background-color: rgba(76, 175, 80, 0.1);
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .feature-icon:hover i {
+            transform: scale(1.1);
+            background-color: var(--color-primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .feature-icon h5 {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--color-dark);
+            font-family: var(--font-heading);
+        }
+
+        /* Botón para volver arriba modernizado */
+        .back-to-top {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: var(--color-primary);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            z-index: 1000;
+            border: none;
+            box-shadow: var(--shadow-md);
+        }
+
+        .back-to-top:hover, .back-to-top:focus {
+            background-color: var(--color-secondary);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Footer modernizado */
+        .custom-footer {
+            background-color: var(--color-dark);
+            color: white;
+            padding: 70px 0 30px;
+            margin-top: 70px;
+            position: relative;
+        }
+
+        .custom-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(to right, var(--color-primary), var(--color-secondary), var(--color-accent));
+        }
+
+        .custom-footer h3 {
+            color: var(--color-primary);
+            margin-bottom: 25px;
+            font-weight: 600;
+            font-family: var(--font-heading);
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .custom-footer h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background-color: var(--color-primary);
+            border-radius: 2px;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .footer-links a::before {
+            content: '\f105';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 8px;
+            color: var(--color-primary);
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover, .footer-links a:focus {
+            color: var(--color-primary);
+            transform: translateX(5px);
+        }
+
+        .footer-links a:hover::before {
+            transform: translateX(3px);
+        }
+
+        .social-icons {
+            margin-top: 20px;
+        }
+
+        .social-icons a {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2rem;
+            margin-right: 15px;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .social-icons a:hover, .social-icons a:focus {
+            color: white;
+            background-color: var(--color-primary);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .copyright {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Mejoras responsive */
+        @media (max-width: 992px) {
+            .tradition-banner h1 {
+                font-size: 2.5rem;
+            }
+            
+            .tradition-section h2 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .tradition-banner {
+                padding: 80px 0;
+            }
+            
+            .tradition-banner h1 {
+                font-size: 2rem;
+            }
+            
+            .tradition-banner p {
+                font-size: 1.1rem;
+            }
+            
+            .tradition-section {
+                padding: 50px 0;
+            }
+            
+            .tradition-section h2 {
+                font-size: 1.8rem;
+            }
+            
+            .timeline::after {
+                left: 31px;
+            }
+            
+            .timeline-item {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 25px;
+            }
+            
+            .timeline-item:nth-child(even) {
+                left: 0;
+            }
+            
+            .timeline-item::after {
+                left: 21px;
+            }
+            
+            .timeline-item:nth-child(odd)::after {
+                right: auto;
+            }
+            
+            .nav-tabs .nav-link {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .tab-content {
+                padding: 25px 20px;
+            }
+            
+            .info-card {
+                padding: 20px;
+            }
+            
+            .auth-section {
+                margin-top: 15px;
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .user-welcome, .auth-buttons {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .tradition-banner h1 {
+                font-size: 1.8rem;
+            }
+            
+            .tradition-banner p {
+                font-size: 1rem;
+            }
+            
+            .tradition-section h2 {
+                font-size: 1.6rem;
+            }
+            
+            .tradition-section h3 {
+                font-size: 1.4rem;
+            }
+            
+            .info-card {
+                padding: 15px;
+            }
+            
+            .quote-block {
+                padding: 20px;
+            }
+            
+            .quote-block blockquote {
+                padding-left: 15px;
+                font-size: 1rem;
+            }
+            
+            .quote-block blockquote::before {
+                font-size: 50px;
+                top: -15px;
+                left: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Encabezado de la página usando los estilos de styles.css -->
+    <!-- Encabezado de la página -->
     <header class="fixed-top">
-    <nav class="navbar navbar-expand-lg" aria-label="Navegación principal">
-        <div class="container-fluid">
-            <div class="header-logo">
-                <a href="index.php" aria-label="Ir a la página de inicio">
-                    <img src="palenque.jpeg" alt="San Basilio de Palenque" width="120" height="120"> 
-                </a>
-            </div>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" 
-                    aria-controls="navbarMain" aria-expanded="false" aria-label="Mostrar menú de navegación">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse nav-links" id="navbarMain">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php">Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="tradiciones.php" aria-current="page">Tradiciones</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="productos.php">Productos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="historias.php">Historias</a>
-                    </li>
-                    <?php if(isset($_SESSION['rol']) && $_SESSION['rol'] == 'admin'): ?>
-                    <li class="nav-item">
-                        <a class="nav-link admin-link" href="admin_home.php">
-                            <i class="fas fa-tachometer-alt"></i> Panel Admin
-                        </a>
-                    </li>
-                    <?php endif; ?>
-                </ul>
+        <nav class="navbar navbar-expand-lg" aria-label="Navegación principal">
+            <div class="container-fluid">
+                <div class="header-logo">
+                    <a href="index.php" aria-label="Ir a la página de inicio">
+                        <img src="palenque.jpeg" alt="San Basilio de Palenque" width="120" height="120"> 
+                    </a>
+                </div>
                 
-                <div class="auth-section ms-auto">
-                    <?php if(isset($_SESSION['usuario'])): ?>
-                        <div class="user-welcome">
-                            <span class="user-name">
-                                <i class="fas fa-user-circle"></i> 
-                                <?php echo htmlspecialchars($_SESSION['usuario']); ?>
-                            </span>
-                            <a href="logout.php" class="logout-btn" aria-label="Cerrar sesión">
-                                <i class="fas fa-sign-out-alt"></i> Salir
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" 
+                        aria-controls="navbarMain" aria-expanded="false" aria-label="Mostrar menú de navegación">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse nav-links" id="navbarMain">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.php">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="tradiciones.php" aria-current="page">Tradiciones</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="productos.php">Productos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="historias.php">Historias</a>
+                        </li>
+                        <?php if(isset($_SESSION['rol']) && $_SESSION['rol'] == 'admin'): ?>
+                        <li class="nav-item">
+                            <a class="nav-link admin-link" href="admin_home.php">
+                                <i class="fas fa-tachometer-alt"></i> Panel Admin
                             </a>
-                        </div>
-                    <?php else: ?>
-                        <div class="auth-buttons">
-                            <a href="login.php" class="login-btn" aria-label="Iniciar sesión">
-                                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-                            </a>
-                            <a href="register.php" class="register-btn" aria-label="Registrarse">
-                                <i class="fas fa-user-plus"></i> Registrarse
-                            </a>
-                        </div>
-                    <?php endif; ?>
+                        </li>
+                        <?php endif; ?>
+                    </ul>
+                    
+                    <div class="auth-section ms-auto">
+                        <?php if(isset($_SESSION['usuario'])): ?>
+                            <div class="user-welcome">
+                                <span class="user-name">
+                                    <i class="fas fa-user-circle"></i> 
+                                    <?php echo htmlspecialchars($_SESSION['usuario']); ?>
+                                </span>
+                                <a href="logout.php" class="logout-btn" aria-label="Cerrar sesión">
+                                    <i class="fas fa-sign-out-alt"></i> Salir
+                                </a>
+                            </div>
+                        <?php else: ?>
+                            <div class="auth-buttons">
+                                <a href="login.php" class="login-btn" aria-label="Iniciar sesión">
+                                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                                </a>
+                                <a href="register.php" class="register-btn" aria-label="Registrarse">
+                                    <i class="fas fa-user-plus"></i> Registrarse
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
-        </div>
-    </nav>
-</header>
-
-<style>
-/* Estilos para el header y la navegación */
-.fixed-top {
-    background-color: #fff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.navbar {
-    padding: 0.5rem 1rem;
-}
-
-.header-logo img {
-    transition: transform 0.3s ease;
-}
-
-.header-logo img:hover {
-    transform: scale(1.05);
-}
-
-.nav-link {
-    font-weight: 500;
-    color: #495057;
-    margin: 0 5px;
-    padding: 8px 15px;
-    border-radius: 4px;
-    transition: all 0.3s ease;
-}
-
-.nav-link:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: #212529;
-}
-
-.nav-link.active {
-    color: #fff;
-    background-color: #6c757d;
-}
-
-.admin-link {
-    color: #28a745;
-    border: 1px dashed #28a745;
-}
-
-.admin-link:hover {
-    background-color: rgba(40, 167, 69, 0.1);
-    color: #28a745;
-}
-
-/* Estilos para la sección de autenticación */
-.auth-section {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-left: auto;
-}
-
-.user-welcome {
-    display: flex;
-    align-items: center;
-    background-color: #f8f9fa;
-    padding: 8px 15px;
-    border-radius: 30px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-.user-name {
-    font-weight: 600;
-    color: #343a40;
-    margin-right: 15px;
-    display: flex;
-    align-items: center;
-}
-
-.user-name i {
-    font-size: 1.2rem;
-    margin-right: 8px;
-    color: #6c757d;
-}
-
-.logout-btn {
-    background-color: #dc3545;
-    color: white;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-}
-
-.logout-btn:hover {
-    background-color: #c82333;
-    color: white;
-    text-decoration: none;
-    transform: translateY(-2px);
-}
-
-.logout-btn i {
-    margin-right: 5px;
-}
-
-.auth-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-.login-btn, .register-btn {
-    padding: 7px 15px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-}
-
-.login-btn {
-    background-color: transparent;
-    color: #007bff;
-    border: 1px solid #007bff;
-}
-
-.login-btn:hover {
-    background-color: rgba(0, 123, 255, 0.1);
-    color: #007bff;
-    text-decoration: none;
-}
-
-.register-btn {
-    background-color: #007bff;
-    color: white;
-    border: 1px solid #007bff;
-}
-
-.register-btn:hover {
-    background-color: #0069d9;
-    color: white;
-    text-decoration: none;
-    transform: translateY(-2px);
-}
-
-.login-btn i, .register-btn i {
-    margin-right: 5px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 991.98px) {
-    .auth-section {
-        margin-top: 15px;
-        justify-content: center;
-        width: 100%;
-    }
-    
-    .user-welcome, .auth-buttons {
-        width: 100%;
-        justify-content: center;
-    }
-}
-</style>
+        </nav>
+    </header>
 
     <main id="contenido-principal">
         <!-- Banner principal con título y descripción -->
@@ -366,7 +1024,7 @@ $info_debug = [
         <section class="tradition-section" id="musica" aria-labelledby="musica-title">
             <div class="container">
                 <h2 id="musica-title" data-aos="fade-right">Expresiones Musicales</h2>
-                <p data-aos="fade-up">Del Tambor Ancestral a las Fusiones Contemporáneas</p>
+                <p data-aos="fade-up" class="lead">Del Tambor Ancestral a las Fusiones Contemporáneas</p>
                 
                 <!-- Tabs para organizar la información musical -->
                 <div class="tradition-tabs" data-aos="fade-up">
@@ -374,19 +1032,19 @@ $info_debug = [
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="generos-tab" data-bs-toggle="tab" data-bs-target="#generos" 
                                     type="button" role="tab" aria-controls="generos" aria-selected="true">
-                                Géneros Tradicionales
+                                <i class="fas fa-music me-2"></i>Géneros Tradicionales
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="instrumentos-tab" data-bs-toggle="tab" data-bs-target="#instrumentos" 
                                     type="button" role="tab" aria-controls="instrumentos" aria-selected="false">
-                                Instrumentación
+                                <i class="fas fa-drum me-2"></i>Instrumentación
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="innovaciones-tab" data-bs-toggle="tab" data-bs-target="#innovaciones" 
                                     type="button" role="tab" aria-controls="innovaciones" aria-selected="false">
-                                Innovaciones
+                                <i class="fas fa-compact-disc me-2"></i>Innovaciones
                             </button>
                         </li>
                     </ul>
@@ -410,22 +1068,22 @@ $info_debug = [
                             
                             <div class="row mt-4">
                                 <div class="col-md-4">
-                                    <div class="text-center">
-                                        <i class="fas fa-drum fa-3x mb-3" style="color: var(--color-primary);"></i>
+                                    <div class="feature-icon">
+                                        <i class="fas fa-drum"></i>
                                         <h5>Tambor Pechiche</h5>
                                         <p>Tambor principal, de tono grave, que marca el ritmo base.</p>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="text-center">
-                                        <i class="fas fa-drum fa-3x mb-3" style="color: var(--color-primary);"></i>
+                                    <div class="feature-icon">
+                                        <i class="fas fa-drum"></i>
                                         <h5>Tambor Llamador</h5>
                                         <p>Tambor pequeño que "llama" o marca el tiempo.</p>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <div class="text-center">
-                                        <i class="fas fa-microphone fa-3x mb-3" style="color: var(--color-primary);"></i>
+                                    <div class="feature-icon">
+                                        <i class="fas fa-microphone"></i>
                                         <h5>Cantadoras</h5>
                                         <p>Mujeres que preservan los cantos tradicionales.</p>
                                     </div>
@@ -619,8 +1277,8 @@ $info_debug = [
         </section>
     </main>
 
-<!-- Botón para volver arriba -->
-<button type="button" class="back-to-top" id="backToTop" aria-label="Volver al inicio de la página">
+    <!-- Botón para volver arriba -->
+    <button type="button" class="back-to-top" id="backToTop" aria-label="Volver al inicio de la página">
         <i class="fas fa-arrow-up" aria-hidden="true"></i>
     </button>
 
@@ -665,20 +1323,13 @@ $info_debug = [
     </footer>
 
     <!-- Scripts -->
-    <!-- jQuery primero para mejor compatibilidad -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
-    <!-- Luego Bootstrap -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
-    <!-- AOS para animaciones -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <!-- Script personalizado -->
+    
     <script>
-        /**
-         * Script principal para la página de tradiciones
-         * Maneja animaciones, navegación y comportamiento interactivo
-         */
         document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar AOS (Animate On Scroll) con configuración optimizada
+            // Inicializar AOS con configuración optimizada
             AOS.init({
                 duration: 800,
                 easing: 'ease-in-out',
@@ -690,9 +1341,6 @@ $info_debug = [
             // Gestión del botón para volver arriba
             const backToTopButton = document.getElementById('backToTop');
             
-            /**
-             * Muestra u oculta el botón de volver arriba según la posición de scroll
-             */
             function toggleBackToTopButton() {
                 if (window.pageYOffset > 300) {
                     backToTopButton.classList.add('visible');
@@ -701,10 +1349,8 @@ $info_debug = [
                 }
             }
             
-            // Escuchar el evento de scroll para mostrar/ocultar el botón
             window.addEventListener('scroll', toggleBackToTopButton);
             
-            // Acción al hacer clic en el botón de volver arriba
             backToTopButton.addEventListener('click', function(e) {
                 e.preventDefault();
                 window.scrollTo({
@@ -713,578 +1359,121 @@ $info_debug = [
                 });
             });
             
-            /**
-             * Implementa navegación suave para enlaces internos
-             * Mejora la experiencia de usuario al navegar entre secciones
-             */
-            function setupSmoothScrolling() {
-                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                    anchor.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        
-                        const targetId = this.getAttribute('href');
-                        if (targetId === '#') return;
-                        
-                        const targetElement = document.querySelector(targetId);
-                        if (targetElement) {
-                            // Ajuste para el header fijo
-                            const headerOffset = 100;
-                            const elementPosition = targetElement.getBoundingClientRect().top;
-                            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                            
-                            window.scrollTo({
-                                top: offsetPosition,
-                                behavior: 'smooth'
-                            });
-                        }
-                    });
-                });
-            }
-            
-            // Configurar navegación suave
-            setupSmoothScrolling();
-            
-            /**
-             * Gestiona la navegación por tabs
-             * Asegura que los tabs funcionen correctamente y mantiene el estado en la URL
-             */
-            function setupTabs() {
-                // Activar el primer tab por defecto
-                const firstTabEl = document.querySelector('#musicTabs button:first-child');
-                if (firstTabEl) {
-                    const firstTab = new bootstrap.Tab(firstTabEl);
-                    firstTab.show();
-                }
-                
-                // Cambiar URL al cambiar de tab (sin recargar la página)
-                const tabLinks = document.querySelectorAll('[data-bs-toggle="tab"]');
-                tabLinks.forEach(tabLink => {
-                    tabLink.addEventListener('shown.bs.tab', function(e) {
-                        const targetId = e.target.getAttribute('data-bs-target').substring(1);
-                        history.replaceState(null, null, `#${targetId}`);
-                    });
-                });
-                
-                // Activar tab según hash en URL al cargar la página
-                const hash = window.location.hash.substring(1);
-                if (hash && document.getElementById(hash)) {
-                    const tabToActivate = document.querySelector(`[data-bs-target="#${hash}"]`);
-                    if (tabToActivate) {
-                        const tab = new bootstrap.Tab(tabToActivate);
-                        tab.show();
-                    }
-                }
-            }
-            
-            // Configurar tabs
-            setupTabs();
-            
-            /**
-             * Mejora la accesibilidad para usuarios de teclado
-             * Permite navegar por la página usando solo el teclado
-             */
-            function enhanceKeyboardAccessibility() {
-                // Mejorar navegación por teclado para la galería
-                const galleryItems = document.querySelectorAll('.gallery-item');
-                galleryItems.forEach(item => {
-                    item.setAttribute('tabindex', '0');
-                    item.addEventListener('keypress', function(e) {
-                        // Activar al presionar Enter o Space
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            this.querySelector('img').click();
-                        }
-                    });
-                });
-            }
-            
-            // Mejorar accesibilidad
-            enhanceKeyboardAccessibility();
-            
-            /**
-             * Implementa carga perezosa (lazy loading) para imágenes
-             * Mejora el rendimiento de la página cargando imágenes solo cuando son necesarias
-             */
-            function setupLazyLoading() {
-                // Verificar si el navegador soporta IntersectionObserver
-                if ('IntersectionObserver' in window) {
-                    const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+            // Navegación suave para enlaces internos
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
                     
-                    const imageObserver = new IntersectionObserver((entries, observer) => {
-                        entries.forEach(entry => {
-                            if (entry.isIntersecting) {
-                                const img = entry.target;
-                                img.src = img.dataset.src || img.src;
-                                img.classList.add('loaded');
-                                imageObserver.unobserve(img);
-                            }
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        const headerOffset = 100;
+                        const elementPosition = targetElement.getBoundingClientRect().top;
+                        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                        
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
                         });
-                    });
-                    
-                    lazyImages.forEach(img => {
-                        imageObserver.observe(img);
-                    });
+                    }
+                });
+            });
+            
+            // Gestión de tabs
+            const firstTabEl = document.querySelector('#musicTabs button:first-child');
+            if (firstTabEl) {
+                const firstTab = new bootstrap.Tab(firstTabEl);
+                firstTab.show();
+            }
+            
+            const tabLinks = document.querySelectorAll('[data-bs-toggle="tab"]');
+            tabLinks.forEach(tabLink => {
+                tabLink.addEventListener('shown.bs.tab', function(e) {
+                    const targetId = e.target.getAttribute('data-bs-target').substring(1);
+                    history.replaceState(null, null, `#${targetId}`);
+                });
+            });
+            
+            const hash = window.location.hash.substring(1);
+            if (hash && document.getElementById(hash)) {
+                const tabToActivate = document.querySelector(`[data-bs-target="#${hash}"]`);
+                if (tabToActivate) {
+                    const tab = new bootstrap.Tab(tabToActivate);
+                    tab.show();
                 }
             }
             
-            // Configurar lazy loading si hay imágenes con data-src
-            setupLazyLoading();
+            // Mejorar accesibilidad para usuarios de teclado
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            galleryItems.forEach(item => {
+                item.setAttribute('tabindex', '0');
+                item.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        this.querySelector('img').click();
+                    }
+                });
+            });
+            
+            // Lazy loading para imágenes
+            if ('IntersectionObserver' in window) {
+                const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+                
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            img.src = img.dataset.src || img.src;
+                            img.classList.add('loaded');
+                            imageObserver.unobserve(img);
+                }});
+                });
+                
+                lazyImages.forEach(img => {
+                    imageObserver.observe(img);
+                });
+            }
+            
+            // Añadir efecto de hover a las tarjetas de información
+            const infoCards = document.querySelectorAll('.info-card');
+            infoCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = 'var(--shadow-lg)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = 'var(--shadow-md)';
+                });
+            });
+            
+            // Añadir efecto de desplazamiento para la navegación
+            const navLinks = document.querySelectorAll('.navbar .nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    // Cerrar el menú móvil si está abierto
+                    const navbarCollapse = document.querySelector('.navbar-collapse');
+                    if (navbarCollapse.classList.contains('show')) {
+                        const bsCollapse = new bootstrap.Collapse(navbarCollapse);
+                        bsCollapse.hide();
+                    }
+                });
+            });
+            
+            // Añadir efecto de scroll para el header
+            const header = document.querySelector('.fixed-top');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 100) {
+                    header.style.padding = '0.3rem 1rem';
+                    header.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.1)';
+                } else {
+                    header.style.padding = '0.5rem 1.5rem';
+                    header.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.05)';
+                }
+            });
         });
     </script>
-    
-    <!-- Archivo CSS externo para los estilos específicos de tradiciones -->
-    <style>
-        /* Este bloque se debe mover a un archivo externo: css/tradiciones.css */
-        :root {
-            --color-primary: #4CAF50;
-            --color-secondary: #FF5722;
-            --color-accent: #e74c3c;
-            --color-light: #ecf0f1;
-            --color-dark: #34495e;
-            --color-text: #333;
-            --font-main: 'Poppins', sans-serif;
-        }
-
-        body {
-            font-family: var(--font-main);
-            color: var(--color-text);
-            background-color: #f9f9f9;
-            padding-top: 100px; /* Espacio para el header fijo */
-            scroll-behavior: smooth;
-        }
-
-        /* Estilos para el banner principal */
-        .tradition-banner {
-            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
-                        url('https://images.unsplash.com/photo-1518019671582-55004f1bc9ab?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
-            color: white;
-            padding: 100px 0;
-            text-align: center;
-            margin-bottom: 50px;
-            position: relative;
-        }
-
-        .tradition-banner h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            font-weight: 700;
-        }
-
-        .tradition-banner p {
-            font-size: 1.2rem;
-            max-width: 800px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-
-        /* Estilos para las secciones de contenido */
-        .tradition-section {
-            padding: 60px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .tradition-section:last-child {
-            border-bottom: none;
-        }
-
-        .tradition-section h2 {
-            color: var(--color-primary);
-            margin-bottom: 30px;
-            position: relative;
-            padding-bottom: 15px;
-        }
-
-        .tradition-section h2::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 80px;
-            height: 3px;
-            background-color: var(--color-primary);
-        }
-
-        .tradition-section h3 {
-            color: var(--color-secondary);
-            margin: 25px 0 15px;
-            font-weight: 600;
-        }
-
-        /* Estilos para las tarjetas de información */
-        .info-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            padding: 25px;
-            margin-bottom: 30px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .info-card:hover, .info-card:focus-within {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .info-card h4 {
-            color: var(--color-primary);
-            font-weight: 600;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--color-primary);
-            padding-left: 15px;
-        }
-
-        /* Estilos para la galería de imágenes */
-        .tradition-gallery {
-            margin: 40px 0;
-        }
-
-        .gallery-item {
-            margin-bottom: 30px;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .gallery-item img {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .gallery-item:hover img, .gallery-item:focus img {
-            transform: scale(1.05);
-        }
-
-        .gallery-caption {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .gallery-item:hover .gallery-caption, .gallery-item:focus .gallery-caption {
-            opacity: 1;
-        }
-
-        /* Estilos para las citas destacadas */
-        .quote-block {
-            background-color: var(--color-light);
-            border-left: 5px solid var(--color-primary);
-            padding: 20px;
-            margin: 30px 0;
-            position: relative;
-        }
-
-        .quote-block blockquote {
-            font-style: italic;
-            margin: 0;
-            padding: 0 0 0 30px;
-        }
-
-        .quote-block blockquote::before {
-            content: '"';
-            font-size: 60px;
-            color: rgba(76, 175, 80, 0.2);
-            position: absolute;
-            top: -15px;
-            left: 10px;
-        }
-
-        .quote-block figcaption {
-            margin-top: 10px;
-            text-align: right;
-            font-weight: 500;
-        }
-
-        /* Estilos para la sección de tabs */
-        .tradition-tabs {
-            margin: 40px 0;
-        }
-
-        .nav-tabs .nav-link {
-            color: var(--color-dark);
-            border: none;
-            padding: 15px 20px;
-            font-weight: 500;
-            border-radius: 0;
-            border-bottom: 3px solid transparent;
-        }
-
-        .nav-tabs .nav-link.active {
-            color: var(--color-primary);
-            background: transparent;
-            border-bottom: 3px solid var(--color-primary);
-        }
-
-        .tab-content {
-            padding: 30px;
-            background: white;
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Estilos para la línea de tiempo */
-        .timeline {
-            position: relative;
-            max-width: 1200px;
-            margin: 40px auto;
-        }
-
-        .timeline::after {
-            content: '';
-            position: absolute;
-            width: 6px;
-            background-color: var(--color-light);
-            top: 0;
-            bottom: 0;
-            left: 50%;
-            margin-left: -3px;
-        }
-
-        .timeline-item {
-            padding: 10px 40px;
-            position: relative;
-            width: 50%;
-            box-sizing: border-box;
-        }
-
-        .timeline-item:nth-child(odd) {
-            left: 0;
-        }
-
-        .timeline-item:nth-child(even) {
-            left: 50%;
-        }
-
-        .timeline-content {
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .timeline-item::after {
-            content: '';
-            position: absolute;
-            width: 25px;
-            height: 25px;
-            background-color: var(--color-primary);
-            border-radius: 50%;
-            top: 15px;
-            z-index: 1;
-        }
-
-        .timeline-item:nth-child(odd)::after {
-            right: -12px;
-        }
-
-        .timeline-item:nth-child(even)::after {
-            left: -13px;
-        }
-
-        /* Botón para volver arriba */
-        .back-to-top {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--color-primary);
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.3s ease, background-color 0.3s ease;
-            z-index: 1000;
-            border: none;
-        }
-
-        .back-to-top:hover, .back-to-top:focus {
-            background-color: var(--color-secondary);
-        }
-
-        .back-to-top.visible {
-            opacity: 1;
-        }
-
-        /* Estilos para el pie de página personalizado */
-        .custom-footer {
-            background-color: var(--color-dark);
-            color: white;
-            padding: 50px 0 20px;
-            margin-top: 50px;
-        }
-
-        .custom-footer h3 {
-            color: var(--color-primary);
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .footer-links {
-            list-style: none;
-            padding: 0;
-        }
-
-        .footer-links li {
-            margin-bottom: 10px;
-        }
-
-        .footer-links a {
-            color: white;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover, .footer-links a:focus {
-            color: var(--color-primary);
-            text-decoration: underline;
-        }
-
-        .social-icons a {
-            color: white;
-            font-size: 1.5rem;
-            margin-right: 15px;
-            transition: color 0.3s ease;
-            display: inline-block;
-        }
-
-        .social-icons a:hover, .social-icons a:focus {
-            color: var(--color-primary);
-        }
-
-        .copyright {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* Mejoras de accesibilidad */
-        .visually-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            margin: -1px;
-            padding: 0;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
-        }
-
-        /* Estilos para dispositivos móviles */
-        @media (max-width: 768px) {
-            .tradition-banner h1 {
-                font-size: 2rem;
-            }
-            
-            .tradition-banner p {
-                font-size: 1rem;
-            }
-            
-            .timeline::after {
-                left: 31px;
-            }
-            
-            .timeline-item {
-                width: 100%;
-                padding-left: 70px;
-                padding-right: 25px;
-            }
-            
-            .timeline-item:nth-child(even) {
-                left: 0;
-            }
-            
-            .timeline-item::after {
-                left: 18px;
-            }
-            
-            .timeline-item:nth-child(odd)::after {
-                right: auto;
-            }
-            
-            .nav-tabs .nav-link {
-                padding: 10px 15px;
-                font-size: 0.9rem;
-            }
-            
-            .tab-content {
-                padding: 20px 15px;
-            }
-            
-            .info-card {
-                padding: 15px;
-            }
-        }
-
-        /* Mejoras para pantallas grandes */
-        @media (min-width: 1200px) {
-            .container {
-                max-width: 1140px;
-            }
-            
-            .tradition-banner {
-                padding: 150px 0;
-            }
-            
-            .tradition-banner h1 {
-                font-size: 3rem;
-            }
-        }
-
-        /* Animaciones para mejorar la experiencia de usuario */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        /* Mejoras para impresión */
-        @media print {
-            .back-to-top, 
-            .nav-tabs, 
-            .custom-footer {
-                display: none !important;
-            }
-            
-            body {
-                padding-top: 0;
-            }
-            
-            .tradition-section {
-                page-break-inside: avoid;
-                border-bottom: none;
-            }
-            
-            .info-card {
-                box-shadow: none;
-                border: 1px solid #ddd;
-            }
-            
-            .tradition-banner {
-                background: #f9f9f9 !important;
-                color: #333 !important;
-                padding: 20px 0;
-            }
-            
-            .tradition-banner h1 {
-                color: var(--color-primary) !important;
-            }
-        }
-    </style>
 </body>
 </html>
