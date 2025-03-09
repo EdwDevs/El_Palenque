@@ -13,7 +13,7 @@ include('db.php');
 $usuario_id = isset($_SESSION['usuario_id']) ? intval($_SESSION['usuario_id']) : null;
 if (!$usuario_id) {
     $usuario = htmlspecialchars($_SESSION['usuario']);
-    $stmt = $conexion->prepare("SELECT id FROM usuarios WHERE usuario = ?");
+    $stmt = $conexion->prepare("SELECT id FROM usuarios WHERE nombre = ?"); // Corregido de 'usuario' a 'nombre'
     $stmt->bind_param("s", $usuario);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -26,20 +26,53 @@ if (!$usuario_id) {
     $stmt->close();
 }
 
-// Determinar si el usuario es administrador
+// Verificar si se proporcionó un ID de pedido
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    header("Location: gestion_pedidos.php?mensaje=ID de pedido inválido");
+    exit();
+}
+
+$pedido_id = intval($_GET['id']);
 $isAdmin = isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin';
 
-// Obtener los pedidos (todos si es admin, solo los del usuario si no)
+// Obtener el pedido específico
 if ($isAdmin) {
-    $stmt = $conexion->prepare("SELECT * FROM pedidos ORDER BY fecha_pedido DESC");
-    $stmt->execute();
+    $stmt = $conexion->prepare("
+        SELECT p.id, p.usuario_id, p.fecha_pedido, p.total, p.estado, u.nombre AS usuario_nombre 
+        FROM pedidos p 
+        LEFT JOIN usuarios u ON p.usuario_id = u.id 
+        WHERE p.id = ?
+    ");
+    $stmt->bind_param("i", $pedido_id);
 } else {
-    $stmt = $conexion->prepare("SELECT * FROM pedidos WHERE usuario_id = ? ORDER BY fecha_pedido DESC");
-    $stmt->bind_param("i", $usuario_id);
-    $stmt->execute();
+    $stmt = $conexion->prepare("
+        SELECT p.id, p.usuario_id, p.fecha_pedido, p.total, p.estado, u.nombre AS usuario_nombre 
+        FROM pedidos p 
+        LEFT JOIN usuarios u ON p.usuario_id = u.id 
+        WHERE p.id = ? AND p.usuario_id = ?
+    ");
+    $stmt->bind_param("ii", $pedido_id, $usuario_id);
 }
-$result_pedidos = $stmt->get_result();
+$stmt->execute();
+$result_pedido = $stmt->get_result();
+$pedido = $result_pedido->fetch_assoc();
 $stmt->close();
+
+if (!$pedido) {
+    header("Location: gestion_pedidos.php?mensaje=Pedido no encontrado o no tienes permiso");
+    exit();
+}
+
+// Obtener detalles del pedido
+$stmt = $conexion->prepare("
+    SELECT dp.producto_id, dp.cantidad, dp.precio_unitario, p.nombre 
+    FROM detalles_pedido dp 
+    LEFT JOIN productos p ON dp.producto_id = p.id 
+    WHERE dp.pedido_id = ?
+");
+$stmt->bind_param("i", $pedido_id);
+$stmt->execute();
+$result_detalles = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -47,7 +80,7 @@ $stmt->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis Pedidos - Sabor Colombiano</title>
+    <title>Detalles del Pedido #<?php echo $pedido_id; ?> - Sabor Colombiano</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
@@ -66,8 +99,8 @@ $stmt->close();
             background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
             min-height: 100vh;
             color: var(--color-text);
-            padding-top: 100px; /* Espacio para header fijo */
-            padding-bottom: 60px; /* Espacio para footer */
+            padding-top: 100px;
+            padding-bottom: 60px;
         }
         header {
             background: rgba(255, 255, 255, 0.95);
@@ -103,7 +136,7 @@ $stmt->close();
             margin-right: 1rem;
         }
         .container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 2rem;
             background: rgba(255, 255, 255, 0.9);
@@ -111,7 +144,6 @@ $stmt->close();
             box-shadow: var(--shadow);
         }
         .pedido-card {
-            margin-bottom: 2rem;
             padding: 1.5rem;
             border: 1px solid #ddd;
             border-radius: 10px;
@@ -141,63 +173,50 @@ $stmt->close();
         </div>
         <div>
             <span class="user-welcome"><i class="fas fa-user"></i> Hola, <?php echo htmlspecialchars($_SESSION['usuario']); ?></span>
+            <a href="<?php echo $isAdmin ? 'gestion_pedidos.php' : 'ver_pedido.php'; ?>" class="btn-auth"><i class="fas fa-list"></i> Mis Pedidos</a>
             <a href="index.php" class="btn-auth"><i class="fas fa-home"></i> Inicio</a>
             <a href="logout.php" class="btn-auth"><i class="fas fa-sign-out-alt"></i> Salir</a>
         </div>
     </header>
 
     <div class="container">
-        <h2 class="text-center mb-4">Mis Pedidos</h2>
-        <?php if ($result_pedidos->num_rows > 0): ?>
-            <?php while ($pedido = $result_pedidos->fetch_assoc()): ?>
-                <div class="pedido-card">
-                    <h3>Pedido #<?php echo $pedido['id']; ?></h3>
-                    <p><strong>Fecha:</strong> <?php echo date('d/m/Y H:i', strtotime($pedido['fecha_pedido'])); ?></p>
-                    <p><strong>Total:</strong> $<?php echo number_format($pedido['total'], 2); ?></p>
-                    <p><strong>Estado:</strong> <?php echo ucfirst($pedido['estado']); ?></p>
+        <h2 class="text-center mb-4">Detalles del Pedido #<?php echo htmlspecialchars($pedido['id']); ?></h2>
+        <div class="pedido-card">
+            <h3>Pedido #<?php echo htmlspecialchars($pedido['id']); ?></h3>
+            <p><strong>Usuario:</strong> <?php echo htmlspecialchars($pedido['usuario_nombre']); ?></p>
+            <p><strong>Fecha:</strong> <?php echo date('d/m/Y H:i', strtotime($pedido['fecha_pedido'])); ?></p>
+            <p><strong>Total:</strong> $<?php echo number_format($pedido['total'], 2); ?></p>
+            <p><strong>Estado:</strong> <?php echo ucfirst(htmlspecialchars($pedido['estado'])); ?></p>
 
-                    <!-- Obtener detalles del pedido -->
-                    <?php
-                    $stmt = $conexion->prepare("SELECT dp.producto_id, dp.cantidad, dp.precio_unitario, p.nombre 
-                                                FROM detalles_pedido dp 
-                                                LEFT JOIN productos p ON dp.producto_id = p.id 
-                                                WHERE dp.pedido_id = ?");
-                    $stmt->bind_param("i", $pedido['id']);
-                    $stmt->execute();
-                    $result_detalles = $stmt->get_result();
-                    ?>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th>Cantidad</th>
-                                <th>Precio Unitario</th>
-                                <th>Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php while ($detalle = $result_detalles->fetch_assoc()): ?>
-                                <tr>
-                                    <td>
-                                        <?php if ($detalle['nombre']): ?>
-                                            <?php echo htmlspecialchars($detalle['nombre']); ?>
-                                        <?php else: ?>
-                                            Producto ID: <?php echo $detalle['producto_id']; ?>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><?php echo $detalle['cantidad']; ?></td>
-                                    <td>$<?php echo number_format($detalle['precio_unitario'], 2); ?></td>
-                                    <td>$<?php echo number_format($detalle['precio_unitario'] * $detalle['cantidad'], 2); ?></td>
-                                </tr>
-                            <?php endwhile; ?>
-                        </tbody>
-                    </table>
-                    <?php $stmt->close(); ?>
-                </div>
-            <?php endwhile; ?>
-        <?php else: ?>
-            <p class="text-center">No tienes pedidos registrados.</p>
-        <?php endif; ?>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($detalle = $result_detalles->fetch_assoc()): ?>
+                        <tr>
+                            <td>
+                                <?php if ($detalle['nombre']): ?>
+                                    <?php echo htmlspecialchars($detalle['nombre']); ?>
+                                <?php else: ?>
+                                    Producto ID: <?php echo $detalle['producto_id']; ?>
+                                <?php endif; ?>
+                            </td>
+                            <td><?php echo $detalle['cantidad']; ?></td>
+                            <td>$<?php echo number_format($detalle['precio_unitario'], 2); ?></td>
+                            <td>$<?php echo number_format($detalle['precio_unitario'] * $detalle['cantidad'], 2); ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+            <?php $stmt->close(); ?>
+            <a href="<?php echo $isAdmin ? 'gestion_pedidos.php' : 'ver_pedido.php'; ?>" class="btn btn-primary mt-3"><i class="fas fa-arrow-left"></i> Volver</a>
+        </div>
     </div>
 
     <footer>
