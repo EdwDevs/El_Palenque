@@ -1,95 +1,122 @@
 <?php
+// Iniciar sesión y verificar autenticación
 session_start();
 
-// Verificar si el usuario está autenticado
 if (!isset($_SESSION['usuario'])) {
-    header("Location: login.php?mensaje=Usuario no autenticado");
+    header("Location: login.php");
     exit();
 }
 
-include('db.php');
-
-// Verificar que sea una solicitud POST desde el formulario
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: carrito.php?mensaje=Método no permitido");
-    exit();
-}
-
-// Obtener los datos del formulario
-$cart = json_decode($_POST['cart'] ?? '', true);
-$forma_pago = $_POST['forma_pago'] ?? '';
-$direccion = $_POST['direccion'] ?? '';
-$ciudad = $_POST['ciudad'] ?? '';
-$telefono = $_POST['telefono'] ?? '';
-
-if (empty($cart) || empty($forma_pago) || empty($direccion) || empty($ciudad) || empty($telefono)) {
-    header("Location: finalizar_compra.php?mensaje=Datos incompletos");
-    exit();
-}
-
-// Obtener el ID del usuario
-$usuario_id = isset($_SESSION['usuario_id']) ? intval($_SESSION['usuario_id']) : null;
-if (!$usuario_id) {
-    $usuario = htmlspecialchars($_SESSION['usuario']);
-    $stmt = $conexion->prepare("SELECT id FROM usuarios WHERE nombre = ?");
-    $stmt->bind_param("s", $usuario);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($row = $result->fetch_assoc()) {
-        $usuario_id = $row['id'];
-        $_SESSION['usuario_id'] = $usuario_id;
+// Verificar si hay datos del carrito
+if (!isset($_POST['cart']) || empty($_POST['cart'])) {
+    // Intentar obtener el carrito desde la sesión
+    if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+        $cart = $_SESSION['cart'];
     } else {
-        header("Location: carrito.php?mensaje=Usuario no encontrado");
+        // No hay carrito ni en POST ni en sesión
+        header("Location: carrito.php?message=No hay productos en el carrito&status=error");
         exit();
     }
-    $stmt->close();
-}
-
-// Calcular el total
-$total = 0;
-foreach ($cart as $item) {
-    $total += floatval($item['price']) * (isset($item['cantidad']) ? $item['cantidad'] : 1);
-}
-
-// Iniciar transacción
-$conexion->begin_transaction();
-
-try {
-    // Insertar el pedido
-    $stmt = $conexion->prepare("INSERT INTO pedidos (usuario_id, total, fecha_pedido, estado) VALUES (?, ?, NOW(), 'pendiente')");
-    $stmt->bind_param("id", $usuario_id, $total);
-    $stmt->execute();
-    $pedido_id = $conexion->insert_id;
-    $stmt->close();
-
-    // Insertar detalles del pedido
-    $stmt = $conexion->prepare("INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, precio_unitario) VALUES (?, ?, ?, ?)");
-    foreach ($cart as $item) {
-        $producto_id = intval($item['id']);
-        $cantidad = isset($item['cantidad']) ? intval($item['cantidad']) : 1;
-        $precio_unitario = floatval($item['price']);
-        $stmt->bind_param("iiid", $pedido_id, $producto_id, $cantidad, $precio_unitario);
-        $stmt->execute();
+} else {
+    // Decodificar el carrito desde POST
+    $cart = json_decode($_POST['cart'], true);
+    if (empty($cart)) {
+        header("Location: carrito.php?message=El carrito está vacío&status=error");
+        exit();
     }
-    $stmt->close();
-
-    // Insertar datos de entrega
-    $stmt = $conexion->prepare("INSERT INTO entregas (pedido_id, forma_pago, direccion, ciudad, telefono) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("issss", $pedido_id, $forma_pago, $direccion, $ciudad, $telefono);
-    $stmt->execute();
-    $stmt->close();
-
-    // Confirmar transacción
-    $conexion->commit();
-
-    // Redirigir a index.php con mensaje y clear_cart
-    header("Location: index.php?mensaje=Pedido confirmado correctamente&clear_cart=1");
-    exit();
-} catch (Exception $e) {
-    $conexion->rollback();
-    header("Location: finalizar_compra.php?mensaje=Error al procesar el pedido: " . urlencode($e->getMessage()));
-    exit();
 }
 
-$conexion->close();
+// Obtener datos del formulario
+$nombre = $_POST['nombre'] ?? '';
+$apellido = $_POST['apellido'] ?? '';
+$email = $_POST['email'] ?? '';
+$telefono = $_POST['telefono'] ?? '';
+$direccion = $_POST['direccion'] ?? '';
+$departamento = $_POST['departamento'] ?? '';
+$ciudad = $_POST['ciudad'] ?? '';
+$codigo_postal = $_POST['codigo_postal'] ?? '';
+$tipo_envio = $_POST['tipo_envio'] ?? 'estandar';
+$metodo_pago = $_POST['metodo_pago'] ?? '';
+$notas = $_POST['notas'] ?? '';
+
+// Calcular totales
+$subtotal = floatval($_POST['subtotal'] ?? 0);
+$impuestos = floatval($_POST['impuestos'] ?? 0);
+$envio = floatval($_POST['envio'] ?? 15000);
+if ($tipo_envio === 'express') {
+    $envio += 10000; // Agregar costo de envío express
+}
+$total = floatval($_POST['total'] ?? ($subtotal + $impuestos + $envio));
+
+// Generar número de pedido único
+$pedido_id = 'PED-' . date('YmdHis') . '-' . substr(md5(uniqid(mt_rand(), true)), 0, 6);
+
+// Guardar datos del pedido en la sesión para mostrarlos en la confirmación
+$_SESSION['ultimo_pedido'] = [
+    'pedido_id' => $pedido_id,
+    'fecha' => date('Y-m-d H:i:s'),
+    'cart' => $cart,
+    'subtotal' => $subtotal,
+    'impuestos' => $impuestos,
+    'envio' => $envio,
+    'total' => $total,
+    'nombre' => $nombre,
+    'apellido' => $apellido,
+    'email' => $email,
+    'telefono' => $telefono,
+    'direccion' => $direccion,
+    'departamento' => $departamento,
+    'ciudad' => $ciudad,
+    'codigo_postal' => $codigo_postal,
+    'tipo_envio' => $tipo_envio,
+    'metodo_pago' => $metodo_pago,
+    'notas' => $notas,
+    'estado' => 'pendiente'
+];
+
+// Intentar guardar el pedido en la base de datos (si está disponible)
+$pedido_guardado = false;
+try {
+    // Incluir conexión a la base de datos
+    if (file_exists('db.php')) {
+        include('db.php');
+        
+        // Verificar si existe la conexión
+        if (isset($conn) && $conn instanceof mysqli) {
+            // Preparar datos para insertar en la tabla de pedidos
+            $usuario_id = $_SESSION['usuario_id'] ?? 0;
+            $fecha = date('Y-m-d H:i:s');
+            $estado = 'pendiente';
+            $productos_json = json_encode($cart);
+            
+            // Insertar pedido en la base de datos
+            $query = "INSERT INTO pedidos (pedido_id, usuario_id, fecha, nombre, apellido, email, telefono, 
+                      direccion, departamento, ciudad, codigo_postal, tipo_envio, metodo_pago, 
+                      subtotal, impuestos, envio, total, productos, notas, estado) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            $stmt = $conn->prepare($query);
+            if ($stmt) {
+                $stmt->bind_param("sisssssssssssdddssss", 
+                    $pedido_id, $usuario_id, $fecha, $nombre, $apellido, $email, $telefono, 
+                    $direccion, $departamento, $ciudad, $codigo_postal, $tipo_envio, $metodo_pago, 
+                    $subtotal, $impuestos, $envio, $total, $productos_json, $notas, $estado);
+                
+                $pedido_guardado = $stmt->execute();
+                $stmt->close();
+            }
+        }
+    }
+} catch (Exception $e) {
+    // Registrar error pero continuar con el proceso
+    error_log("Error al guardar pedido: " . $e->getMessage());
+}
+
+// Limpiar el carrito después de procesar el pedido
+unset($_SESSION['cart']);
+// También limpiar el carrito en localStorage mediante JavaScript
+
+// Redirigir a la página de confirmación
+header("Location: confirmacion_pedido.php?pedido=" . $pedido_id);
+exit();
 ?>
