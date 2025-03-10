@@ -58,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $hashed_password = password_hash($contraseña, PASSWORD_DEFAULT);
             
             // Insertar directamente en la base de datos en lugar de redirigir
-            $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, contraseña, rol, estado) VALUES (?, ?, ?, ?, 1)");
+            $stmt = $conexion->prepare("INSERT INTO usuarios (nombre, correo, contraseña, rol, habilitado) VALUES (?, ?, ?, ?, 1)");
             $stmt->bind_param("ssss", $nombre, $correo, $hashed_password, $rol);
             
             if ($stmt->execute()) {

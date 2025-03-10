@@ -255,7 +255,7 @@ $category_result = $conexion->query($category_query);
     <header>
         <div class="header-logo">
             <a href="index.php" title="Volver al inicio">
-                <img src="imagenes/logo.jpeg" alt="San Basilio de Palenque">
+                <img src="palenque.jpeg" alt="San Basilio de Palenque">
             </a>
         </div>
         <span class="user-welcome"><i class="fas fa-user"></i> ¡Hola, <?php echo $username; ?>!</span>
