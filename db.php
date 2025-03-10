@@ -9,4 +9,3 @@ if (mysqli_connect_errno()) {
 
 // Establecer el conjunto de caracteres a utf8
 mysqli_set_charset($conexion, "utf8");
-?>

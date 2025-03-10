@@ -28,36 +28,36 @@ include('db.php');
 // Manejar la eliminación de pedidos si se proporciona un ID
 if (isset($_GET['eliminar_pedido'])) {
     $pedido_id = intval($_GET['eliminar_pedido']);
-    
+
     try {
         // Iniciar transacción para asegurar la integridad de los datos
         $conexion->begin_transaction();
-        
+
         // Eliminar registros relacionados en la tabla entregas (si existe)
         $stmt = $conexion->prepare("DELETE FROM entregas WHERE pedido_id = ?");
         $stmt->bind_param("i", $pedido_id);
         $stmt->execute();
-        
+
         // Eliminar detalles del pedido primero
         $stmt = $conexion->prepare("DELETE FROM detalles_pedido WHERE pedido_id = ?");
         $stmt->bind_param("i", $pedido_id);
         $stmt->execute();
-        
+
         // Eliminar el pedido principal
         $stmt = $conexion->prepare("DELETE FROM pedidos WHERE id = ?");
         $stmt->bind_param("i", $pedido_id);
         $stmt->execute();
-        
+
         // Confirmar la transacción
         $conexion->commit();
-        
+
         // Redirigir con mensaje de éxito
         header("Location: gestion_pedidos.php?mensaje=Pedido eliminado correctamente&tipo=success");
         exit();
     } catch (Exception $e) {
         // Revertir cambios en caso de error
         $conexion->rollback();
-        
+
         // Redirigir con mensaje de error
         header("Location: gestion_pedidos.php?mensaje=Error al eliminar el pedido: " . $e->getMessage() . "&tipo=danger");
         exit();
@@ -164,8 +164,8 @@ $total_registros = $row_count['total'];
 $total_paginas = ceil($total_registros / $registros_por_pagina);
 
 // Consulta principal para obtener los pedidos filtrados y paginados
-$sql = "SELECT p.id, p.usuario_id, p.fecha_pedido, p.total, p.estado, u.nombre AS usuario_nombre " . 
-       $sql_base . $sql_orden . " LIMIT ?, ?";
+$sql = "SELECT p.id, p.usuario_id, p.fecha_pedido, p.total, p.estado, u.nombre AS usuario_nombre " .
+    $sql_base . $sql_orden . " LIMIT ?, ?";
 
 $stmt = $conexion->prepare($sql);
 
@@ -198,24 +198,25 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Panel de administración para gestionar pedidos de Sabor Colombiano">
     <title>Gestión de Pedidos - Sabor Colombiano</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Flatpickr (para selector de fechas) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    
+
     <style>
         :root {
             --color-primary: #FF5722;
@@ -233,7 +234,7 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             --transition-normal: all 0.3s ease;
         }
-        
+
         body {
             background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
             min-height: 100vh;
@@ -242,7 +243,7 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             padding-bottom: 60px;
             position: relative;
         }
-        
+
         /* Header modernizado */
         header {
             background: rgba(255, 255, 255, 0.95);
@@ -258,11 +259,11 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             align-items: center;
             transition: var(--transition-normal);
         }
-        
+
         .header-logo {
             margin-left: 2rem;
         }
-        
+
         .header-logo img {
             max-width: 120px;
             border-radius: 50%;
@@ -270,11 +271,11 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             transition: transform 0.3s ease;
             object-fit: cover;
         }
-        
+
         .header-logo img:hover {
             transform: scale(1.05);
         }
-        
+
         .user-welcome {
             color: var(--color-primary);
             font-weight: 600;
@@ -288,18 +289,18 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             display: flex;
             align-items: center;
         }
-        
+
         .user-welcome i {
             margin-right: 0.5rem;
             color: var(--color-secondary);
         }
-        
+
         .header-actions {
             display: flex;
             gap: 0.8rem;
             margin-right: 2rem;
         }
-        
+
         /* Botones modernizados */
         .btn-nav {
             border: none;
@@ -315,14 +316,14 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             color: var(--color-light);
             background-color: var(--color-primary);
         }
-        
+
         .btn-nav:hover {
             background-color: var(--color-secondary);
             transform: translateY(-3px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             color: var(--color-light);
         }
-        
+
         /* Contenedor principal mejorado */
         .container {
             margin-top: 8rem;
@@ -333,12 +334,19 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             max-width: 1200px;
             animation: fadeIn 0.5s ease-in-out;
         }
-        
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
+
         /* Título con diseño moderno */
         h1 {
             color: var(--color-primary);
@@ -350,7 +358,7 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             padding-bottom: 0.8rem;
             font-size: 2.2rem;
         }
-        
+
         h1::after {
             content: '';
             position: absolute;
@@ -362,7 +370,7 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             background: linear-gradient(to right, var(--color-accent), var(--color-primary), var(--color-secondary));
             border-radius: 4px;
         }
-        
+
         /* Alerta mejorada */
         .alert {
             border-radius: 10px;
@@ -374,13 +382,13 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             align-items: center;
             gap: 0.8rem;
         }
-        
+
         .alert-success {
             background-color: rgba(76, 175, 80, 0.15);
             color: var(--color-secondary);
             border-left: 4px solid var(--color-secondary);
         }
-        
+
         .alert-success::before {
             content: '\f058';
             font-family: 'Font Awesome 6 Free';
@@ -388,13 +396,13 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             font-size: 1.2rem;
             color: var(--color-secondary);
         }
-        
+
         .alert-danger {
             background-color: rgba(244, 67, 54, 0.15);
             color: var(--color-danger);
             border-left: 4px solid var(--color-danger);
         }
-        
+
         .alert-danger::before {
             content: '\f057';
             font-family: 'Font Awesome 6 Free';
@@ -402,7 +410,7 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             font-size: 1.2rem;
             color: var(--color-danger);
         }
-        
+
         /* Sección de filtros */
         .filtros-container {
             background: rgba(255, 255, 255, 0.8);
@@ -412,7 +420,7 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(255, 193, 7, 0.2);
         }
-        
+
         .filtros-header {
             display: flex;
             justify-content: space-between;
@@ -421,7 +429,7 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             padding-bottom: 0.8rem;
             border-bottom: 1px dashed rgba(255, 193, 7, 0.3);
         }
-        
+
         .filtros-title {
             font-family: 'Montserrat', sans-serif;
             font-weight: 600;
@@ -431,23 +439,23 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .filtros-title i {
             color: var(--color-secondary);
         }
-        
+
         .filtros-form {
             display: flex;
             flex-wrap: wrap;
             gap: 1rem;
             align-items: flex-end;
         }
-        
+
         .filtro-grupo {
             flex: 1;
             min-width: 200px;
         }
-        
+
         .filtro-label {
             display: block;
             margin-bottom: 0.5rem;
@@ -455,7 +463,7 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             color: var(--color-text);
             font-size: 0.9rem;
         }
-        
+
         .filtro-input {
             width: 100%;
             padding: 0.6rem 1rem;
@@ -464,13 +472,13 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             background-color: rgba(255, 255, 255, 0.9);
             transition: var(--transition-normal);
         }
-        
+
         .filtro-input:focus {
             border-color: var(--color-primary);
             box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
             outline: none;
         }
-        
+
         .filtro-select {
             width: 100%;
             padding: 0.6rem 1rem;
@@ -484,13 +492,13 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             background-position: right 1rem center;
             background-size: 16px 12px;
         }
-        
+
         .filtro-select:focus {
             border-color: var(--color-primary);
             box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
             outline: none;
         }
-        
+
         .filtro-date {
             width: 100%;
             padding: 0.6rem 1rem;
@@ -499,19 +507,19 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             background-color: rgba(255, 255, 255, 0.9);
             transition: var(--transition-normal);
         }
-        
+
         .filtro-date:focus {
             border-color: var(--color-primary);
             box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
             outline: none;
         }
-        
+
         .filtros-actions {
             display: flex;
             gap: 0.8rem;
             margin-top: 1rem;
         }
-        
+
         .btn-filtrar {
             background-color: var(--color-secondary);
             color: var(--color-light);
@@ -524,13 +532,13 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .btn-filtrar:hover {
             background-color: #3d8b40;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        
+
         .btn-limpiar {
             background-color: rgba(255, 193, 7, 0.1);
             color: var(--color-accent);
@@ -543,12 +551,12 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .btn-limpiar:hover {
             background-color: rgba(255, 193, 7, 0.2);
             transform: translateY(-2px);
         }
-        
+
         /* Resumen de filtros aplicados */
         .filtros-aplicados {
             display: flex;
@@ -558,7 +566,7 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             padding-top: 1rem;
             border-top: 1px dashed rgba(255, 193, 7, 0.3);
         }
-        
+
         .filtro-tag {
             background-color: rgba(255, 87, 34, 0.1);
             color: var(--color-primary);
@@ -569,11 +577,11 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .filtro-tag i {
             font-size: 0.75rem;
         }
-        
+
         .filtro-tag-remove {
             background: none;
             border: none;
@@ -584,11 +592,11 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             opacity: 0.7;
             transition: var(--transition-normal);
         }
-        
+
         .filtro-tag-remove:hover {
             opacity: 1;
         }
-        
+
         /* Información de resultados y ordenación */
         .resultados-info {
             display: flex;
@@ -598,28 +606,28 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             flex-wrap: wrap;
             gap: 1rem;
         }
-        
+
         .resultados-contador {
             font-size: 0.95rem;
             color: var(--color-text);
         }
-        
+
         .resultados-contador strong {
             color: var(--color-primary);
         }
-        
+
         .ordenar-por {
             display: flex;
             align-items: center;
             gap: 0.8rem;
         }
-        
+
         .ordenar-label {
             font-size: 0.95rem;
             color: var(--color-text);
             margin: 0;
         }
-        
+
         .ordenar-select {
             padding: 0.4rem 0.8rem;
             border: 1px solid rgba(255, 193, 7, 0.3);
@@ -628,12 +636,12 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             transition: var(--transition-normal);
             font-size: 0.9rem;
         }
-        
+
         .ordenar-select:focus {
             border-color: var(--color-primary);
             outline: none;
         }
-        
+
         /* Tabla modernizada */
         .table-container {
             background: white;
@@ -642,14 +650,14 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             overflow: hidden;
             margin-bottom: 2rem;
         }
-        
+
         .table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
             margin-bottom: 0;
         }
-        
+
         .table thead th {
             background-color: var(--color-secondary);
             color: var(--color-light);
@@ -662,28 +670,28 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             font-family: 'Montserrat', sans-serif;
             letter-spacing: 0.5px;
         }
-        
+
         .table thead th:first-child {
             border-top-left-radius: var(--border-radius);
         }
-        
+
         .table thead th:last-child {
             border-top-right-radius: var(--border-radius);
         }
-        
+
         .table tbody tr {
             transition: var(--transition-normal);
         }
-        
+
         .table tbody tr:nth-child(even) {
             background-color: rgba(76, 175, 80, 0.05);
         }
-        
+
         .table tbody tr:hover {
             background-color: var(--color-hover);
             transform: scale(1.01);
         }
-        
+
         .table td {
             padding: 1.2rem 1rem;
             border-bottom: 1px solid rgba(255, 193, 7, 0.2);
@@ -691,11 +699,11 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             vertical-align: middle;
             font-size: 0.95rem;
         }
-        
+
         .table tr:last-child td {
             border-bottom: none;
         }
-        
+
         /* Celdas especiales */
         .id-cell {
             font-weight: 600;
@@ -705,7 +713,7 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             padding: 0.4rem 0.8rem;
             display: inline-block;
         }
-        
+
         .user-cell {
             font-weight: 600;
             color: var(--color-primary);
@@ -714,24 +722,24 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             justify-content: center;
             gap: 0.5rem;
         }
-        
+
         .user-cell i {
             color: var(--color-secondary);
             background-color: rgba(76, 175, 80, 0.1);
             padding: 0.5rem;
             border-radius: 50%;
         }
-        
+
         .date-cell {
             color: #666;
             font-size: 0.9rem;
         }
-        
+
         .price-cell {
             font-weight: 700;
             color: var(--color-primary);
         }
-        
+
         .status-cell {
             font-weight: 600;
             display: inline-flex;
@@ -740,67 +748,67 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             border-radius: 20px;
             font-size: 0.9rem;
         }
-        
+
         .status-pendiente {
             background-color: rgba(255, 87, 34, 0.1);
             color: var(--color-primary);
         }
-        
+
         .status-pendiente::before {
             content: '\f017';
             font-family: 'Font Awesome 6 Free';
             font-weight: 900;
             margin-right: 0.5rem;
         }
-        
+
         .status-confirmado {
             background-color: rgba(76, 175, 80, 0.1);
             color: var(--color-secondary);
         }
-        
+
         .status-confirmado::before {
             content: '\f00c';
             font-family: 'Font Awesome 6 Free';
             font-weight: 900;
             margin-right: 0.5rem;
         }
-        
+
         .status-enviado {
             background-color: rgba(255, 193, 7, 0.1);
             color: var(--color-accent);
         }
-        
+
         .status-enviado::before {
             content: '\f0d1';
             font-family: 'Font Awesome 6 Free';
             font-weight: 900;
             margin-right: 0.5rem;
         }
-        
+
         .status-entregado {
             background-color: rgba(76, 175, 80, 0.1);
             color: var(--color-secondary);
         }
-        
+
         .status-entregado::before {
             content: '\f5b0';
             font-family: 'Font Awesome 6 Free';
             font-weight: 900;
             margin-right: 0.5rem;
         }
-        
+
         .status-cancelado {
             background-color: rgba(244, 67, 54, 0.1);
             color: var(--color-danger);
         }
-        
+
         .status-cancelado::before {
             content: '\f00d';
             font-family: 'Font Awesome 6 Free';
             font-weight: 900;
             margin-right: 0.5rem;
         }
-        
+
         .actions-cell {
             display: flex;
             justify-content: center;
@@ -808,7 +816,7 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             gap: 0.6rem;
             flex-wrap: wrap;
         }
-        
+
         .btn-action {
             text-decoration: none;
             padding: 0.5rem 1rem;
@@ -822,43 +830,43 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             white-space: nowrap;
             border: none;
         }
-        
+
         .btn-ver {
             background-color: rgba(255, 193, 7, 0.1);
             color: var(--color-accent);
         }
-        
+
         .btn-ver:hover {
             background-color: var(--color-accent);
             color: var(--color-text);
             transform: translateY(-2px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        
+
         .btn-estado {
             background-color: rgba(76, 175, 80, 0.1);
             color: var(--color-secondary);
         }
-        
+
         .btn-estado:hover {
             background-color: var(--color-secondary);
             color: var(--color-light);
             transform: translateY(-2px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        
+
         .btn-eliminar {
             background-color: rgba(244, 67, 54, 0.1);
             color: var(--color-danger);
         }
-        
+
         .btn-eliminar:hover {
             background-color: var(--color-danger);
             color: var(--color-light);
             transform: translateY(-2px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        
+
         /* Footer modernizado */
         footer {
             text-align: center;
@@ -873,82 +881,84 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
             border-top: 1px solid rgba(255, 193, 7, 0.2);
             font-family: 'Montserrat', sans-serif;
         }
-        
+
         /* Responsive */
         @media (max-width: 992px) {
             .container {
                 padding: 2rem;
                 margin-top: 7.5rem;
             }
-            
+
             h1 {
                 font-size: 1.8rem;
             }
         }
-        
+
         @media (max-width: 768px) {
             header {
                 flex-direction: column;
                 padding: 0.8rem 0;
             }
-            
+
             .header-logo {
                 margin: 0.5rem 0;
             }
-            
+
             .header-logo img {
                 max-width: 80px;
             }
-            
+
             .user-welcome {
                 margin: 0.5rem 0;
                 font-size: 1rem;
             }
-            
+
             .header-actions {
                 margin: 0.5rem 0;
                 flex-wrap: wrap;
                 justify-content: center;
             }
-            
+
             .container {
                 margin-top: 12rem;
                 padding: 1.5rem;
             }
-            
+
             h1 {
                 font-size: 1.5rem;
             }
-            
+
             .btn-nav {
                 padding: 0.5rem 1rem;
                 font-size: 0.9rem;
             }
-            
+
             .actions-cell {
                 flex-direction: column;
                 gap: 0.4rem;
             }
-            
+
             .btn-action {
                 width: 100%;
                 justify-content: center;
             }
         }
-        
+
         @media (max-width: 576px) {
             .container {
                 padding: 1rem;
                 margin-top: 14rem;
             }
-            
-            .table td, .table th {
+
+            .table td,
+            .table th {
                 padding: 0.8rem 0.5rem;
                 font-size: 0.85rem;
             }
         }
     </style>
 </head>
+
 <body>
     <!-- Encabezado fijo con logo, bienvenida y botones -->
     <header>
@@ -976,14 +986,14 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
     <!-- Contenedor principal con la tabla de gestión de pedidos -->
     <div class="container">
         <h1>Gestión de Pedidos</h1>
-        
+
         <!-- Mensaje de feedback -->
         <?php if (isset($_GET['mensaje'])): ?>
             <div class="alert alert-<?php echo htmlspecialchars($_GET['tipo']); ?>" role="alert">
                 <?php echo htmlspecialchars($_GET['mensaje']); ?>
             </div>
         <?php endif; ?>
-        
+
         <!-- Sección de filtros -->
         <div class="filtros-container">
             <div class="filtros-header">
@@ -1101,41 +1111,41 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
                                         break;
                                 }
                         ?>
-                        <tr>
-                            <td><span class="id-cell">#<?php echo htmlspecialchars($fila['id']); ?></span></td>
-                            <td class="user-cell">
-                                <i class="fas fa-user"></i>
-                                <?php echo htmlspecialchars($fila['usuario_nombre']); ?>
-                            </td>
-                            <td class="date-cell"><?php echo htmlspecialchars(date('d/m/Y H:i', strtotime($fila['fecha_pedido']))); ?></td>
-                            <td class="price-cell">$<?php echo number_format($fila['total'], 2, ',', '.'); ?></td>
-                            <td>
-                                <span class="status-cell <?php echo $estadoClass; ?>">
-                                    <?php echo ucfirst(htmlspecialchars($fila['estado'])); ?>
-                                </span>
-                            </td>
-                            <td class="actions-cell">
-                                <a href="ver_pedido.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-ver" title="Ver detalles del pedido">
-                                    <i class="fas fa-eye"></i> Ver detalles
-                                </a>
-                                <a href="modificar_estado_pedido.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-estado" title="Modificar estado del pedido">
-                                    <i class="fas fa-edit"></i> Cambiar estado
-                                </a>
-                                <a href="gestion_pedidos.php?eliminar_pedido=<?php echo $fila['id']; ?>" class="btn-action btn-eliminar" title="Eliminar pedido" onclick="return confirm('¿Estás seguro de que deseas eliminar este pedido? Esta acción no se puede deshacer.')">
-                                    <i class="fas fa-trash-alt"></i> Eliminar
-                                </a>
-                            </td>
-                        </tr>
-                        <?php
+                                <tr>
+                                    <td><span class="id-cell">#<?php echo htmlspecialchars($fila['id']); ?></span></td>
+                                    <td class="user-cell">
+                                        <i class="fas fa-user"></i>
+                                        <?php echo htmlspecialchars($fila['usuario_nombre']); ?>
+                                    </td>
+                                    <td class="date-cell"><?php echo htmlspecialchars(date('d/m/Y H:i', strtotime($fila['fecha_pedido']))); ?></td>
+                                    <td class="price-cell">$<?php echo number_format($fila['total'], 2, ',', '.'); ?></td>
+                                    <td>
+                                        <span class="status-cell <?php echo $estadoClass; ?>">
+                                            <?php echo ucfirst(htmlspecialchars($fila['estado'])); ?>
+                                        </span>
+                                    </td>
+                                    <td class="actions-cell">
+                                        <a href="ver_pedido.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-ver" title="Ver detalles del pedido">
+                                            <i class="fas fa-eye"></i> Ver detalles
+                                        </a>
+                                        <a href="modificar_estado_pedido.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-estado" title="Modificar estado del pedido">
+                                            <i class="fas fa-edit"></i> Cambiar estado
+                                        </a>
+                                        <a href="gestion_pedidos.php?eliminar_pedido=<?php echo $fila['id']; ?>" class="btn-action btn-eliminar" title="Eliminar pedido" onclick="return confirm('¿Estás seguro de que deseas eliminar este pedido? Esta acción no se puede deshacer.')">
+                                            <i class="fas fa-trash-alt"></i> Eliminar
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php
                             }
                         } else {
-                        ?>
-                        <tr>
-                            <td colspan="6" style="text-align: center; padding: 2rem;">
-                                <i class="fas fa-shopping-basket" style="font-size: 2rem; color: #ccc; margin-bottom: 1rem; display: block;"></i>
-                                No hay pedidos registrados en el sistema.
-                            </td>
-                        </tr>
+                            ?>
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem;">
+                                    <i class="fas fa-shopping-basket" style="font-size: 2rem; color: #ccc; margin-bottom: 1rem; display: block;"></i>
+                                    No hay pedidos registrados en el sistema.
+                                </td>
+                            </tr>
                         <?php
                         }
                         ?>
@@ -1165,10 +1175,10 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Flatpickr JS (para selector de fechas) -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    
+
     <!-- Script personalizado -->
     <script>
         // Inicializar Flatpickr para los campos de fecha
@@ -1197,4 +1207,5 @@ while ($row = $stmt_usuarios->fetch_assoc()) {
         });
     </script>
 </body>
+
 </html>

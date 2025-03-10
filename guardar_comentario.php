@@ -45,4 +45,3 @@ if (mysqli_stmt_execute($stmt)) {
 // Cerrar la declaración y la conexión
 mysqli_stmt_close($stmt);
 mysqli_close($conexion);
-?>

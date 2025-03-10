@@ -77,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -85,79 +86,89 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --color-primary: #FF5722;
-            --color-secondary: #4CAF50;
-            --color-accent: #FFC107;
-            --color-text: #333333;
-            --color-light: #FFFFFF;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
-        }
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
-            min-height: 100vh;
-            color: var(--color-text);
-            padding-top: 100px;
-            padding-bottom: 60px;
-        }
-        header {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 1rem 2rem;
-            box-shadow: var(--shadow);
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header-logo img {
-            max-width: 120px;
-            border-radius: 10px;
-            border: 3px solid var(--color-primary);
-        }
-        .btn-auth {
-            background-color: var(--color-primary);
-            color: var(--color-light);
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: var(--transition);
-        }
-        .btn-auth:hover {
-            background-color: var(--color-secondary);
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-        }
-        .form-control-sm {
-            max-width: 150px;
-        }
-        footer {
-            text-align: center;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.9);
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
+    :root {
+        --color-primary: #FF5722;
+        --color-secondary: #4CAF50;
+        --color-accent: #FFC107;
+        --color-text: #333333;
+        --color-light: #FFFFFF;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+    }
+
+    body {
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
+        min-height: 100vh;
+        color: var(--color-text);
+        padding-top: 100px;
+        padding-bottom: 60px;
+    }
+
+    header {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 1rem 2rem;
+        box-shadow: var(--shadow);
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-logo img {
+        max-width: 120px;
+        border-radius: 10px;
+        border: 3px solid var(--color-primary);
+    }
+
+    .btn-auth {
+        background-color: var(--color-primary);
+        color: var(--color-light);
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .btn-auth:hover {
+        background-color: var(--color-secondary);
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+    }
+
+    .form-control-sm {
+        max-width: 150px;
+    }
+
+    footer {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
     </style>
 </head>
+
 <body>
     <header>
         <div class="header-logo">
             <a href="index.php"><img src="palenque.jpeg" alt="San Basilio de Palenque"></a>
         </div>
         <div>
-            <span class="user-welcome"><i class="fas fa-user"></i> Hola, <?php echo htmlspecialchars($_SESSION['usuario']); ?></span>
+            <span class="user-welcome"><i class="fas fa-user"></i> Hola,
+                <?php echo htmlspecialchars($_SESSION['usuario']); ?></span>
             <a href="ver_pedido.php" class="btn-auth"><i class="fas fa-list"></i> Ver Pedidos</a>
             <a href="logout.php" class="btn-auth"><i class="fas fa-sign-out-alt"></i> Salir</a>
         </div>
@@ -167,27 +178,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h2 class="text-center mb-4">Modificar Pedido #<?php echo $pedido_id; ?></h2>
 
         <?php if (isset($success)): ?>
-            <div class="alert alert-success"><?php echo $success; ?></div>
+        <div class="alert alert-success"><?php echo $success; ?></div>
         <?php elseif (isset($error)): ?>
-            <div class="alert alert-danger"><?php echo $error; ?></div>
+        <div class="alert alert-danger"><?php echo $error; ?></div>
         <?php endif; ?>
 
         <form method="POST" action="">
             <div class="mb-3">
                 <label for="estado" class="form-label">Estado</label>
                 <select name="estado" id="estado" class="form-control" required>
-                    <option value="pendiente" <?php echo $pedido['estado'] === 'pendiente' ? 'selected' : ''; ?>>Pendiente</option>
-                    <option value="confirmado" <?php echo $pedido['estado'] === 'confirmado' ? 'selected' : ''; ?>>Confirmado</option>
-                    <option value="en_proceso" <?php echo $pedido['estado'] === 'en_proceso' ? 'selected' : ''; ?>>En Proceso</option>
-                    <option value="enviado" <?php echo $pedido['estado'] === 'enviado' ? 'selected' : ''; ?>>Enviado</option>
-                    <option value="entregado" <?php echo $pedido['estado'] === 'entregado' ? 'selected' : ''; ?>>Entregado</option>
-                    <option value="cancelado" <?php echo $pedido['estado'] === 'cancelado' ? 'selected' : ''; ?>>Cancelado</option>
+                    <option value="pendiente" <?php echo $pedido['estado'] === 'pendiente' ? 'selected' : ''; ?>>
+                        Pendiente</option>
+                    <option value="confirmado" <?php echo $pedido['estado'] === 'confirmado' ? 'selected' : ''; ?>>
+                        Confirmado</option>
+                    <option value="en_proceso" <?php echo $pedido['estado'] === 'en_proceso' ? 'selected' : ''; ?>>En
+                        Proceso</option>
+                    <option value="enviado" <?php echo $pedido['estado'] === 'enviado' ? 'selected' : ''; ?>>Enviado
+                    </option>
+                    <option value="entregado" <?php echo $pedido['estado'] === 'entregado' ? 'selected' : ''; ?>>
+                        Entregado</option>
+                    <option value="cancelado" <?php echo $pedido['estado'] === 'cancelado' ? 'selected' : ''; ?>>
+                        Cancelado</option>
                 </select>
             </div>
 
             <div class="mb-3">
                 <label for="total" class="form-label">Total</label>
-                <input type="number" step="0.01" name="total" id="total" class="form-control" value="<?php echo $pedido['total']; ?>" required>
+                <input type="number" step="0.01" name="total" id="total" class="form-control"
+                    value="<?php echo $pedido['total']; ?>" required>
             </div>
 
             <h4>Detalles del Pedido</h4>
@@ -201,21 +219,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </thead>
                 <tbody>
                     <?php foreach ($detalles as $detalle): ?>
-                        <tr>
-                            <td>
-                                <input type="number" name="detalles[<?php echo $detalle['id']; ?>][producto_id]" 
-                                       class="form-control form-control-sm" value="<?php echo $detalle['producto_id']; ?>" required>
-                                <small><?php echo $detalle['nombre'] ? htmlspecialchars($detalle['nombre']) : 'ID: ' . $detalle['producto_id']; ?></small>
-                            </td>
-                            <td>
-                                <input type="number" name="detalles[<?php echo $detalle['id']; ?>][cantidad]" 
-                                       class="form-control form-control-sm" value="<?php echo $detalle['cantidad']; ?>" min="1" required>
-                            </td>
-                            <td>
-                                <input type="number" step="0.01" name="detalles[<?php echo $detalle['id']; ?>][precio_unitario]" 
-                                       class="form-control form-control-sm" value="<?php echo $detalle['precio_unitario']; ?>" required>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>
+                            <input type="number" name="detalles[<?php echo $detalle['id']; ?>][producto_id]"
+                                class="form-control form-control-sm" value="<?php echo $detalle['producto_id']; ?>"
+                                required>
+                            <small><?php echo $detalle['nombre'] ? htmlspecialchars($detalle['nombre']) : 'ID: ' . $detalle['producto_id']; ?></small>
+                        </td>
+                        <td>
+                            <input type="number" name="detalles[<?php echo $detalle['id']; ?>][cantidad]"
+                                class="form-control form-control-sm" value="<?php echo $detalle['cantidad']; ?>" min="1"
+                                required>
+                        </td>
+                        <td>
+                            <input type="number" step="0.01"
+                                name="detalles[<?php echo $detalle['id']; ?>][precio_unitario]"
+                                class="form-control form-control-sm" value="<?php echo $detalle['precio_unitario']; ?>"
+                                required>
+                        </td>
+                    </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
@@ -231,5 +253,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
 <?php $conexion->close(); ?>

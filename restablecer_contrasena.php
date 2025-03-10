@@ -90,6 +90,7 @@ if (isset($_GET['token'])) {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -101,108 +102,110 @@ if (isset($_GET['token'])) {
     <!-- Font Awesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Estilos globales */
-        
-        body {
-            background: linear-gradient(135deg, #FFC107, #FF5722, #4CAF50);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            font-family: 'Montserrat', sans-serif;
-            color: #333;
-            padding: 20px;
-        }
-        
-        /* Contenedor principal */
-        .reset-container {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-            max-width: 450px;
-            margin: 0 auto;
-            border: 1px solid #FFC107;
-            margin-top: 80px;
-        }
-        
-        /* Título */
-        h2 {
-            color: #FF5722;
-            font-weight: 700;
-            font-size: 2rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-        
-        /* Formulario */
-        .form-label {
-            color: #4CAF50;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-        
-        .form-control {
-            border: 2px solid #FFC107;
-            border-radius: 10px;
-            padding: 0.75rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        
-        .form-control:focus {
-            border-color: #FF5722;
-            box-shadow: 0 0 8px rgba(255, 87, 34, 0.3);
-            outline: none;
-        }
-        
-        .password-container {
-            position: relative;
-        }
-        
-        .password-toggle {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #4CAF50;
-            transition: color 0.3s;
-        }
-        
-        .password-toggle:hover {
-            color: #FF5722;
-        }
-        
-        /* Botón */
-        .btn-reset {
-            background-color: #4CAF50;
-            border: none;
-            padding: 0.75rem;
-            font-weight: 600;
-            color: white;
-            border-radius: 10px;
-            width: 100%;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-        
-        .btn-reset:hover {
-            background-color: #FF5722;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
+    /* Estilos globales */
+
+    body {
+        background: linear-gradient(135deg, #FFC107, #FF5722, #4CAF50);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        font-family: 'Montserrat', sans-serif;
+        color: #333;
+        padding: 20px;
+    }
+
+    /* Contenedor principal */
+    .reset-container {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 2.5rem;
+        border-radius: 20px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        max-width: 450px;
+        margin: 0 auto;
+        border: 1px solid #FFC107;
+        margin-top: 80px;
+    }
+
+    /* Título */
+    h2 {
+        color: #FF5722;
+        font-weight: 700;
+        font-size: 2rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Formulario */
+    .form-label {
+        color: #4CAF50;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .form-control {
+        border: 2px solid #FFC107;
+        border-radius: 10px;
+        padding: 0.75rem;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: #FF5722;
+        box-shadow: 0 0 8px rgba(255, 87, 34, 0.3);
+        outline: none;
+    }
+
+    .password-container {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #4CAF50;
+        transition: color 0.3s;
+    }
+
+    .password-toggle:hover {
+        color: #FF5722;
+    }
+
+    /* Botón */
+    .btn-reset {
+        background-color: #4CAF50;
+        border: none;
+        padding: 0.75rem;
+        font-weight: 600;
+        color: white;
+        border-radius: 10px;
+        width: 100%;
+        transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .btn-reset:hover {
+        background-color: #FF5722;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
     </style>
 </head>
+
 <body>
     <div class="reset-container">
         <!-- Título del formulario -->
         <h2>Restablecer Contraseña</h2>
-        
+
         <!-- Formulario de restablecimiento -->
         <form action="restablecer_contrasena.php?token=<?php echo urlencode($token); ?>" method="post">
             <div class="mb-3">
                 <label for="nueva_contraseña" class="form-label">Nueva Contraseña</label>
                 <div class="password-container">
-                    <input type="password" class="form-control" id="nueva_contraseña" name="nueva_contraseña" placeholder="Ingresa tu nueva contraseña" required>
+                    <input type="password" class="form-control" id="nueva_contraseña" name="nueva_contraseña"
+                        placeholder="Ingresa tu nueva contraseña" required>
                     <span class="password-toggle" id="togglePassword1">
                         <i class="fas fa-eye"></i>
                     </span>
@@ -211,7 +214,8 @@ if (isset($_GET['token'])) {
             <div class="mb-3">
                 <label for="confirmar_contraseña" class="form-label">Confirmar Contraseña</label>
                 <div class="password-container">
-                    <input type="password" class="form-control" id="confirmar_contraseña" name="confirmar_contraseña" placeholder="Confirma tu nueva contraseña" required>
+                    <input type="password" class="form-control" id="confirmar_contraseña" name="confirmar_contraseña"
+                        placeholder="Confirma tu nueva contraseña" required>
                     <span class="password-toggle" id="togglePassword2">
                         <i class="fas fa-eye"></i>
                     </span>
@@ -225,25 +229,26 @@ if (isset($_GET['token'])) {
 
     <!-- Script para mostrar/ocultar contraseñas -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const togglePassword1 = document.getElementById('togglePassword1');
-            const passwordField1 = document.getElementById('nueva_contraseña');
-            togglePassword1.addEventListener('click', function() {
-                const type = passwordField1.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordField1.setAttribute('type', type);
-                this.querySelector('i').classList.toggle('fa-eye');
-                this.querySelector('i').classList.toggle('fa-eye-slash');
-            });
-
-            const togglePassword2 = document.getElementById('togglePassword2');
-            const passwordField2 = document.getElementById('confirmar_contraseña');
-            togglePassword2.addEventListener('click', function() {
-                const type = passwordField2.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordField2.setAttribute('type', type);
-                this.querySelector('i').classList.toggle('fa-eye');
-                this.querySelector('i').classList.toggle('fa-eye-slash');
-            });
+    document.addEventListener('DOMContentLoaded', function() {
+        const togglePassword1 = document.getElementById('togglePassword1');
+        const passwordField1 = document.getElementById('nueva_contraseña');
+        togglePassword1.addEventListener('click', function() {
+            const type = passwordField1.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField1.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
         });
+
+        const togglePassword2 = document.getElementById('togglePassword2');
+        const passwordField2 = document.getElementById('confirmar_contraseña');
+        togglePassword2.addEventListener('click', function() {
+            const type = passwordField2.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField2.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    });
     </script>
 </body>
+
 </html>

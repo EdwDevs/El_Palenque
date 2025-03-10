@@ -23,6 +23,7 @@ include('db.php');
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <!-- Configuración básica del documento -->
     <meta charset="UTF-8">
@@ -91,7 +92,12 @@ include('db.php');
             flex-direction: column;
         }
 
-        h1, h2, h3, h4, h5, h6 {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             font-family: 'Montserrat', sans-serif;
             font-weight: 700;
         }
@@ -276,13 +282,27 @@ include('db.php');
         }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .cart-item:hover {
@@ -552,8 +572,15 @@ include('db.php');
         }
 
         @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         .toast-icon {
@@ -603,7 +630,7 @@ include('db.php');
             .cart-item {
                 flex-wrap: wrap;
             }
-            
+
             .cart-item-subtotal {
                 margin-top: var(--spacing-sm);
                 text-align: left;
@@ -614,35 +641,35 @@ include('db.php');
             .main-content {
                 padding: var(--spacing-md);
             }
-            
+
             .page-title {
                 font-size: 1.8rem;
             }
-            
+
             .cart-footer {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .cart-actions {
                 flex-direction: column;
             }
-            
+
             .checkout-steps {
                 flex-direction: column;
                 gap: var(--spacing-md);
                 align-items: flex-start;
             }
-            
+
             .checkout-steps::before {
                 display: none;
             }
-            
+
             .checkout-step {
                 flex-direction: row;
                 gap: var(--spacing-sm);
             }
-            
+
             .step-number {
                 margin-bottom: 0;
             }
@@ -653,12 +680,12 @@ include('db.php');
                 flex-direction: column;
                 align-items: flex-start;
             }
-            
+
             .cart-item-image {
                 margin-right: 0;
                 margin-bottom: var(--spacing-sm);
             }
-            
+
             .cart-item-actions {
                 margin-top: var(--spacing-sm);
                 align-self: flex-end;
@@ -666,6 +693,7 @@ include('db.php');
         }
     </style>
 </head>
+
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg custom-navbar">
@@ -673,12 +701,12 @@ include('db.php');
             <a class="navbar-brand" href="index.php">
                 <img src="palenque.jpeg" alt="San Basilio de Palenque" width="60" height="60">
             </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" 
-                    aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
@@ -697,16 +725,16 @@ include('db.php');
                         <a class="nav-link" href="contacto.php">Contacto</a>
                     </li>
                 </ul>
-                
+
                 <div class="d-flex align-items-center gap-3">
                     <span class="user-welcome d-none d-md-flex">
                         <i class="fas fa-user-circle"></i> Hola, <?php echo $username; ?>
                     </span>
-                    
+
                     <a href="productos_compra.php" class="btn-action">
                         <i class="fas fa-shopping-basket"></i> Seguir comprando
                     </a>
-                    
+
                     <a href="logout.php" class="btn-action btn-danger">
                         <i class="fas fa-sign-out-alt"></i> Salir
                     </a>
@@ -718,7 +746,7 @@ include('db.php');
     <!-- Contenido principal -->
     <main class="container main-content">
         <h1 class="page-title animate__animated animate__fadeIn">Tu Carrito de Compras</h1>
-        
+
         <!-- Pasos del proceso de compra -->
         <div class="checkout-steps animate__animated animate__fadeIn">
             <div class="checkout-step active">
@@ -738,7 +766,7 @@ include('db.php');
                 <div class="step-label">Confirmación</div>
             </div>
         </div>
-        
+
         <!-- Contenedor del carrito -->
         <div class="cart-container animate__animated animate__fadeIn" id="cartContainer">
             <!-- El contenido del carrito se cargará dinámicamente con JavaScript -->
@@ -762,22 +790,22 @@ include('db.php');
         document.addEventListener('DOMContentLoaded', function() {
             // Cargar el carrito al iniciar
             loadCart();
-            
+
             // Verificar si hay mensajes de la URL
             const urlParams = new URLSearchParams(window.location.search);
             const message = urlParams.get('message');
             const status = urlParams.get('status');
-            
+
             if (message) {
                 showToast(message, status || 'success');
             }
         });
-        
+
         // Función para cargar el carrito
         function loadCart() {
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             const cartContainer = document.getElementById('cartContainer');
-            
+
             // Si el carrito está vacío
             if (cart.length === 0) {
                 cartContainer.innerHTML = `
@@ -794,11 +822,11 @@ include('db.php');
                 `;
                 return;
             }
-            
+
             // Calcular totales
             let subtotal = 0;
             let itemCount = 0;
-            
+
             // Crear estructura del carrito
             let cartHTML = `
                 <div class="cart-header">
@@ -807,7 +835,7 @@ include('db.php');
                 </div>
                 <div class="cart-body">
             `;
-            
+
             // Agregar cada producto
             cart.forEach((item, index) => {
                 const cantidad = item.cantidad || 1;
@@ -815,7 +843,7 @@ include('db.php');
                 const itemSubtotal = precio * cantidad;
                 subtotal += itemSubtotal;
                 itemCount += cantidad;
-                
+
                 cartHTML += `
                     <div class="cart-item" data-index="${index}">
                         <div class="cart-item-image">
@@ -847,11 +875,11 @@ include('db.php');
                     </div>
                 `;
             });
-            
+
             // Calcular impuestos y total
             const impuestos = subtotal * 0.19; // 19% IVA
             const total = subtotal + impuestos;
-            
+
             // Agregar resumen y botones
             cartHTML += `
                 </div>
@@ -880,20 +908,20 @@ include('db.php');
                     </div>
                 </div>
             `;
-            
+
             // Actualizar el contenedor
             cartContainer.innerHTML = cartHTML;
-            
+
             // Guardar valores para el checkout
             document.getElementById('totalInput').value = total;
             document.getElementById('subtotalInput').value = subtotal;
             document.getElementById('impuestosInput').value = impuestos;
         }
-        
+
         // Función para actualizar cantidad
         function updateQuantity(index, newQuantity) {
             newQuantity = parseInt(newQuantity);
-            
+
             // Validar cantidad
             if (isNaN(newQuantity) || newQuantity < 1) {
                 newQuantity = 1;
@@ -901,72 +929,72 @@ include('db.php');
                 newQuantity = 10;
                 showToast('Máximo 10 unidades por producto', 'error');
             }
-            
+
             // Obtener carrito actual
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
-            
+
             // Actualizar cantidad
             cart[index].cantidad = newQuantity;
-            
+
             // Guardar carrito actualizado
             localStorage.setItem('cart', JSON.stringify(cart));
-            
+
             // Recargar carrito
             loadCart();
-            
+
             // Mostrar notificación
             showToast(`Cantidad actualizada: ${newQuantity}`, 'success');
         }
-        
+
         // Función para eliminar producto del carrito
         function removeFromCart(index) {
             // Obtener carrito actual
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
-            
+
             // Guardar nombre del producto antes de eliminarlo
             const productName = cart[index].nombre || cart[index].name;
-            
+
             // Eliminar producto
             cart.splice(index, 1);
-            
+
             // Guardar carrito actualizado
             localStorage.setItem('cart', JSON.stringify(cart));
-            
+
             // Recargar carrito
             loadCart();
-            
+
             // Mostrar notificación
             showToast(`"${productName}" eliminado del carrito`, 'success');
         }
-        
+
         // Función para vaciar carrito
         function clearCart() {
             // Confirmar acción
             if (!confirm('¿Estás seguro de que quieres vaciar el carrito?')) {
                 return;
             }
-            
+
             // Vaciar carrito
             localStorage.removeItem('cart');
-            
+
             // Recargar carrito
             loadCart();
-            
+
             // Mostrar notificación
             showToast('Carrito vaciado correctamente', 'success');
         }
-        
+
         // Función para finalizar compra
         function checkout() {
             // Obtener carrito actual
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            
+
             // Verificar si hay productos
             if (cart.length === 0) {
                 showToast('No hay productos en el carrito', 'error');
                 return;
             }
-            
+
             // Calcular totales nuevamente para asegurar datos actualizados
             let subtotal = 0;
             cart.forEach(item => {
@@ -974,34 +1002,34 @@ include('db.php');
                 const precio = parseFloat(item.precio || item.price);
                 subtotal += precio * cantidad;
             });
-            
+
             const impuestos = subtotal * 0.19; // 19% IVA
             const total = subtotal + impuestos;
-            
+
             // Preparar datos para enviar
             document.getElementById('cartInput').value = JSON.stringify(cart);
             document.getElementById('totalInput').value = total;
             document.getElementById('subtotalInput').value = subtotal;
             document.getElementById('impuestosInput').value = impuestos;
-            
+
             // Guardar en sessionStorage como respaldo
             sessionStorage.setItem('checkout_cart', JSON.stringify(cart));
             sessionStorage.setItem('checkout_total', total);
             sessionStorage.setItem('checkout_subtotal', subtotal);
             sessionStorage.setItem('checkout_impuestos', impuestos);
-            
+
             // Enviar formulario
             document.getElementById('checkoutForm').submit();
         }
-        
+
         // Función para mostrar notificaciones toast
         function showToast(message, type = 'success') {
             const toastContainer = document.getElementById('toastContainer');
-            
+
             // Crear elemento toast
             const toast = document.createElement('div');
             toast.className = 'custom-toast animate__animated animate__fadeInRight';
-            
+
             // Contenido del toast
             toast.innerHTML = `
                 <div class="toast-icon ${type}">
@@ -1013,10 +1041,10 @@ include('db.php');
                 </div>
                 <button type="button" class="toast-close" onclick="this.parentElement.remove()">&times;</button>
             `;
-            
+
             // Agregar al contenedor
             toastContainer.appendChild(toast);
-            
+
             // Auto-eliminar después de 3 segundos
             setTimeout(() => {
                 toast.classList.remove('animate__fadeInRight');
@@ -1026,12 +1054,12 @@ include('db.php');
                 }, 300);
             }, 3000);
         }
-        
+
         // Función para sincronizar carrito con la barra de navegación
         function syncCartCount() {
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
             const count = cart.reduce((total, item) => total + (parseInt(item.cantidad) || 1), 0);
-            
+
             // Actualizar contador en la barra de navegación si existe
             const navCartCount = document.getElementById('cartCountNav');
             if (navCartCount) {
@@ -1039,10 +1067,10 @@ include('db.php');
                 navCartCount.style.display = count > 0 ? 'flex' : 'none';
             }
         }
-        
+
         // Sincronizar carrito al cargar
         syncCartCount();
-        
+
         // Escuchar cambios en localStorage para mantener sincronizado
         window.addEventListener('storage', function(e) {
             if (e.key === 'cart') {
@@ -1052,4 +1080,5 @@ include('db.php');
         });
     </script>
 </body>
+
 </html>

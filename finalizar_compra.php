@@ -45,11 +45,38 @@ $granTotal = $total + $envio;
 
 // Obtener departamentos de Colombia para el formulario
 $departamentos = [
-    'Amazonas', 'Antioquia', 'Arauca', 'Atlántico', 'Bolívar', 'Boyacá', 'Caldas', 
-    'Caquetá', 'Casanare', 'Cauca', 'Cesar', 'Chocó', 'Córdoba', 'Cundinamarca', 
-    'Guainía', 'Guaviare', 'Huila', 'La Guajira', 'Magdalena', 'Meta', 'Nariño', 
-    'Norte de Santander', 'Putumayo', 'Quindío', 'Risaralda', 'San Andrés y Providencia', 
-    'Santander', 'Sucre', 'Tolima', 'Valle del Cauca', 'Vaupés', 'Vichada'
+    'Amazonas',
+    'Antioquia',
+    'Arauca',
+    'Atlántico',
+    'Bolívar',
+    'Boyacá',
+    'Caldas',
+    'Caquetá',
+    'Casanare',
+    'Cauca',
+    'Cesar',
+    'Chocó',
+    'Córdoba',
+    'Cundinamarca',
+    'Guainía',
+    'Guaviare',
+    'Huila',
+    'La Guajira',
+    'Magdalena',
+    'Meta',
+    'Nariño',
+    'Norte de Santander',
+    'Putumayo',
+    'Quindío',
+    'Risaralda',
+    'San Andrés y Providencia',
+    'Santander',
+    'Sucre',
+    'Tolima',
+    'Valle del Cauca',
+    'Vaupés',
+    'Vichada'
 ];
 
 // Inicializar datos del usuario (sin necesidad de conexión a base de datos)
@@ -64,6 +91,7 @@ $usuario = [
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <!-- Configuración básica del documento -->
     <meta charset="UTF-8">
@@ -132,7 +160,12 @@ $usuario = [
             flex-direction: column;
         }
 
-        h1, h2, h3, h4, h5, h6 {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             font-family: 'Montserrat', sans-serif;
             font-weight: 700;
         }
@@ -442,7 +475,7 @@ $usuario = [
             border-bottom: 1px solid var(--color-light-gray);
         }
 
-        .form-floating > label {
+        .form-floating>label {
             color: var(--color-text-light);
         }
 
@@ -492,7 +525,7 @@ $usuario = [
             height: 100%;
         }
 
-        .payment-method input[type="radio"]:checked + label {
+        .payment-method input[type="radio"]:checked+label {
             border-color: var(--color-primary);
             background-color: rgba(255, 87, 34, 0.05);
         }
@@ -504,7 +537,7 @@ $usuario = [
             transition: var(--transition);
         }
 
-        .payment-method input[type="radio"]:checked + label i {
+        .payment-method input[type="radio"]:checked+label i {
             color: var(--color-primary);
         }
 
@@ -576,8 +609,15 @@ $usuario = [
         }
 
         @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         /* Responsive */
@@ -586,7 +626,7 @@ $usuario = [
                 overflow-x: auto;
                 padding-bottom: var(--spacing-sm);
             }
-            
+
             .checkout-step {
                 min-width: 100px;
             }
@@ -596,32 +636,32 @@ $usuario = [
             .main-content {
                 padding: var(--spacing-md);
             }
-            
+
             .page-title {
                 font-size: 1.8rem;
             }
-            
+
             .checkout-header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 0.5rem;
             }
-            
+
             .payment-methods {
                 flex-direction: column;
             }
-            
+
             .payment-method {
                 width: 100%;
             }
-            
+
             .payment-method label {
                 flex-direction: row;
                 justify-content: flex-start;
                 gap: 1rem;
                 text-align: left;
             }
-            
+
             .payment-method label i {
                 margin-bottom: 0;
             }
@@ -633,27 +673,28 @@ $usuario = [
                 gap: var(--spacing-sm);
                 align-items: flex-start;
             }
-            
+
             .checkout-steps::before {
                 display: none;
             }
-            
+
             .checkout-step {
                 flex-direction: row;
                 width: 100%;
                 gap: var(--spacing-sm);
             }
-            
+
             .step-number {
                 margin-bottom: 0;
             }
-            
+
             .order-summary-table .product-image {
                 display: none;
             }
         }
     </style>
 </head>
+
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg custom-navbar">
@@ -661,12 +702,12 @@ $usuario = [
             <a class="navbar-brand" href="index.php">
                 <img src="palenque.jpeg" alt="San Basilio de Palenque" width="60" height="60">
             </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" 
-                    aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarMain">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
@@ -679,12 +720,12 @@ $usuario = [
                         <a class="nav-link" href="carrito.php">Carrito</a>
                     </li>
                 </ul>
-                
+
                 <div class="d-flex align-items-center gap-3">
                     <span class="user-welcome d-none d-md-flex">
                         <i class="fas fa-user-circle"></i> Hola, <?php echo htmlspecialchars($_SESSION['usuario']); ?>
                     </span>
-                    
+
                     <a href="carrito.php" class="btn-action btn-outline">
                         <i class="fas fa-arrow-left"></i> Volver al carrito
                     </a>
@@ -696,7 +737,7 @@ $usuario = [
     <!-- Contenido principal -->
     <main class="container main-content">
         <h1 class="page-title animate__animated animate__fadeIn">Finalizar Compra</h1>
-        
+
         <!-- Pasos del proceso de compra -->
         <div class="checkout-steps animate__animated animate__fadeIn">
             <div class="checkout-step completed">
@@ -716,7 +757,7 @@ $usuario = [
                 <div class="step-label">Confirmación</div>
             </div>
         </div>
-        
+
         <!-- Formulario de checkout -->
         <form action="procesar_pedido.php" method="post" id="checkoutForm">
             <div class="row">
@@ -741,12 +782,12 @@ $usuario = [
                                     </thead>
                                     <tbody>
                                         <?php foreach ($cart as $item): ?>
-                                            <?php 
-                                                $nombre = $item['nombre'] ?? $item['name'] ?? "Producto ID: {$item['id']}";
-                                                $precio = floatval($item['precio'] ?? $item['price'] ?? 0);
-                                                $cantidad = intval($item['cantidad'] ?? 1);
-                                                $subtotalItem = $precio * $cantidad;
-                                                $imagen = $item['imagen'] ?? 'imagenes/producto_default.jpg';
+                                            <?php
+                                            $nombre = $item['nombre'] ?? $item['name'] ?? "Producto ID: {$item['id']}";
+                                            $precio = floatval($item['precio'] ?? $item['price'] ?? 0);
+                                            $cantidad = intval($item['cantidad'] ?? 1);
+                                            $subtotalItem = $precio * $cantidad;
+                                            $imagen = $item['imagen'] ?? 'imagenes/producto_default.jpg';
                                             ?>
                                             <tr>
                                                 <td>
@@ -761,7 +802,7 @@ $usuario = [
                                     </tbody>
                                 </table>
                             </div>
-                            
+
                             <!-- Resumen de costos -->
                             <div class="cost-summary mt-4">
                                 <div class="cost-row">
@@ -783,7 +824,7 @@ $usuario = [
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Datos de envío -->
                     <div class="checkout-container animate__animated animate__fadeIn">
                         <div class="checkout-header">
@@ -822,7 +863,7 @@ $usuario = [
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                <div class="form-floating mb-3">
+                                    <div class="form-floating mb-3">
                                         <select class="form-select" id="departamento" name="departamento" required>
                                             <option value="" selected disabled>Seleccione...</option>
                                             <?php foreach ($departamentos as $departamento): ?>
@@ -854,21 +895,21 @@ $usuario = [
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" id="guardar_direccion" name="guardar_direccion" value="1" checked>
                                 <label class="form-check-label" for="guardar_direccion">
                                     Guardar esta dirección para futuras compras
                                 </label>
                             </div>
-                            
+
                             <div class="form-floating mb-3">
                                 <textarea class="form-control" id="notas" name="notas" style="height: 100px" placeholder="Notas adicionales"></textarea>
                                 <label for="notas">Notas adicionales (opcional)</label>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Método de pago -->
                     <div class="checkout-container animate__animated animate__fadeIn">
                         <div class="checkout-header">
@@ -884,7 +925,7 @@ $usuario = [
                                         <div class="payment-method-description">Pago seguro con tarjeta</div>
                                     </label>
                                 </div>
-                                
+
                                 <div class="payment-method">
                                     <input type="radio" name="metodo_pago" id="pago_transferencia" value="transferencia">
                                     <label for="pago_transferencia">
@@ -893,7 +934,7 @@ $usuario = [
                                         <div class="payment-method-description">Pago mediante transferencia</div>
                                     </label>
                                 </div>
-                                
+
                                 <div class="payment-method">
                                     <input type="radio" name="metodo_pago" id="pago_efectivo" value="efectivo">
                                     <label for="pago_efectivo">
@@ -902,7 +943,7 @@ $usuario = [
                                         <div class="payment-method-description">Pago contra entrega</div>
                                     </label>
                                 </div>
-                                
+
                                 <div class="payment-method">
                                     <input type="radio" name="metodo_pago" id="pago_nequi" value="nequi">
                                     <label for="pago_nequi">
@@ -912,7 +953,7 @@ $usuario = [
                                     </label>
                                 </div>
                             </div>
-                            
+
                             <!-- Detalles de pago con tarjeta (se muestra/oculta según selección) -->
                             <div id="tarjeta_detalles" class="payment-details mt-3" style="display: none;">
                                 <div class="row g-3">
@@ -942,7 +983,7 @@ $usuario = [
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Detalles de transferencia bancaria -->
                             <div id="transferencia_detalles" class="payment-details mt-3" style="display: none;">
                                 <div class="alert alert-info">
@@ -958,7 +999,7 @@ $usuario = [
                                     <p>Una vez realizada la transferencia, envía el comprobante a <strong>pagos@sanbasilio.com</strong> indicando tu número de pedido.</p>
                                 </div>
                             </div>
-                            
+
                             <!-- Detalles de pago con Nequi/Daviplata -->
                             <div id="nequi_detalles" class="payment-details mt-3" style="display: none;">
                                 <div class="alert alert-info">
@@ -975,7 +1016,7 @@ $usuario = [
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Resumen de la orden (columna lateral) -->
                 <div class="col-lg-4">
                     <div class="checkout-container animate__animated animate__fadeIn">
@@ -1001,31 +1042,31 @@ $usuario = [
                                     <span class="cost-value cost-total" id="gran_total">$<?php echo number_format($granTotal, 0, ',', '.'); ?></span>
                                 </div>
                             </div>
-                            
+
                             <div class="form-check mb-3 mt-4">
                                 <input class="form-check-input" type="checkbox" id="terminos" name="terminos" required>
                                 <label class="form-check-label" for="terminos">
                                     He leído y acepto los <a href="#" data-bs-toggle="modal" data-bs-target="#terminosModal">términos y condiciones</a>
                                 </label>
                             </div>
-                            
+
                             <div class="form-check mb-4">
                                 <input class="form-check-input" type="checkbox" id="politica_privacidad" name="politica_privacidad" required>
                                 <label class="form-check-label" for="politica_privacidad">
                                     Acepto la <a href="#" data-bs-toggle="modal" data-bs-target="#privacidadModal">política de privacidad</a>
                                 </label>
                             </div>
-                            
+
                             <!-- Botones de acción -->
                             <div class="d-grid gap-2">
-                            <button type="submit" class="btn-action btn-secondary btn-lg" id="btnConfirmarPedido">
-    <i class="fas fa-check-circle me-2"></i> Confirmar Pedido
-</button>
+                                <button type="submit" class="btn-action btn-secondary btn-lg" id="btnConfirmarPedido">
+                                    <i class="fas fa-check-circle me-2"></i> Confirmar Pedido
+                                </button>
                                 <a href="carrito.php" class="btn-action btn-outline">
                                     <i class="fas fa-arrow-left me-2"></i> Volver al Carrito
                                 </a>
                             </div>
-                            
+
                             <!-- Información de seguridad -->
                             <div class="text-center mt-4">
                                 <p class="small text-muted">
@@ -1041,14 +1082,14 @@ $usuario = [
                     </div>
                 </div>
             </div>
-            
+
             <!-- Campos ocultos para enviar datos -->
-    <input type="hidden" name="cart" value='<?php echo htmlspecialchars(json_encode($cart), ENT_QUOTES, 'UTF-8'); ?>'>
-    <input type="hidden" name="subtotal" value="<?php echo $subtotal; ?>">
-    <input type="hidden" name="impuestos" value="<?php echo $impuestos; ?>">
-    <input type="hidden" name="envio" value="<?php echo $envio; ?>">
-    <input type="hidden" name="total" value="<?php echo $granTotal; ?>" id="total_hidden">
-</form>
+            <input type="hidden" name="cart" value='<?php echo htmlspecialchars(json_encode($cart), ENT_QUOTES, 'UTF-8'); ?>'>
+            <input type="hidden" name="subtotal" value="<?php echo $subtotal; ?>">
+            <input type="hidden" name="impuestos" value="<?php echo $impuestos; ?>">
+            <input type="hidden" name="envio" value="<?php echo $envio; ?>">
+            <input type="hidden" name="total" value="<?php echo $granTotal; ?>" id="total_hidden">
+        </form>
     </main>
 
     <!-- Modal de Términos y Condiciones -->
@@ -1062,19 +1103,19 @@ $usuario = [
                 <div class="modal-body">
                     <h4>Términos y Condiciones de Compra</h4>
                     <p>Bienvenido a la tienda en línea de San Basilio del Palenque. Al utilizar nuestro servicio, aceptas los siguientes términos y condiciones:</p>
-                    
+
                     <h5>1. Productos y Precios</h5>
                     <p>Todos los productos están sujetos a disponibilidad. Los precios están expresados en pesos colombianos e incluyen IVA. Nos reservamos el derecho de modificar los precios en cualquier momento sin previo aviso.</p>
-                    
+
                     <h5>2. Pedidos</h5>
                     <p>Al realizar un pedido, recibirás una confirmación por correo electrónico. Esto no implica la aceptación del pedido, ya que está sujeto a verificación de disponibilidad y datos de pago.</p>
-                    
+
                     <h5>3. Envíos</h5>
                     <p>Los tiempos de entrega son estimados y pueden variar según la ubicación geográfica. No nos hacemos responsables por retrasos causados por terceros o situaciones de fuerza mayor.</p>
-                    
+
                     <h5>4. Devoluciones</h5>
                     <p>Tienes derecho a devolver tu compra dentro de los 5 días siguientes a la recepción del producto, siempre que esté en perfecto estado y con su embalaje original.</p>
-                    
+
                     <h5>5. Protección de Datos</h5>
                     <p>La información proporcionada será tratada conforme a nuestra política de privacidad y la legislación vigente en materia de protección de datos.</p>
                 </div>
@@ -1096,19 +1137,19 @@ $usuario = [
                 <div class="modal-body">
                     <h4>Política de Privacidad</h4>
                     <p>En San Basilio del Palenque, nos comprometemos a proteger tu privacidad. Esta política describe cómo recopilamos, utilizamos y protegemos tu información personal.</p>
-                    
+
                     <h5>1. Información que Recopilamos</h5>
                     <p>Recopilamos información personal como nombre, dirección, correo electrónico y datos de pago necesarios para procesar tus pedidos y mejorar tu experiencia de compra.</p>
-                    
+
                     <h5>2. Uso de la Información</h5>
                     <p>Utilizamos tu información para procesar pedidos, comunicarnos contigo sobre tu compra, personalizar tu experiencia y mejorar nuestros servicios.</p>
-                    
+
                     <h5>3. Protección de Datos</h5>
                     <p>Implementamos medidas de seguridad para proteger tu información personal contra acceso no autorizado, alteración, divulgación o destrucción.</p>
-                    
+
                     <h5>4. Compartir Información</h5>
                     <p>No vendemos ni alquilamos tu información personal a terceros. Solo compartimos información con proveedores de servicios que nos ayudan a operar nuestro sitio y procesar tus pedidos.</p>
-                    
+
                     <h5>5. Tus Derechos</h5>
                     <p>Tienes derecho a acceder, corregir o eliminar tu información personal. Para ejercer estos derechos, contáctanos a través de nuestro formulario de contacto.</p>
                 </div>
@@ -1128,42 +1169,42 @@ $usuario = [
         document.addEventListener('DOMContentLoaded', function() {
             // Verificar si hay un carrito en localStorage
             const localCart = localStorage.getItem('cart');
-            
+
             // Si hay un carrito en localStorage y no se recibió uno por POST
             if (localCart && <?php echo isset($_POST['cart']) && !empty($_POST['cart']) ? 'false' : 'true'; ?>) {
                 // Establecer el valor del campo oculto
                 document.querySelector('input[name="cart"]').value = localCart;
-                
+
                 // Recargar la página con el carrito como parámetro POST
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = window.location.href;
-                
+
                 const input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = 'cart';
                 input.value = localCart;
-                
+
                 form.appendChild(input);
                 document.body.appendChild(form);
                 form.submit();
             }
-            
+
             // Mostrar/ocultar detalles de pago según método seleccionado
             const metodoPagoInputs = document.querySelectorAll('input[name="metodo_pago"]');
             const detallesTarjeta = document.getElementById('tarjeta_detalles');
             const detallesTransferencia = document.getElementById('transferencia_detalles');
             const detallesNequi = document.getElementById('nequi_detalles');
-            
+
             metodoPagoInputs.forEach(input => {
                 input.addEventListener('change', function() {
                     // Ocultar todos los detalles
                     detallesTarjeta.style.display = 'none';
                     detallesTransferencia.style.display = 'none';
                     detallesNequi.style.display = 'none';
-                    
+
                     // Mostrar detalles según método seleccionado
-                    switch(this.value) {
+                    switch (this.value) {
                         case 'tarjeta':
                             detallesTarjeta.style.display = 'block';
                             break;
@@ -1176,32 +1217,32 @@ $usuario = [
                     }
                 });
             });
-            
+
             // Actualizar costo de envío según tipo seleccionado
             const tipoEnvioSelect = document.getElementById('tipo_envio');
             const costoEnvioSpan = document.getElementById('costo_envio');
             const granTotalSpan = document.getElementById('gran_total');
             const totalHidden = document.getElementById('total_hidden');
-            
+
             tipoEnvioSelect.addEventListener('change', function() {
                 let costoEnvio = <?php echo $envio; ?>;
                 let subtotal = <?php echo $subtotal; ?>;
                 let impuestos = <?php echo $impuestos; ?>;
-                
+
                 if (this.value === 'express') {
                     costoEnvio = <?php echo $envio; ?> + 10000; // Agregar costo de envío express
                 }
-                
+
                 const nuevoTotal = subtotal + impuestos + costoEnvio;
-                
+
                 costoEnvioSpan.textContent = '$' + costoEnvio.toLocaleString('es-CO');
                 granTotalSpan.textContent = '$' + nuevoTotal.toLocaleString('es-CO');
                 totalHidden.value = nuevoTotal;
             });
-            
+
             // Validación del formulario
             const checkoutForm = document.getElementById('checkoutForm');
-            
+
             checkoutForm.addEventListener('submit', function(event) {
                 // Validar método de pago
                 const metodoPago = document.querySelector('input[name="metodo_pago"]:checked');
@@ -1210,40 +1251,40 @@ $usuario = [
                     showToast('Por favor selecciona un método de pago', 'error');
                     return;
                 }
-                
+
                 // Validar campos de tarjeta si es el método seleccionado
                 if (metodoPago.value === 'tarjeta') {
                     const tarjetaNombre = document.getElementById('tarjeta_nombre').value.trim();
                     const tarjetaNumero = document.getElementById('tarjeta_numero').value.trim();
                     const tarjetaExpiracion = document.getElementById('tarjeta_expiracion').value.trim();
                     const tarjetaCvv = document.getElementById('tarjeta_cvv').value.trim();
-                    
+
                     if (!tarjetaNombre || !tarjetaNumero || !tarjetaExpiracion || !tarjetaCvv) {
                         event.preventDefault();
                         showToast('Por favor completa todos los datos de la tarjeta', 'error');
                         return;
                     }
                 }
-                
+
                 // Validar términos y condiciones
                 const terminos = document.getElementById('terminos');
                 const politicaPrivacidad = document.getElementById('politica_privacidad');
-                
+
                 if (!terminos.checked || !politicaPrivacidad.checked) {
                     event.preventDefault();
                     showToast('Debes aceptar los términos y condiciones y la política de privacidad', 'error');
                     return;
                 }
             });
-            
+
             // Función para mostrar notificaciones toast
             function showToast(message, type = 'success') {
                 const toastContainer = document.getElementById('toastContainer');
-                
+
                 // Crear elemento toast
                 const toast = document.createElement('div');
                 toast.className = 'custom-toast animate__animated animate__fadeInRight';
-                
+
                 // Contenido del toast
                 toast.innerHTML = `
                     <div class="toast-icon ${type}">
@@ -1255,10 +1296,10 @@ $usuario = [
                     </div>
                     <button type="button" class="toast-close" onclick="this.parentElement.remove()">&times;</button>
                 `;
-                
+
                 // Agregar al contenedor
                 toastContainer.appendChild(toast);
-                
+
                 // Auto-eliminar después de 3 segundos
                 setTimeout(() => {
                     toast.classList.remove('animate__fadeInRight');
@@ -1271,4 +1312,5 @@ $usuario = [
         });
     </script>
 </body>
+
 </html>

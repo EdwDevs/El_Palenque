@@ -23,4 +23,3 @@ $_SESSION['numero_pedido'] = "PED-TEST-123";
 // Esperar 5 segundos y redirigir
 echo "<p>Redirigiendo en 5 segundos...</p>";
 echo "<script>setTimeout(function() { window.location.href = 'confirmacion_pedido.php'; }, 5000);</script>";
-?>

@@ -17,4 +17,3 @@ if (isset($_GET['id'])) {
     header("Location: admin_home.php?section=" . $section);
     exit();
 }
-?>

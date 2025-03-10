@@ -55,20 +55,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cambiar Contraseña</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+
 <body>
     <div class="container mt-5">
         <h2>Cambiar Contraseña</h2>
         <?php if (isset($error_msg)): ?>
-            <div class="alert alert-danger"><?php echo $error_msg; ?></div>
+        <div class="alert alert-danger"><?php echo $error_msg; ?></div>
         <?php endif; ?>
         <?php if (isset($success_msg)): ?>
-            <div class="alert alert-success"><?php echo $success_msg; ?></div>
+        <div class="alert alert-success"><?php echo $success_msg; ?></div>
         <?php endif; ?>
         <form method="POST" action="">
             <div class="mb-3">
@@ -81,10 +83,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
             <div class="mb-3">
                 <label for="confirmar_contraseña" class="form-label">Confirmar Nueva Contraseña</label>
-                <input type="password" class="form-control" id="confirmar_contraseña" name="confirmar_contraseña" required>
+                <input type="password" class="form-control" id="confirmar_contraseña" name="confirmar_contraseña"
+                    required>
             </div>
             <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
         </form>
     </div>
 </body>
+
 </html>

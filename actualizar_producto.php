@@ -60,193 +60,193 @@ $category_result = $conexion->query($category_query);
 
     <!-- Estilos personalizados -->
     <style>
-    :root {
-        --color-primary: #FF5722;
-        --color-secondary: #4CAF50;
-        --color-accent: #FFC107;
-        --color-text: #333333;
-        --color-light: #FFFFFF;
-        --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        --transition: all 0.3s ease;
-    }
-
-    body {
-        font-family: 'Montserrat', sans-serif;
-        background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
-        min-height: 100vh;
-        color: var(--color-text);
-        margin: 0;
-        padding: 0;
-    }
-
-    header {
-        background: rgba(255, 255, 255, 0.95);
-        padding: 1rem 2rem;
-        box-shadow: var(--shadow);
-        position: fixed;
-        top: 0;
-        width: 100%;
-        z-index: 1000;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    .header-logo img {
-        max-width: 120px;
-        border-radius: 10px;
-        border: 3px solid var(--color-primary);
-        transition: var(--transition);
-    }
-
-    .header-logo img:hover {
-        transform: scale(1.05);
-    }
-
-    .user-welcome {
-        color: var(--color-primary);
-        font-weight: bold;
-        margin: 0 1rem;
-    }
-
-    .btn-home {
-        background-color: var(--color-primary);
-        color: var(--color-light);
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
-        text-decoration: none;
-        transition: var(--transition);
-    }
-
-    .btn-home:hover {
-        background-color: var(--color-secondary);
-        transform: translateY(-2px);
-    }
-
-    .main-content {
-        margin-top: 8rem;
-        padding: 2rem;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .contenedor {
-        background-color: var(--color-light);
-        padding: 2rem;
-        border-radius: 10px;
-        box-shadow: var(--shadow);
-        animation: fadeIn 0.5s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
+        :root {
+            --color-primary: #FF5722;
+            --color-secondary: #4CAF50;
+            --color-accent: #FFC107;
+            --color-text: #333333;
+            --color-light: #FFFFFF;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
         }
 
-        to {
-            opacity: 1;
-            transform: translateY(0);
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
+            min-height: 100vh;
+            color: var(--color-text);
+            margin: 0;
+            padding: 0;
         }
-    }
 
-    h3 {
-        color: var(--color-primary);
-        text-align: center;
-        margin-bottom: 2rem;
-        font-size: 1.8rem;
-        font-weight: 700;
-    }
-
-    form {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-
-    label {
-        font-weight: 600;
-        color: var(--color-text);
-    }
-
-    input[type="text"],
-    input[type="datetime-local"],
-    select {
-        padding: 0.75rem;
-        border: 2px solid var(--color-accent);
-        border-radius: 5px;
-        font-size: 1rem;
-        width: 100%;
-        box-sizing: border-box;
-        transition: var(--transition);
-    }
-
-    input[type="text"]:focus,
-    input[type="datetime-local"]:focus,
-    select:focus {
-        border-color: var(--color-primary);
-        box-shadow: 0 0 8px rgba(255, 87, 34, 0.3);
-        outline: none;
-    }
-
-    input[type="submit"] {
-        background-color: var(--color-secondary);
-        color: var(--color-light);
-        padding: 0.9rem;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 1.1rem;
-        transition: var(--transition);
-    }
-
-    input[type="submit"]:hover {
-        background-color: var(--color-primary);
-        transform: translateY(-2px);
-    }
-
-    .notification {
-        display: none;
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px;
-        border-radius: 5px;
-        color: var(--color-light);
-        z-index: 1000;
-        box-shadow: var(--shadow);
-    }
-
-    .success {
-        background-color: var(--color-secondary);
-    }
-
-    .error {
-        background-color: #f44336;
-    }
-
-    @media (max-width: 768px) {
         header {
-            flex-direction: column;
-            gap: 1rem;
-            padding: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-logo img {
+            max-width: 120px;
+            border-radius: 10px;
+            border: 3px solid var(--color-primary);
+            transition: var(--transition);
+        }
+
+        .header-logo img:hover {
+            transform: scale(1.05);
+        }
+
+        .user-welcome {
+            color: var(--color-primary);
+            font-weight: bold;
+            margin: 0 1rem;
+        }
+
+        .btn-home {
+            background-color: var(--color-primary);
+            color: var(--color-light);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .btn-home:hover {
+            background-color: var(--color-secondary);
+            transform: translateY(-2px);
         }
 
         .main-content {
-            padding: 1rem;
+            margin-top: 8rem;
+            padding: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .contenedor {
-            padding: 1.5rem;
+            background-color: var(--color-light);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         h3 {
-            font-size: 1.5rem;
+            color: var(--color-primary);
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            font-weight: 700;
         }
-    }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        input[type="text"],
+        input[type="datetime-local"],
+        select {
+            padding: 0.75rem;
+            border: 2px solid var(--color-accent);
+            border-radius: 5px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        input[type="text"]:focus,
+        input[type="datetime-local"]:focus,
+        select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 8px rgba(255, 87, 34, 0.3);
+            outline: none;
+        }
+
+        input[type="submit"] {
+            background-color: var(--color-secondary);
+            color: var(--color-light);
+            padding: 0.9rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        input[type="submit"]:hover {
+            background-color: var(--color-primary);
+            transform: translateY(-2px);
+        }
+
+        .notification {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            color: var(--color-light);
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        .success {
+            background-color: var(--color-secondary);
+        }
+
+        .error {
+            background-color: #f44336;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .contenedor {
+                padding: 1.5rem;
+            }
+
+            h3 {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 
@@ -311,67 +311,67 @@ $category_result = $conexion->query($category_query);
 
     <!-- Scripts personalizados -->
     <script>
-    function handleSubmit(event) {
-        event.preventDefault();
-        const form = event.target;
-        const formData = new FormData(form);
+        function handleSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
 
-        fetch(form.action, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (response.ok) {
-                    showNotification('Producto actualizado con éxito', 'success');
-                    setTimeout(() => window.location.href = 'productos.php', 1500);
-                } else {
-                    showNotification('Error al actualizar el producto', 'error');
+            fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showNotification('Producto actualizado con éxito', 'success');
+                        setTimeout(() => window.location.href = 'productos.php', 1500);
+                    } else {
+                        showNotification('Error al actualizar el producto', 'error');
+                    }
+                })
+                .catch(() => showNotification('Error de conexión', 'error'));
+
+            return false;
+        }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+            setTimeout(() => notification.style.display = 'none', 3000);
+        }
+
+        document
+            .getElementById('precio')
+            .addEventListener('input', function(e) {
+                const value = this.value.trim();
+                const regex = /^[0-9]+(\.[0-9]{0,2})?$/;
+
+                // Prevent non-numeric input except decimal point
+                if (!/^\d*\.?\d*$/.test(value)) {
+                    this.value = value.replace(/[^\d.]/g, '');
                 }
-            })
-            .catch(() => showNotification('Error de conexión', 'error'));
 
-        return false;
-    }
-
-    function showNotification(message, type) {
-        const notification = document.getElementById('notification');
-        notification.textContent = message;
-        notification.className = `notification ${type}`;
-        notification.style.display = 'block';
-        setTimeout(() => notification.style.display = 'none', 3000);
-    }
-
-    document
-    .getElementById('precio')
-    .addEventListener('input', function(e) {
-        const value = this.value.trim();
-        const regex = /^[0-9]+(\.[0-9]{0,2})?$/;
-        
-        // Prevent non-numeric input except decimal point
-        if (!/^\d*\.?\d*$/.test(value)) {
-            this.value = value.replace(/[^\d.]/g, '');
-        }
-        
-        if (!regex.test(value)) {
-            this.style.borderColor = '#f44336';
-            this.setAttribute('aria-invalid', 'true');
-        } else {
-            this.style.borderColor = 'var(--color-accent)';
-            this.setAttribute('aria-invalid', 'false');
-        }
-    });
+                if (!regex.test(value)) {
+                    this.style.borderColor = '#f44336';
+                    this.setAttribute('aria-invalid', 'true');
+                } else {
+                    this.style.borderColor = 'var(--color-accent)';
+                    this.setAttribute('aria-invalid', 'false');
+                }
+            });
 
 
-    // Animación al enfocar los campos
-    const inputs = document.querySelectorAll('input[type="text"], input[type="datetime-local"], select');
-    inputs.forEach(input => {
-        input.addEventListener('focus', () => {
-            input.style.transform = 'scale(1.02)';
+        // Animación al enfocar los campos
+        const inputs = document.querySelectorAll('input[type="text"], input[type="datetime-local"], select');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.style.transform = 'scale(1.02)';
+            });
+            input.addEventListener('blur', () => {
+                input.style.transform = 'scale(1)';
+            });
         });
-        input.addEventListener('blur', () => {
-            input.style.transform = 'scale(1)';
-        });
-    });
     </script>
 </body>
 

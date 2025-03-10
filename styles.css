@@ -1,87 +1,87 @@
 /* ===== HEADER Y NAVEGACIÓN ===== */
 header {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 1rem 2rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-    display: flex; /* Asegura que los elementos estén en una fila */
-    justify-content: space-between; /* Espacia los elementos */
-    align-items: center; /* Centra verticalmente los elementos */
-    box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  display: flex; /* Asegura que los elementos estén en una fila */
+  justify-content: space-between; /* Espacia los elementos */
+  align-items: center; /* Centra verticalmente los elementos */
+  box-sizing: border-box;
 }
 
 .header-logo {
-    flex-shrink: 0; /* Evita que el logo se reduzca */
+  flex-shrink: 0; /* Evita que el logo se reduzca */
 }
 
 .header-logo img {
-    max-width: 120px;
-    height: auto;
-    border-radius: 10px;
-    border: 3px solid #FF5722;
-    transition: transform 0.3s ease;
-    display: block;
+  max-width: 120px;
+  height: auto;
+  border-radius: 10px;
+  border: 3px solid #ff5722;
+  transition: transform 0.3s ease;
+  display: block;
 }
 
 .header-logo img:hover {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 .nav-links {
-    flex-grow: 1; /* Permite que la navegación ocupe el espacio disponible */
-    display: flex; /* Asegura que los enlaces estén en una fila */
-    justify-content: center; /* Centra los enlaces horizontalmente */
+  flex-grow: 1; /* Permite que la navegación ocupe el espacio disponible */
+  display: flex; /* Asegura que los enlaces estén en una fila */
+  justify-content: center; /* Centra los enlaces horizontalmente */
 }
 
 .navbar-nav {
-    display: flex; /* Asegura que los elementos estén en una fila */
-    gap: 2rem; /* Espaciado entre los enlaces */
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    align-items: center;
+  display: flex; /* Asegura que los elementos estén en una fila */
+  gap: 2rem; /* Espaciado entre los enlaces */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
 }
 
 .nav-item {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-link {
-    color: #4CAF50;
-    font-weight: 600;
-    font-size: 1.1rem;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
-    display: block;
+  color: #4caf50;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  display: block;
 }
 
 .nav-link:hover {
-    color: #FF5722;
-    background: rgba(76, 175, 80, 0.1);
+  color: #ff5722;
+  background: rgba(76, 175, 80, 0.1);
 }
 
 .btn-salir {
-    background-color: #FF5722;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 10px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    white-space: nowrap; /* Evita que el texto del botón se divida en varias líneas */
-    flex-shrink: 0; /* Evita que el botón se reduzca */
+  background-color: #ff5722;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  white-space: nowrap; /* Evita que el texto del botón se divida en varias líneas */
+  flex-shrink: 0; /* Evita que el botón se reduzca */
 }
 
 .btn-salir:hover {
-    background-color: #4CAF50;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background-color: #4caf50;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }

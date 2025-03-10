@@ -41,66 +41,74 @@ if (isset($_GET['nombre']) && isset($_GET['correo']) && isset($_GET['contraseña
         if (isset($_GET['success']) && $_GET['success'] == 1) {
             // Generar una página HTML básica para mostrar la alerta de éxito y redirigir
             ?>
-            <!DOCTYPE html>
-            <html lang="es">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Registro Exitoso - Sabor Colombiano</title>
-                <!-- Bootstrap CSS: Incluye los estilos de Bootstrap para un diseño responsive -->
-                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-                <!-- Google Fonts - Montserrat: Añade tipografía profesional -->
-                <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-                <style>
-                    body {
-                        background: linear-gradient(135deg, #FFC107, #FF5722, #4CAF50);
-                        min-height: 100vh;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: center;
-                        font-family: 'Montserrat', sans-serif;
-                        color: #333;
-                    }
-                    .success-container {
-                        background: rgba(255, 255, 255, 0.95);
-                        padding: 2.5rem;
-                        border-radius: 20px;
-                        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-                        max-width: 450px;
-                        margin: 0 auto;
-                        text-align: center;
-                        border: 1px solid #FFC107;
-                    }
-                    h2 {
-                        color: #4CAF50;
-                        font-weight: 700;
-                        font-size: 2rem;
-                        margin-bottom: 1.5rem;
-                    }
-                    p {
-                        color: #333;
-                        font-size: 1.2rem;
-                        margin-bottom: 1.5rem;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="success-container">
-                    <h2>¡Registro Exitoso!</h2>
-                    <p>Usuario registrado con éxito:<br>Nombre: <?php echo htmlspecialchars($nombre); ?><br>Correo: <?php echo htmlspecialchars($correo); ?></p>
-                    <script>
-                        // Mostrar alerta y redirigir después de 3 segundos
-                        setTimeout(function() {
-                            alert('Usuario registrado con éxito:\nNombre: <?php echo addslashes($nombre); ?>\nCorreo: <?php echo addslashes($correo); ?>');
-                            window.location.href = 'login.php';
-                        }, 3000); // Espera 3 segundos antes de mostrar la alerta y redirigir
-                    </script>
-                </div>
-                <!-- Bootstrap JS: Incluye las funcionalidades de Bootstrap para interacciones dinámicas -->
-                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-            </body>
-            </html>
-            <?php
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Exitoso - Sabor Colombiano</title>
+    <!-- Bootstrap CSS: Incluye los estilos de Bootstrap para un diseño responsive -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts - Montserrat: Añade tipografía profesional -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+    body {
+        background: linear-gradient(135deg, #FFC107, #FF5722, #4CAF50);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        font-family: 'Montserrat', sans-serif;
+        color: #333;
+    }
+
+    .success-container {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 2.5rem;
+        border-radius: 20px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        max-width: 450px;
+        margin: 0 auto;
+        text-align: center;
+        border: 1px solid #FFC107;
+    }
+
+    h2 {
+        color: #4CAF50;
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    p {
+        color: #333;
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="success-container">
+        <h2>¡Registro Exitoso!</h2>
+        <p>Usuario registrado con éxito:<br>Nombre: <?php echo htmlspecialchars($nombre); ?><br>Correo:
+            <?php echo htmlspecialchars($correo); ?></p>
+        <script>
+        // Mostrar alerta y redirigir después de 3 segundos
+        setTimeout(function() {
+            alert(
+                'Usuario registrado con éxito:\nNombre: <?php echo addslashes($nombre); ?>\nCorreo: <?php echo addslashes($correo); ?>');
+            window.location.href = 'login.php';
+        }, 3000); // Espera 3 segundos antes de mostrar la alerta y redirigir
+        </script>
+    </div>
+    <!-- Bootstrap JS: Incluye las funcionalidades de Bootstrap para interacciones dinámicas -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
+<?php
             exit;
         } else {
             // Redirigir al login sin notificación si no se indica éxito

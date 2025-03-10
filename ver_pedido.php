@@ -229,17 +229,19 @@ if (!$header_included) {
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
                     <li class="breadcrumb-item"><a href="mis_pedidos.php">Mis Pedidos</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Pedido #<?php echo htmlspecialchars($numero_pedido); ?></li>
+                    <li class="breadcrumb-item active" aria-current="page">Pedido
+                        #<?php echo htmlspecialchars($numero_pedido); ?></li>
                 </ol>
             </nav>
             <h1 class="mb-4">Detalles del Pedido #<?php echo htmlspecialchars($numero_pedido); ?></h1>
-            
+
             <div class="alert alert-<?php echo $estado_clase; ?> d-flex align-items-center" role="alert">
                 <i class="bi bi-info-circle-fill me-2"></i>
                 <div>
                     Estado del pedido: <strong><?php echo htmlspecialchars($estado_texto); ?></strong>
                     <?php if ($estado == 'enviado'): ?>
-                        <p class="mb-0 mt-1">Fecha estimada de entrega: <strong><?php echo $fecha_entrega_formateada; ?></strong></p>
+                    <p class="mb-0 mt-1">Fecha estimada de entrega:
+                        <strong><?php echo $fecha_entrega_formateada; ?></strong></p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -268,16 +270,22 @@ if (!$header_included) {
                                 <tr>
                                     <td class="ps-3">
                                         <div class="d-flex align-items-center">
-                                            <img src="<?php echo htmlspecialchars($producto['imagen']); ?>" alt="<?php echo htmlspecialchars($producto['nombre']); ?>" class="img-thumbnail me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                            <img src="<?php echo htmlspecialchars($producto['imagen']); ?>"
+                                                alt="<?php echo htmlspecialchars($producto['nombre']); ?>"
+                                                class="img-thumbnail me-3"
+                                                style="width: 50px; height: 50px; object-fit: cover;">
                                             <div>
-                                                <h6 class="mb-0"><?php echo htmlspecialchars($producto['nombre']); ?></h6>
+                                                <h6 class="mb-0"><?php echo htmlspecialchars($producto['nombre']); ?>
+                                                </h6>
                                                 <small class="text-muted">ID: <?php echo $producto['id']; ?></small>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="text-center align-middle">$<?php echo formatear_precio($producto['precio']); ?></td>
+                                    <td class="text-center align-middle">
+                                        $<?php echo formatear_precio($producto['precio']); ?></td>
                                     <td class="text-center align-middle"><?php echo $producto['cantidad']; ?></td>
-                                    <td class="text-end pe-3 align-middle">$<?php echo formatear_precio($producto['subtotal']); ?></td>
+                                    <td class="text-end pe-3 align-middle">
+                                        $<?php echo formatear_precio($producto['subtotal']); ?></td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -339,7 +347,8 @@ if (!$header_included) {
                         </li>
                         <li class="list-group-item d-flex justify-content-between px-0">
                             <span>Estado:</span>
-                            <span><span class="badge bg-<?php echo $estado_clase; ?>"><?php echo htmlspecialchars($estado_texto); ?></span></span>
+                            <span><span
+                                    class="badge bg-<?php echo $estado_clase; ?>"><?php echo htmlspecialchars($estado_texto); ?></span></span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between px-0">
                             <span>Método de pago:</span>
@@ -376,7 +385,8 @@ if (!$header_included) {
             <div class="d-grid gap-2">
                 <a href="mis_pedidos.php" class="btn btn-outline-primary">Volver a mis pedidos</a>
                 <?php if ($estado == 'pendiente'): ?>
-                <a href="cancelar_pedido.php?id=<?php echo $pedido_id; ?>" class="btn btn-outline-danger" onclick="return confirm('¿Estás seguro de que deseas cancelar este pedido?');">Cancelar pedido</a>
+                <a href="cancelar_pedido.php?id=<?php echo $pedido_id; ?>" class="btn btn-outline-danger"
+                    onclick="return confirm('¿Estás seguro de que deseas cancelar este pedido?');">Cancelar pedido</a>
                 <?php endif; ?>
                 <a href="#" class="btn btn-outline-secondary" onclick="window.print();">
                     <i class="bi bi-printer"></i> Imprimir pedido
@@ -388,20 +398,29 @@ if (!$header_included) {
 
 <style>
 @media print {
-    header, footer, .breadcrumb, .btn, nav {
+
+    header,
+    footer,
+    .breadcrumb,
+    .btn,
+    nav {
         display: none !important;
     }
+
     .container {
         width: 100% !important;
         max-width: 100% !important;
     }
+
     .card {
         border: 1px solid #ddd !important;
     }
+
     .card-header {
         background-color: #f8f9fa !important;
         color: #000 !important;
     }
+
     .badge {
         border: 1px solid #000 !important;
         color: #000 !important;

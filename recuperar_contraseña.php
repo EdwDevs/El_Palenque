@@ -202,6 +202,7 @@ if (isset($_POST['correo'])) {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -213,145 +214,146 @@ if (isset($_POST['correo'])) {
     <!-- Font Awesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Estilos globales */
-        body {
-            background: linear-gradient(135deg, #FFC107, #FF5722, #4CAF50);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            font-family: 'Montserrat', sans-serif;
-            color: #333;
-            padding: 20px;
-        }
-        
-        /* Header */
-        header {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 1rem 0;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            text-align: center;
-            left: 0;
-        }
-        
-        header img {
-            max-width: 120px;
-            border-radius: 10px;
-            border: 3px solid #FF5722;
-            transition: transform 0.3s ease;
-        }
-        
-        header img:hover {
-            transform: scale(1.05);
-        }
-        
-        /* Contenedor principal */
-        .recovery-container {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-            max-width: 450px;
-            margin: 0 auto;
-            border: 1px solid #FFC107;
-            margin-top: 80px;
-        }
-        
-        /* Título */
-        h2 {
-            color: #FF5722;
-            font-weight: 700;
-            font-size: 2rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-        
-        /* Descripción */
-        .recovery-description {
-            text-align: center;
-            margin-bottom: 1.5rem;
-            color: #555;
-        }
-        
-        /* Formulario */
-        .form-label {
-            color: #4CAF50;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-        
-        .form-control {
-            border: 2px solid #FFC107;
-            border-radius: 10px;
-            padding: 0.75rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        
-        .form-control:focus {
-            border-color: #FF5722;
-            box-shadow: 0 0 8px rgba(255, 87, 34, 0.3);
-            outline: none;
-        }
-        
-        .input-group-text {
-            background-color: #FFC107;
-            border: 2px solid #FFC107;
-            color: #333;
-            border-radius: 0 10px 10px 0;
-        }
-        
-        /* Botón */
-        .btn-recovery {
-            background-color: #4CAF50;
-            border: none;
-            padding: 0.75rem;
-            font-weight: 600;
-            color: white;
-            border-radius: 10px;
-            width: 100%;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-        
-        .btn-recovery:hover {
-            background-color: #FF5722;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Enlaces */
-        .back-to-login {
-            text-align: center;
-            margin-top: 1.5rem;
-        }
-        
-        .back-to-login a {
-            color: #FF5722;
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.3s;
-        }
-        
-        .back-to-login a:hover {
-            color: #4CAF50;
-            text-decoration: underline;
-        }
-        
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 1rem;
-            color: #333;
-            font-size: 0.9rem;
-            margin-top: 2rem;
-            background: rgba(255, 255, 255, 0.7);
-            border-radius: 10px;
-        }
+    /* Estilos globales */
+    body {
+        background: linear-gradient(135deg, #FFC107, #FF5722, #4CAF50);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        font-family: 'Montserrat', sans-serif;
+        color: #333;
+        padding: 20px;
+    }
+
+    /* Header */
+    header {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 1rem 0;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        text-align: center;
+        left: 0;
+    }
+
+    header img {
+        max-width: 120px;
+        border-radius: 10px;
+        border: 3px solid #FF5722;
+        transition: transform 0.3s ease;
+    }
+
+    header img:hover {
+        transform: scale(1.05);
+    }
+
+    /* Contenedor principal */
+    .recovery-container {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 2.5rem;
+        border-radius: 20px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        max-width: 450px;
+        margin: 0 auto;
+        border: 1px solid #FFC107;
+        margin-top: 80px;
+    }
+
+    /* Título */
+    h2 {
+        color: #FF5722;
+        font-weight: 700;
+        font-size: 2rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Descripción */
+    .recovery-description {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #555;
+    }
+
+    /* Formulario */
+    .form-label {
+        color: #4CAF50;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .form-control {
+        border: 2px solid #FFC107;
+        border-radius: 10px;
+        padding: 0.75rem;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: #FF5722;
+        box-shadow: 0 0 8px rgba(255, 87, 34, 0.3);
+        outline: none;
+    }
+
+    .input-group-text {
+        background-color: #FFC107;
+        border: 2px solid #FFC107;
+        color: #333;
+        border-radius: 0 10px 10px 0;
+    }
+
+    /* Botón */
+    .btn-recovery {
+        background-color: #4CAF50;
+        border: none;
+        padding: 0.75rem;
+        font-weight: 600;
+        color: white;
+        border-radius: 10px;
+        width: 100%;
+        transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .btn-recovery:hover {
+        background-color: #FF5722;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Enlaces */
+    .back-to-login {
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+
+    .back-to-login a {
+        color: #FF5722;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s;
+    }
+
+    .back-to-login a:hover {
+        color: #4CAF50;
+        text-decoration: underline;
+    }
+
+    /* Footer */
+    footer {
+        text-align: center;
+        padding: 1rem;
+        color: #333;
+        font-size: 0.9rem;
+        margin-top: 2rem;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 10px;
+    }
     </style>
 </head>
+
 <body>
     <!-- Header con logo -->
     <header>
@@ -363,18 +365,19 @@ if (isset($_POST['correo'])) {
     <div class="recovery-container">
         <!-- Título del formulario -->
         <h2>Recuperar Contraseña</h2>
-        
+
         <!-- Descripción del proceso -->
         <div class="recovery-description">
             <p>Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</p>
         </div>
-        
+
         <!-- Formulario de recuperación -->
         <form action="recuperar_contraseña.php" method="post">
             <div class="mb-3">
                 <label for="correo" class="form-label">Correo Electrónico</label>
                 <div class="input-group">
-                    <input type="email" class="form-control" id="correo" name="correo" placeholder="Ingrese su correo" required>
+                    <input type="email" class="form-control" id="correo" name="correo" placeholder="Ingrese su correo"
+                        required>
                     <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                 </div>
             </div>
@@ -384,7 +387,7 @@ if (isset($_POST['correo'])) {
                 </button>
             </div>
         </form>
-        
+
         <!-- Enlace para volver al login -->
         <div class="back-to-login">
             <a href="login.php"><i class="fas fa-arrow-left me-1"></i> Volver a Iniciar Sesión</a>
@@ -398,4 +401,5 @@ if (isset($_POST['correo'])) {
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
