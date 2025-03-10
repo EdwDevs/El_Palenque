@@ -17,10 +17,10 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'admin') {
 // Incluir el archivo de conexión a la base de datos ANTES de usarlo
 include('db.php');
 
-// Almacenar el nombre del usuario logueado en una variable con seguridad contra XSS
+include('db.php');
+
 $username = htmlspecialchars($_SESSION['usuario']);
 
-// Verificar si existe el ID de usuario en la sesión
 if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
     $stmt = $conexion->prepare("SELECT id FROM usuarios WHERE nombre = ?");
     $stmt->bind_param("s", $_SESSION['usuario']);
@@ -31,13 +31,70 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
     }
     $stmt->close();
 }
+
+$section = isset($_GET['section']) ? $_GET['section'] : 'users';
+
+// Parámetros de filtro para comentarios
+$filter_autor = isset($_GET['autor']) ? trim($_GET['autor']) : '';
+$filter_comentario = isset($_GET['comentario']) ? trim($_GET['comentario']) : '';
+$filter_fecha_inicio = isset($_GET['fecha_inicio']) ? trim($_GET['fecha_inicio']) : '';
+$filter_fecha_fin = isset($_GET['fecha_fin']) ? trim($_GET['fecha_fin']) : '';
+
+// Paginación
+$limit = 10; // Comentarios por página
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+// Consulta base para comentarios con filtros
+$sql = "SELECT c.id, c.comentario, c.fecha_publicacion, u.nombre as autor 
+        FROM comentarios c 
+        JOIN usuarios u ON c.usuario_id = u.id 
+        WHERE 1=1";
+$params = [];
+$types = '';
+
+if ($filter_autor) {
+    $sql .= " AND u.nombre LIKE ?";
+    $params[] = "%$filter_autor%";
+    $types .= "s";
+}
+if ($filter_comentario) {
+    $sql .= " AND c.comentario LIKE ?";
+    $params[] = "%$filter_comentario%";
+    $types .= "s";
+}
+if ($filter_fecha_inicio) {
+    $sql .= " AND c.fecha_publicacion >= ?";
+    $params[] = $filter_fecha_inicio;
+    $types .= "s";
+}
+if ($filter_fecha_fin) {
+    $sql .= " AND c.fecha_publicacion <= ?";
+    $params[] = $filter_fecha_fin . " 23:59:59";
+    $types .= "s";
+}
+
+// Contar total de comentarios para paginación
+$count_sql = "SELECT COUNT(*) as total " . substr($sql, strrpos($sql, 'FROM'));
+$count_stmt = $conexion->prepare($count_sql);
+if ($params) {
+    $count_stmt->bind_param($types, ...$params);
+}
+$count_stmt->execute();
+$total_comments = $count_stmt->get_result()->fetch_assoc()['total'];
+$total_pages = ceil($total_comments / $limit);
+
+$sql .= " ORDER BY c.fecha_publicacion DESC LIMIT ? OFFSET ?";
+$params[] = $limit;
+$params[] = $offset;
+$types .= "ii";
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Panel de administración para gestionar usuarios y pedidos de Sabor Colombiano">
+    <meta name="description" content="Panel de administración para gestionar usuarios y comentarios de Sabor Colombiano">
     <title>Panel de Administración - Sabor Colombiano</title>
     
     <!-- Bootstrap CSS -->
@@ -152,6 +209,11 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             color: var(--color-light);
         }
         
+        .btn-comentarios {
+            background-color: #2196F3; /* Color azul para comentarios */
+            color: var(--color-light);
+        }
+        
         .btn-salir {
             background-color: var(--color-primary);
             color: var(--color-light);
@@ -178,6 +240,70 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        /* Contenedor de filtros */
+.filter-container {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.filter-container label {
+    font-weight: 500;
+    margin-right: 0.5rem;
+    color: var(--color-text);
+}
+
+.filter-container input, .filter-container select {
+    padding: 0.6rem 1rem;
+    border: 2px solid rgba(255, 193, 7, 0.3);
+    border-radius: 25px;
+    font-size: 0.9rem;
+    transition: var(--transition-normal);
+}
+
+.filter-container input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 10px rgba(255, 87, 34, 0.2);
+    outline: none;
+}
+
+.btn-filter {
+    background-color: #2196F3;
+    color: var(--color-light);
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: var(--transition-normal);
+}
+
+.btn-filter:hover {
+    background-color: #1976D2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-reset {
+    background-color: #9E9E9E;
+    color: var(--color-light);
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: var(--transition-normal);
+}
+
+.btn-reset:hover {
+    background-color: #757575;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
         
         /* Título con diseño moderno */
         h1 {
@@ -405,6 +531,18 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
         
+        .btn-eliminar {
+            background-color: rgba(255, 87, 34, 0.2);
+            color: var(--color-primary);
+        }
+        
+        .btn-eliminar:hover {
+            background-color: var(--color-primary);
+            color: var(--color-light);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
         /* Paginación modernizada */
         .pagination {
             display: flex;
@@ -548,125 +686,254 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
         <div class="header-actions">
             <!-- Botón para ir a la sección de productos -->
             <a href="productos.php" class="btn-nav btn-productos" title="Ir a la gestión de productos">
-                <i class="fas fa-shopping-cart"></i>Productos
+                <i class="fas fa-shopping-cart"></i> Productos
             </a>
             <!-- Botón para gestionar pedidos -->
             <a href="gestion_pedidos.php" class="btn-nav btn-pedidos" title="Gestionar pedidos">
-                <i class="fas fa-box"></i>Pedidos
+                <i class="fas fa-box"></i> Pedidos
+            </a>
+            <!-- Botón para gestionar comentarios -->
+            <a href="?section=comments" class="btn-nav btn-comentarios" title="Gestionar comentarios">
+                <i class="fas fa-comments"></i> Comentarios
             </a>
             <!-- Botón para cerrar sesión -->
             <a href="logout.php" class="btn-nav btn-salir" title="Cerrar sesión">
-                <i class="fas fa-sign-out-alt"></i>Salir
+                <i class="fas fa-sign-out-alt"></i> Salir
             </a>
         </div>
     </header>
 
-    <!-- Contenedor principal con la tabla de gestión de usuarios -->
+    <!-- Contenedor principal con la tabla de gestión -->
     <div class="container">
-        <h1>Panel de Administración de Usuarios</h1>
-        
-        <!-- Barra de búsqueda y filtros -->
-        <div class="search-bar">
-            <input type="text" class="search-input" id="searchUser" placeholder="Buscar usuario por nombre, correo o rol..." aria-label="Buscar usuario">
-            <button class="btn-search" onclick="searchUsers()">
-                <i class="fas fa-search"></i> Buscar
-            </button>
-        </div>
-        
-        <!-- Tabla responsive de usuarios -->
-        <div class="table-container">
-            <div class="table-responsive">
-                <table class="table" id="usersTable">
-                    <thead>
-                        <tr>
-                            <th>Nombre Usuario</th>
-                            <th>Correo</th>
-                            <th>Rol</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        // Consultar todos los usuarios de la base de datos
-                        $sel = $conexion->query("SELECT * FROM usuarios ORDER BY id ASC");
-                        
-                        if ($sel->num_rows > 0) {
-                            while ($fila = $sel->fetch_assoc()) {
-                                $statusClass = $fila['habilitado'] == 1 ? 'status-enabled' : 'status-disabled';
-                        ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($fila['nombre']); ?></td>
-                            <td><?php echo htmlspecialchars($fila['correo']); ?></td>
-                            <td><?php echo htmlspecialchars($fila['rol']); ?></td>
-                            <td>
-                                <div class="status-cell">
-                                    <span class="status-badge <?php echo $statusClass; ?>">
-                                        <?php if ($fila['habilitado'] == 1): ?>
-                                            <i class="fas fa-check-circle"></i> Habilitado
-                                        <?php else: ?>
-                                            <i class="fas fa-times-circle"></i> Inhabilitado
-                                        <?php endif; ?>
-                                    </span>
-                                </div>
-                            </td>
-                            <td class="actions-cell">
-                                <?php if ($fila['habilitado'] == 1): ?>
-                                    <a href="inhabilitar.php?correo=<?php echo urlencode($fila['correo']); ?>" class="btn-action btn-inhabilitar" title="Inhabilitar usuario">
-                                        <i class="fas fa-user-slash"></i> Inhabilitar
-                                    </a>
-                                <?php else: ?>
-                                    <a href="habilitar.php?correo=<?php echo urlencode($fila['correo']); ?>" class="btn-action btn-habilitar" title="Habilitar usuario">
-                                        <i class="fas fa-user-check"></i> Habilitar
-                                    </a>
-                                <?php endif; ?>
-                                <a href="modificar_usuario.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-editar" title="Asignar rol al usuario">
-                                    <i class="fas fa-user-tag"></i> Asignar Rol
-                                </a>
-                                <a href="editar_usuario.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-modificar" title="Modificar datos del usuario">
-                                    <i class="fas fa-user-edit"></i> Modificar
-                                </a>
-                            </td>
-                        </tr>
-                        <?php
-                            }
-                        } else {
-                        ?>
-                        <tr>
-                            <td colspan="5" class="text-center">No hay usuarios registrados en el sistema.</td>
-                        </tr>
-                        <?php
-                        }
-                        ?>
-                    </tbody>
-                </table>
+        <?php if ($section === 'users'): ?>
+            <h1>Panel de Administración de Usuarios</h1>
+            
+            <!-- Barra de búsqueda y filtros para usuarios -->
+            <div class="search-bar">
+                <input type="text" class="search-input" id="searchUser" placeholder="Buscar usuario por nombre, correo o rol..." aria-label="Buscar usuario">
+                <button class="btn-search" onclick="searchUsers()">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
             </div>
+            
+            <!-- Tabla responsive de usuarios -->
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table class="table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Nombre Usuario</th>
+                                <th>Correo</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            // Consultar todos los usuarios de la base de datos
+                            $sel = $conexion->query("SELECT * FROM usuarios ORDER BY id ASC");
+                            
+                            if ($sel->num_rows > 0) {
+                                while ($fila = $sel->fetch_assoc()) {
+                                    $statusClass = $fila['habilitado'] == 1 ? 'status-enabled' : 'status-disabled';
+                            ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($fila['nombre']); ?></td>
+                                <td><?php echo htmlspecialchars($fila['correo']); ?></td>
+                                <td><?php echo htmlspecialchars($fila['rol']); ?></td>
+                                <td>
+                                    <div class="status-cell">
+                                        <span class="status-badge <?php echo $statusClass; ?>">
+                                            <?php if ($fila['habilitado'] == 1): ?>
+                                                <i class="fas fa-check-circle"></i> Habilitado
+                                            <?php else: ?>
+                                                <i class="fas fa-times-circle"></i> Inhabilitado
+                                            <?php endif; ?>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="actions-cell">
+                                    <?php if ($fila['habilitado'] == 1): ?>
+                                        <a href="inhabilitar.php?correo=<?php echo urlencode($fila['correo']); ?>" class="btn-action btn-inhabilitar" title="Inhabilitar usuario">
+                                            <i class="fas fa-user-slash"></i> Inhabilitar
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="habilitar.php?correo=<?php echo urlencode($fila['correo']); ?>" class="btn-action btn-habilitar" title="Habilitar usuario">
+                                            <i class="fas fa-user-check"></i> Habilitar
+                                        </a>
+                                    <?php endif; ?>
+                                    <a href="modificar_usuario.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-editar" title="Asignar rol al usuario">
+                                        <i class="fas fa-user-tag"></i> Asignar Rol
+                                    </a>
+                                    <a href="editar_usuario.php?id=<?php echo $fila['id']; ?>" class="btn-action btn-modificar" title="Modificar datos del usuario">
+                                        <i class="fas fa-user-edit"></i> Modificar
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php
+                                }
+                            } else {
+                            ?>
+                            <tr>
+                                <td colspan="5" class="text-center">No hay usuarios registrados en el sistema.</td>
+                            </tr>
+                            <?php
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Paginación para usuarios -->
+            <nav aria-label="Paginación de usuarios">
+                <ul class="pagination">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </a>
+                    </li>
+                    <li class="page-item active" aria-current="page">
+                        <a class="page-link" href="#">1</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">2</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">3</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">
+                            Siguiente <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <?php elseif ($section === 'comments'): ?>
+    <h1>Gestión de Comentarios</h1>
+    
+    <!-- Formulario de filtros profesional -->
+    <form class="filter-container" method="GET" action="admin_home.php">
+        <input type="hidden" name="section" value="comments">
+        
+        <div>
+            <label for="autor">Autor:</label>
+            <input type="text" id="autor" name="autor" value="<?php echo htmlspecialchars($filter_autor); ?>" placeholder="Nombre del autor">
         </div>
         
-        <!-- Paginación para tablas con muchos registros -->
-        <nav aria-label="Paginación de usuarios">
-            <ul class="pagination">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                        <i class="fas fa-chevron-left"></i> Anterior
-                    </a>
-                </li>
-                <li class="page-item active" aria-current="page">
-                    <a class="page-link" href="#">1</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="#">2</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="#">3</a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="#">
-                        Siguiente <i class="fas fa-chevron-right"></i>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+        <div>
+            <label for="comentario">Comentario:</label>
+            <input type="text" id="comentario" name="comentario" value="<?php echo htmlspecialchars($filter_comentario); ?>" placeholder="Texto del comentario">
+        </div>
+        
+        <div>
+            <label for="fecha_inicio">Desde:</label>
+            <input type="date" id="fecha_inicio" name="fecha_inicio" value="<?php echo htmlspecialchars($filter_fecha_inicio); ?>">
+        </div>
+        
+        <div>
+            <label for="fecha_fin">Hasta:</label>
+            <input type="date" id="fecha_fin" name="fecha_fin" value="<?php echo htmlspecialchars($filter_fecha_fin); ?>">
+        </div>
+        
+        <button type="submit" class="btn-filter"><i class="fas fa-filter"></i> Filtrar</button>
+        <a href="admin_home.php?section=comments" class="btn-reset"><i class="fas fa-undo"></i> Reiniciar</a>
+    </form>
+    
+    <!-- Tabla responsive de comentarios -->
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table" id="commentsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Autor</th>
+                        <th>Comentario</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $stmt = $conexion->prepare($sql);
+                    if ($params) {
+                        $stmt->bind_param($types, ...$params);
+                    }
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    
+                    if ($result->num_rows > 0) {
+                        while ($fila = $result->fetch_assoc()) {
+                    ?>
+                    <tr>
+                        <td><?php echo $fila['id']; ?></td>
+                        <td><?php echo htmlspecialchars($fila['autor']); ?></td>
+                        <td><?php echo htmlspecialchars($fila['comentario']); ?></td>
+                        <td><?php echo date('d/m/Y H:i', strtotime($fila['fecha_publicacion'])); ?></td>
+                        <td class="actions-cell">
+                            <a href="eliminar_comentario.php?id=<?php echo $fila['id']; ?>&section=comments" class="btn-action btn-eliminar" title="Eliminar comentario">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </a>
+                        </td>
+                    </tr>
+                    <?php
+                        }
+                    } else {
+                    ?>
+                    <tr>
+                        <td colspan="5" class="text-center">No hay comentarios que coincidan con los filtros.</td>
+                    </tr>
+                    <?php
+                    }
+                    $stmt->close();
+                    ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Paginación dinámica -->
+    <nav aria-label="Paginación de comentarios">
+        <ul class="pagination">
+            <?php if ($page > 1): ?>
+            <li class="page-item">
+                <a class="page-link" href="admin_home.php?section=comments&page=<?php echo $page - 1; ?>&autor=<?php echo urlencode($filter_autor); ?>&comentario=<?php echo urlencode($filter_comentario); ?>&fecha_inicio=<?php echo urlencode($filter_fecha_inicio); ?>&fecha_fin=<?php echo urlencode($filter_fecha_fin); ?>">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </a>
+            </li>
+            <?php else: ?>
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </a>
+            </li>
+            <?php endif; ?>
+            
+            <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+            <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                <a class="page-link" href="admin_home.php?section=comments&page=<?php echo $i; ?>&autor=<?php echo urlencode($filter_autor); ?>&comentario=<?php echo urlencode($filter_comentario); ?>&fecha_inicio=<?php echo urlencode($filter_fecha_inicio); ?>&fecha_fin=<?php echo urlencode($filter_fecha_fin); ?>">
+                    <?php echo $i; ?>
+                </a>
+            </li>
+            <?php endfor; ?>
+            
+            <?php if ($page < $total_pages): ?>
+            <li class="page-item">
+                <a class="page-link" href="admin_home.php?section=comments&page=<?php echo $page + 1; ?>&autor=<?php echo urlencode($filter_autor); ?>&comentario=<?php echo urlencode($filter_comentario); ?>&fecha_inicio=<?php echo urlencode($filter_fecha_inicio); ?>&fecha_fin=<?php echo urlencode($filter_fecha_fin); ?>">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+            <?php else: ?>
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+            <?php endif; ?>
+        </ul>
+    </nav>
+<?php endif; ?>
     </div>
 
     <!-- Pie de página -->
@@ -701,17 +968,56 @@ if (isset($_SESSION['usuario']) && !isset($_SESSION['usuario_id'])) {
             }
         }
         
-        // Escuchar eventos de teclado en el campo de búsqueda
-        document.getElementById('searchUser').addEventListener('keyup', searchUsers);
-        
-        // Confirmar antes de inhabilitar o habilitar un usuario
-        document.addEventListener('DOMContentLoaded', function() {
-            const actionButtons = document.querySelectorAll('.btn-inhabilitar, .btn-habilitar');
+        // Función para buscar comentarios en la tabla
+        function searchComments() {
+            const searchValue = document.getElementById('searchComment').value.toLowerCase();
+            const table = document.getElementById('commentsTable');
+            const rows = table.getElementsByTagName('tr');
             
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let found = false;
+                
+                for (let j = 0; j < cells.length - 1; j++) {
+                    const cellText = cells[j].textContent.toLowerCase();
+                    if (cellText.includes(searchValue)) {
+                        found = true;
+                        break;
+                    }
+                }
+                
+                rows[i].style.display = found ? '' : 'none';
+            }
+        }
+        
+        // Escuchar eventos de teclado en los campos de búsqueda
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchUser = document.getElementById('searchUser');
+            if (searchUser) {
+                searchUser.addEventListener('keyup', searchUsers);
+            }
+            
+            const searchComment = document.getElementById('searchComment');
+            if (searchComment) {
+                searchComment.addEventListener('keyup', searchComments);
+            }
+            
+            // Confirmar antes de inhabilitar o habilitar un usuario
+            const actionButtons = document.querySelectorAll('.btn-inhabilitar, .btn-habilitar');
             actionButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
                     const action = this.classList.contains('btn-inhabilitar') ? 'inhabilitar' : 'habilitar';
                     if (!confirm(`¿Estás seguro de que deseas ${action} este usuario?`)) {
+                        e.preventDefault();
+                    }
+                });
+            });
+            
+            // Confirmar antes de eliminar un comentario
+            const deleteButtons = document.querySelectorAll('.btn-eliminar');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    if (!confirm('¿Estás seguro de que deseas eliminar este comentario?')) {
                         e.preventDefault();
                     }
                 });

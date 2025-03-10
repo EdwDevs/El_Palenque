@@ -691,7 +691,7 @@ include('db.php');
                         <a class="nav-link" href="productos_compra.php">Productos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="historias.php">Historias</a>
+                        <a class="nav-link" href="Historias_comunidad.php">Historias</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="contacto.php">Contacto</a>
