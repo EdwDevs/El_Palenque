@@ -1,4 +1,9 @@
 <?php
+// gestion_pedidos.php - Panel de administración para gestionar pedidos
+// Autor: [Tu Nombre]
+// Fecha: [Fecha actual]
+// Descripción: Este archivo permite a los administradores ver, filtrar y gestionar todos los pedidos del sistema
+
 // Iniciar la sesión para gestionar datos del usuario logueado
 session_start();
 
@@ -25,6 +30,14 @@ if (isset($_GET['eliminar_pedido'])) {
     $pedido_id = intval($_GET['eliminar_pedido']);
     
     try {
+        // Iniciar transacción para asegurar la integridad de los datos
+        $conexion->begin_transaction();
+        
+        // Eliminar registros relacionados en la tabla entregas (si existe)
+        $stmt = $conexion->prepare("DELETE FROM entregas WHERE pedido_id = ?");
+        $stmt->bind_param("i", $pedido_id);
+        $stmt->execute();
+        
         // Eliminar detalles del pedido primero
         $stmt = $conexion->prepare("DELETE FROM detalles_pedido WHERE pedido_id = ?");
         $stmt->bind_param("i", $pedido_id);
@@ -35,22 +48,152 @@ if (isset($_GET['eliminar_pedido'])) {
         $stmt->bind_param("i", $pedido_id);
         $stmt->execute();
         
+        // Confirmar la transacción
+        $conexion->commit();
+        
         // Redirigir con mensaje de éxito
-        header("Location: gestion_pedidos.php?mensaje=Pedido eliminado correctamente");
+        header("Location: gestion_pedidos.php?mensaje=Pedido eliminado correctamente&tipo=success");
         exit();
     } catch (Exception $e) {
-        header("Location: gestion_pedidos.php?mensaje=Error al eliminar el pedido: " . $e->getMessage());
+        // Revertir cambios en caso de error
+        $conexion->rollback();
+        
+        // Redirigir con mensaje de error
+        header("Location: gestion_pedidos.php?mensaje=Error al eliminar el pedido: " . $e->getMessage() . "&tipo=danger");
         exit();
     }
 }
 
-// Consultar todos los pedidos con el nombre del usuario
-$sel = $conexion->query("
-    SELECT p.id, p.usuario_id, p.fecha_pedido, p.total, p.estado, u.nombre AS usuario_nombre 
+// Configuración de filtros y paginación
+// =====================================
+
+// Valores predeterminados para filtros
+$filtro_estado = isset($_GET['estado']) ? $_GET['estado'] : '';
+$filtro_usuario = isset($_GET['usuario']) ? $_GET['usuario'] : '';
+$filtro_fecha_desde = isset($_GET['fecha_desde']) ? $_GET['fecha_desde'] : '';
+$filtro_fecha_hasta = isset($_GET['fecha_hasta']) ? $_GET['fecha_hasta'] : '';
+$orden = isset($_GET['orden']) ? $_GET['orden'] : 'fecha_desc'; // Orden predeterminado: más recientes primero
+
+// Configuración de paginación
+$registros_por_pagina = 10;
+$pagina_actual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
+$offset = ($pagina_actual - 1) * $registros_por_pagina;
+
+// Construir la consulta SQL base
+$sql_base = "
     FROM pedidos p 
     JOIN usuarios u ON p.usuario_id = u.id 
-    ORDER BY p.fecha_pedido DESC
-");
+    WHERE 1=1
+";
+
+// Añadir condiciones de filtro a la consulta
+$params = [];
+$tipos = "";
+
+// Filtro por estado
+if (!empty($filtro_estado)) {
+    $sql_base .= " AND p.estado = ?";
+    $params[] = $filtro_estado;
+    $tipos .= "s";
+}
+
+// Filtro por usuario (búsqueda por nombre o ID)
+if (!empty($filtro_usuario)) {
+    $sql_base .= " AND (u.nombre LIKE ? OR u.id = ?)";
+    $params[] = "%$filtro_usuario%";
+    $params[] = intval($filtro_usuario);
+    $tipos .= "si";
+}
+
+// Filtro por rango de fechas
+if (!empty($filtro_fecha_desde)) {
+    $sql_base .= " AND p.fecha_pedido >= ?";
+    $params[] = $filtro_fecha_desde . " 00:00:00";
+    $tipos .= "s";
+}
+
+if (!empty($filtro_fecha_hasta)) {
+    $sql_base .= " AND p.fecha_pedido <= ?";
+    $params[] = $filtro_fecha_hasta . " 23:59:59";
+    $tipos .= "s";
+}
+
+// Determinar el orden de los resultados
+$sql_orden = "";
+switch ($orden) {
+    case 'fecha_asc':
+        $sql_orden = " ORDER BY p.fecha_pedido ASC";
+        break;
+    case 'fecha_desc':
+        $sql_orden = " ORDER BY p.fecha_pedido DESC";
+        break;
+    case 'total_asc':
+        $sql_orden = " ORDER BY p.total ASC";
+        break;
+    case 'total_desc':
+        $sql_orden = " ORDER BY p.total DESC";
+        break;
+    case 'estado':
+        $sql_orden = " ORDER BY p.estado ASC, p.fecha_pedido DESC";
+        break;
+    case 'usuario':
+        $sql_orden = " ORDER BY u.nombre ASC, p.fecha_pedido DESC";
+        break;
+    default:
+        $sql_orden = " ORDER BY p.fecha_pedido DESC";
+}
+
+// Consulta para contar el total de registros (para la paginación)
+$sql_count = "SELECT COUNT(*) as total " . $sql_base;
+$stmt_count = $conexion->prepare($sql_count);
+
+// Vincular parámetros si existen
+if (!empty($params)) {
+    $ref_params = [];
+    $ref_params[] = &$tipos;
+    foreach ($params as $key => $value) {
+        $ref_params[] = &$params[$key];
+    }
+    call_user_func_array([$stmt_count, 'bind_param'], $ref_params);
+}
+
+$stmt_count->execute();
+$result_count = $stmt_count->get_result();
+$row_count = $result_count->fetch_assoc();
+$total_registros = $row_count['total'];
+$total_paginas = ceil($total_registros / $registros_por_pagina);
+
+// Consulta principal para obtener los pedidos filtrados y paginados
+$sql = "SELECT p.id, p.usuario_id, p.fecha_pedido, p.total, p.estado, u.nombre AS usuario_nombre " . 
+       $sql_base . $sql_orden . " LIMIT ?, ?";
+
+$stmt = $conexion->prepare($sql);
+
+// Añadir parámetros de paginación
+$params[] = $offset;
+$params[] = $registros_por_pagina;
+$tipos .= "ii";
+
+// Vincular parámetros
+$ref_params = [];
+$ref_params[] = &$tipos;
+foreach ($params as $key => $value) {
+    $ref_params[] = &$params[$key];
+}
+call_user_func_array([$stmt, 'bind_param'], $ref_params);
+
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Obtener lista de estados para el filtro
+$estados = ['pendiente', 'confirmado', 'enviado', 'entregado', 'cancelado'];
+
+// Obtener lista de usuarios para el filtro autocompletable
+$stmt_usuarios = $conexion->query("SELECT id, nombre FROM usuarios ORDER BY nombre ASC");
+$usuarios = [];
+while ($row = $stmt_usuarios->fetch_assoc()) {
+    $usuarios[] = $row;
+}
 ?>
 
 <!DOCTYPE html>
@@ -70,6 +213,9 @@ $sel = $conexion->query("
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Flatpickr (para selector de fechas) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
     <style>
         :root {
             --color-primary: #FF5722;
@@ -80,6 +226,9 @@ $sel = $conexion->query("
             --color-hover: #FFF3E0;
             --color-danger: #f44336;
             --color-danger-dark: #d32f2f;
+            --color-success: #4CAF50;
+            --color-info: #2196F3;
+            --color-warning: #FF9800;
             --border-radius: 10px;
             --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             --transition-normal: all 0.3s ease;
@@ -238,6 +387,251 @@ $sel = $conexion->query("
             font-weight: 900;
             font-size: 1.2rem;
             color: var(--color-secondary);
+        }
+        
+        .alert-danger {
+            background-color: rgba(244, 67, 54, 0.15);
+            color: var(--color-danger);
+            border-left: 4px solid var(--color-danger);
+        }
+        
+        .alert-danger::before {
+            content: '\f057';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: var(--color-danger);
+        }
+        
+        /* Sección de filtros */
+        .filtros-container {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+        }
+        
+        .filtros-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px dashed rgba(255, 193, 7, 0.3);
+        }
+        
+        .filtros-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .filtros-title i {
+            color: var(--color-secondary);
+        }
+        
+        .filtros-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+        
+        .filtro-grupo {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filtro-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--color-text);
+            font-size: 0.9rem;
+        }
+        
+        .filtro-input {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: var(--transition-normal);
+        }
+        
+        .filtro-input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+            outline: none;
+        }
+        
+        .filtro-select {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: var(--transition-normal);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23FF5722' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px 12px;
+        }
+        
+        .filtro-select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+            outline: none;
+        }
+        
+        .filtro-date {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: var(--transition-normal);
+        }
+        
+        .filtro-date:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+            outline: none;
+        }
+        
+        .filtros-actions {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+        
+        .btn-filtrar {
+            background-color: var(--color-secondary);
+            color: var(--color-light);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: var(--transition-normal);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-filtrar:hover {
+            background-color: #3d8b40;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-limpiar {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--color-accent);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: var(--transition-normal);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-limpiar:hover {
+            background-color: rgba(255, 193, 7, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Resumen de filtros aplicados */
+        .filtros-aplicados {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed rgba(255, 193, 7, 0.3);
+        }
+        
+        .filtro-tag {
+            background-color: rgba(255, 87, 34, 0.1);
+            color: var(--color-primary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .filtro-tag i {
+            font-size: 0.75rem;
+        }
+        
+        .filtro-tag-remove {
+            background: none;
+            border: none;
+            color: var(--color-primary);
+            cursor: pointer;
+            padding: 0;
+            margin-left: 0.3rem;
+            opacity: 0.7;
+            transition: var(--transition-normal);
+        }
+        
+        .filtro-tag-remove:hover {
+            opacity: 1;
+        }
+        
+        /* Información de resultados y ordenación */
+        .resultados-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .resultados-contador {
+            font-size: 0.95rem;
+            color: var(--color-text);
+        }
+        
+        .resultados-contador strong {
+            color: var(--color-primary);
+        }
+        
+        .ordenar-por {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .ordenar-label {
+            font-size: 0.95rem;
+            color: var(--color-text);
+            margin: 0;
+        }
+        
+        .ordenar-select {
+            padding: 0.4rem 0.8rem;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: var(--transition-normal);
+            font-size: 0.9rem;
+        }
+        
+        .ordenar-select:focus {
+            border-color: var(--color-primary);
+            outline: none;
         }
         
         /* Tabla modernizada */
@@ -567,15 +961,12 @@ $sel = $conexion->query("
             <i class="fas fa-user-shield"></i>¡Hola, <?php echo $username; ?>!
         </span>
         <div class="header-actions">
-            <!-- Botón para ir a la sección de usuarios -->
             <a href="admin_home.php" class="btn-nav" title="Gestionar usuarios">
                 <i class="fas fa-users"></i>Usuarios
             </a>
-            <!-- Botón para ir a la sección de productos -->
             <a href="productos.php" class="btn-nav" title="Gestionar productos">
                 <i class="fas fa-shopping-cart"></i>Productos
             </a>
-            <!-- Botón para cerrar sesión -->
             <a href="logout.php" class="btn-nav" title="Cerrar sesión">
                 <i class="fas fa-sign-out-alt"></i>Salir
             </a>
@@ -588,11 +979,91 @@ $sel = $conexion->query("
         
         <!-- Mensaje de feedback -->
         <?php if (isset($_GET['mensaje'])): ?>
-            <div class="alert alert-success" role="alert">
+            <div class="alert alert-<?php echo htmlspecialchars($_GET['tipo']); ?>" role="alert">
                 <?php echo htmlspecialchars($_GET['mensaje']); ?>
             </div>
         <?php endif; ?>
         
+        <!-- Sección de filtros -->
+        <div class="filtros-container">
+            <div class="filtros-header">
+                <h2 class="filtros-title"><i class="fas fa-filter"></i> Filtrar Pedidos</h2>
+            </div>
+            <form class="filtros-form" method="GET" action="gestion_pedidos.php">
+                <div class="filtro-grupo">
+                    <label class="filtro-label" for="estado">Estado:</label>
+                    <select class="filtro-select" name="estado" id="estado">
+                        <option value="">Todos</option>
+                        <?php foreach ($estados as $estado): ?>
+                            <option value="<?php echo $estado; ?>" <?php echo ($filtro_estado === $estado) ? 'selected' : ''; ?>>
+                                <?php echo ucfirst($estado); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="filtro-grupo">
+                    <label class="filtro-label" for="usuario">Usuario:</label>
+                    <input type="text" class="filtro-input" name="usuario" id="usuario" value="<?php echo htmlspecialchars($filtro_usuario); ?>" placeholder="Nombre o ID de usuario">
+                </div>
+                <div class="filtro-grupo">
+                    <label class="filtro-label" for="fecha_desde">Fecha Desde:</label>
+                    <input type="text" class="filtro-date" name="fecha_desde" id="fecha_desde" value="<?php echo htmlspecialchars($filtro_fecha_desde); ?>" placeholder="YYYY-MM-DD">
+                </div>
+                <div class="filtro-grupo">
+                    <label class="filtro-label" for="fecha_hasta">Fecha Hasta:</label>
+                    <input type="text" class="filtro-date" name="fecha_hasta" id="fecha_hasta" value="<?php echo htmlspecialchars($filtro_fecha_hasta); ?>" placeholder="YYYY-MM-DD">
+                </div>
+                <div class="filtros-actions">
+                    <button type="submit" class="btn-filtrar"><i class="fas fa-search"></i> Filtrar</button>
+                    <a href="gestion_pedidos.php" class="btn-limpiar"><i class="fas fa-times"></i> Limpiar</a>
+                </div>
+            </form>
+            <div class="filtros-aplicados">
+                <?php if ($filtro_estado): ?>
+                    <span class="filtro-tag">
+                        Estado: <?php echo ucfirst(htmlspecialchars($filtro_estado)); ?>
+                        <button class="filtro-tag-remove" onclick="window.location.href='gestion_pedidos.php?usuario=<?php echo htmlspecialchars($filtro_usuario); ?>&fecha_desde=<?php echo htmlspecialchars($filtro_fecha_desde); ?>&fecha_hasta=<?php echo htmlspecialchars($filtro_fecha_hasta); ?>'">&times;</button>
+                    </span>
+                <?php endif; ?>
+                <?php if ($filtro_usuario): ?>
+                    <span class="filtro-tag">
+                        Usuario: <?php echo htmlspecialchars($filtro_usuario); ?>
+                        <button class="filtro-tag-remove" onclick="window.location.href='gestion_pedidos.php?estado=<?php echo htmlspecialchars($filtro_estado); ?>&fecha_desde=<?php echo htmlspecialchars($filtro_fecha_desde); ?>&fecha_hasta=<?php echo htmlspecialchars($filtro_fecha_hasta); ?>'">&times;</button>
+                    </span>
+                <?php endif; ?>
+                <?php if ($filtro_fecha_desde): ?>
+                    <span class="filtro-tag">
+                        Fecha Desde: <?php echo htmlspecialchars($filtro_fecha_desde); ?>
+                        <button class="filtro-tag-remove" onclick="window.location.href='gestion_pedidos.php?estado=<?php echo htmlspecialchars($filtro_estado); ?>&usuario=<?php echo htmlspecialchars($filtro_usuario); ?>&fecha_hasta=<?php echo htmlspecialchars($filtro_fecha_hasta); ?>'">&times;</button>
+                    </span>
+                <?php endif; ?>
+                <?php if ($filtro_fecha_hasta): ?>
+                    <span class="filtro-tag">
+                        Fecha Hasta: <?php echo htmlspecialchars($filtro_fecha_hasta); ?>
+                        <button class="filtro-tag-remove" onclick="window.location.href='gestion_pedidos.php?estado=<?php echo htmlspecialchars($filtro_estado); ?>&usuario=<?php echo htmlspecialchars($filtro_usuario); ?>&fecha_desde=<?php echo htmlspecialchars($filtro_fecha_desde); ?>'">&times;</button>
+                    </span>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Información de resultados -->
+        <div class="resultados-info">
+            <div class="resultados-contador">
+                Mostrando <strong><?php echo $total_registros; ?></strong> pedidos
+            </div>
+            <div class="ordenar-por">
+                <label class="ordenar-label" for="orden">Ordenar por:</label>
+                <select class="ordenar-select" name="orden" id="orden" onchange="window.location.href='gestion_pedidos.php?estado=<?php echo htmlspecialchars($filtro_estado); ?>&usuario=<?php echo htmlspecialchars($filtro_usuario); ?>&fecha_desde=<?php echo htmlspecialchars($filtro_fecha_desde); ?>&fecha_hasta=<?php echo htmlspecialchars($filtro_fecha_hasta); ?>&orden=' + this.value;">
+                    <option value="fecha_desc" <?php echo ($orden === 'fecha_desc') ? 'selected' : ''; ?>>Fecha (más recientes)</option>
+                    <option value="fecha_asc" <?php echo ($orden === 'fecha_asc') ? 'selected' : ''; ?>>Fecha (más antiguos)</option>
+                    <option value="total_desc" <?php echo ($orden === 'total_desc') ? 'selected' : ''; ?>>Total (mayor a menor)</option>
+                    <option value="total_asc" <?php echo ($orden === 'total_asc') ? 'selected' : ''; ?>>Total (menor a mayor)</option>
+                    <option value="estado" <?php echo ($orden === 'estado') ? 'selected' : ''; ?>>Estado</option>
+                    <option value="usuario" <?php echo ($orden === 'usuario') ? 'selected' : ''; ?>>Usuario</option>
+                </select>
+            </div>
+        </div>
+
         <!-- Tabla responsive de pedidos -->
         <div class="table-container">
             <div class="table-responsive">
@@ -609,8 +1080,8 @@ $sel = $conexion->query("
                     </thead>
                     <tbody>
                         <?php
-                        if ($sel->num_rows > 0) {
-                            while ($fila = $sel->fetch_assoc()) {
+                        if ($result->num_rows > 0) {
+                            while ($fila = $result->fetch_assoc()) {
                                 $estadoClass = '';
                                 switch ($fila['estado']) {
                                     case 'pendiente':
@@ -672,6 +1143,19 @@ $sel = $conexion->query("
                 </table>
             </div>
         </div>
+
+        <!-- Paginación -->
+        <nav aria-label="Paginación">
+            <ul class="pagination justify-content-center">
+                <?php for ($i = 1; $i <= $total_paginas; $i++): ?>
+                    <li class="page-item <?php echo ($i == $pagina_actual) ? 'active' : ''; ?>">
+                        <a class="page-link" href="gestion_pedidos.php?estado=<?php echo htmlspecialchars($filtro_estado); ?>&usuario=<?php echo htmlspecialchars($filtro_usuario); ?>&fecha_desde=<?php echo htmlspecialchars($filtro_fecha_desde); ?>&fecha_hasta=<?php echo htmlspecialchars($filtro_fecha_hasta); ?>&orden=<?php echo htmlspecialchars($orden); ?>&pagina=<?php echo $i; ?>">
+                            <?php echo $i; ?>
+                        </a>
+                    </li>
+                <?php endfor; ?>
+            </ul>
+        </nav>
     </div>
 
     <!-- Pie de página -->
@@ -682,8 +1166,21 @@ $sel = $conexion->query("
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- Flatpickr JS (para selector de fechas) -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
     <!-- Script personalizado -->
     <script>
+        // Inicializar Flatpickr para los campos de fecha
+        flatpickr("#fecha_desde", {
+            dateFormat: "Y-m-d",
+            allowInput: true
+        });
+        flatpickr("#fecha_hasta", {
+            dateFormat: "Y-m-d",
+            allowInput: true
+        });
+
         // Confirmación antes de eliminar un pedido
         document.addEventListener('DOMContentLoaded', function() {
             // Auto-ocultar alertas después de 5 segundos
@@ -697,8 +1194,6 @@ $sel = $conexion->query("
                     });
                 }, 5000);
             }
-            
-            // Confirmación de eliminación (ya implementada en el enlace con onclick)
         });
     </script>
 </body>
