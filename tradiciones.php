@@ -899,7 +899,7 @@ $info_debug = [
                             <a class="nav-link" href="productos.php">Productos</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="historias.php">Historias</a>
+                            <a class="nav-link" href="Historias_comunidad.php">Historias</a>
                         </li>
                         <?php if(isset($_SESSION['rol']) && $_SESSION['rol'] == 'admin'): ?>
                         <li class="nav-item">
