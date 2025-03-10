@@ -41,188 +41,215 @@ $category_result = $conexion->query($category_query);
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <!-- Configuración básica del documento -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Formulario para modificar productos en San Basilio del Palenque">
     <title>Modificar Producto - San Basilio del Palenque</title>
-    
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome para íconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts - Montserrat -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Estilos personalizados -->
     <style>
-        :root {
-            --color-primary: #FF5722;
-            --color-secondary: #4CAF50;
-            --color-accent: #FFC107;
-            --color-text: #333333;
-            --color-light: #FFFFFF;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
+    :root {
+        --color-primary: #FF5722;
+        --color-secondary: #4CAF50;
+        --color-accent: #FFC107;
+        --color-text: #333333;
+        --color-light: #FFFFFF;
+        --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+    }
+
+    body {
+        font-family: 'Montserrat', sans-serif;
+        background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
+        min-height: 100vh;
+        color: var(--color-text);
+        margin: 0;
+        padding: 0;
+    }
+
+    header {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 1rem 2rem;
+        box-shadow: var(--shadow);
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .header-logo img {
+        max-width: 120px;
+        border-radius: 10px;
+        border: 3px solid var(--color-primary);
+        transition: var(--transition);
+    }
+
+    .header-logo img:hover {
+        transform: scale(1.05);
+    }
+
+    .user-welcome {
+        color: var(--color-primary);
+        font-weight: bold;
+        margin: 0 1rem;
+    }
+
+    .btn-home {
+        background-color: var(--color-primary);
+        color: var(--color-light);
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .btn-home:hover {
+        background-color: var(--color-secondary);
+        transform: translateY(-2px);
+    }
+
+    .main-content {
+        margin-top: 8rem;
+        padding: 2rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .contenedor {
+        background-color: var(--color-light);
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: var(--shadow);
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
         }
 
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background: linear-gradient(135deg, var(--color-accent), var(--color-primary), var(--color-secondary));
-            min-height: 100vh;
-            color: var(--color-text);
-            margin: 0;
-            padding: 0;
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
+    }
 
+    h3 {
+        color: var(--color-primary);
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    label {
+        font-weight: 600;
+        color: var(--color-text);
+    }
+
+    input[type="text"],
+    input[type="datetime-local"],
+    select {
+        padding: 0.75rem;
+        border: 2px solid var(--color-accent);
+        border-radius: 5px;
+        font-size: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+        transition: var(--transition);
+    }
+
+    input[type="text"]:focus,
+    input[type="datetime-local"]:focus,
+    select:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 8px rgba(255, 87, 34, 0.3);
+        outline: none;
+    }
+
+    input[type="submit"] {
+        background-color: var(--color-secondary);
+        color: var(--color-light);
+        padding: 0.9rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: var(--transition);
+    }
+
+    input[type="submit"]:hover {
+        background-color: var(--color-primary);
+        transform: translateY(-2px);
+    }
+
+    .notification {
+        display: none;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px;
+        border-radius: 5px;
+        color: var(--color-light);
+        z-index: 1000;
+        box-shadow: var(--shadow);
+    }
+
+    .success {
+        background-color: var(--color-secondary);
+    }
+
+    .error {
+        background-color: #f44336;
+    }
+
+    @media (max-width: 768px) {
         header {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 1rem 2rem;
-            box-shadow: var(--shadow);
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .header-logo img {
-            max-width: 120px;
-            border-radius: 10px;
-            border: 3px solid var(--color-primary);
-            transition: var(--transition);
-        }
-
-        .header-logo img:hover {
-            transform: scale(1.05);
-        }
-
-        .user-welcome {
-            color: var(--color-primary);
-            font-weight: bold;
-            margin: 0 1rem;
-        }
-
-        .btn-home {
-            background-color: var(--color-primary);
-            color: var(--color-light);
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: var(--transition);
-        }
-
-        .btn-home:hover {
-            background-color: var(--color-secondary);
-            transform: translateY(-2px);
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1rem;
         }
 
         .main-content {
-            margin-top: 8rem;
-            padding: 2rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            padding: 1rem;
         }
 
         .contenedor {
-            background-color: var(--color-light);
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+            padding: 1.5rem;
         }
 
         h3 {
-            color: var(--color-primary);
-            text-align: center;
-            margin-bottom: 2rem;
-            font-size: 1.8rem;
-            font-weight: 700;
+            font-size: 1.5rem;
         }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        label {
-            font-weight: 600;
-            color: var(--color-text);
-        }
-
-        input[type="text"],
-        input[type="datetime-local"],
-        select {
-            padding: 0.75rem;
-            border: 2px solid var(--color-accent);
-            border-radius: 5px;
-            font-size: 1rem;
-            width: 100%;
-            box-sizing: border-box;
-            transition: var(--transition);
-        }
-
-        input[type="text"]:focus,
-        input[type="datetime-local"]:focus,
-        select:focus {
-            border-color: var(--color-primary);
-            box-shadow: 0 0 8px rgba(255, 87, 34, 0.3);
-            outline: none;
-        }
-
-        input[type="submit"] {
-            background-color: var(--color-secondary);
-            color: var(--color-light);
-            padding: 0.9rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: var(--transition);
-        }
-
-        input[type="submit"]:hover {
-            background-color: var(--color-primary);
-            transform: translateY(-2px);
-        }
-
-        .notification {
-            display: none;
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            color: var(--color-light);
-            z-index: 1000;
-            box-shadow: var(--shadow);
-        }
-
-        .success { background-color: var(--color-secondary); }
-        .error { background-color: #f44336; }
-
-        @media (max-width: 768px) {
-            header { flex-direction: column; gap: 1rem; padding: 1rem; }
-            .main-content { padding: 1rem; }
-            .contenedor { padding: 1.5rem; }
-            h3 { font-size: 1.5rem; }
-        }
+    }
     </style>
 </head>
+
 <body>
     <!-- Encabezado -->
     <header>
@@ -239,19 +266,22 @@ $category_result = $conexion->query($category_query);
     <main class="main-content">
         <div class="contenedor">
             <h3>Modificar Producto</h3>
-            <form id="updateForm" action="query_update_producto.php" method="POST" onsubmit="return handleSubmit(event)">
+            <form id="updateForm" action="query_update_producto.php" method="POST"
+                onsubmit="return handleSubmit(event)">
                 <input type="hidden" name="id" value="<?php echo htmlspecialchars($fila['id']); ?>">
-                
+
                 <label for="nombre">Nombre</label>
-                <input type="text" id="nombre" name="nombre" value="<?php echo htmlspecialchars($fila['nombre']); ?>" required>
-                
+                <input type="text" id="nombre" name="nombre" value="<?php echo htmlspecialchars($fila['nombre']); ?>"
+                    required>
+
                 <label for="descripcion">Descripción</label>
-                <input type="text" id="descripcion" name="descripcion" value="<?php echo htmlspecialchars($fila['descripcion']); ?>" required>
-                
+                <input type="text" id="descripcion" name="descripcion"
+                    value="<?php echo htmlspecialchars($fila['descripcion']); ?>" required>
+
                 <label for="precio">Precio</label>
-                <input type="text" id="precio" name="precio" value="<?php echo htmlspecialchars($fila['precio']); ?>" 
-                       pattern="[0-9]+(\.[0-9]{1,2})?" title="Ingrese un número válido (ej. 1234.56)" required>
-                
+                <input type="text" id="precio" name="precio" value="<?php echo htmlspecialchars($fila['precio']); ?>"
+                    pattern="[0-9]+(\.[0-9]{1,2})?" title="Ingrese un número válido (ej. 1234.56)" required>
+
                 <label for="categoria_id">Categoría</label>
                 <select id="categoria_id" name="categoria_id" required>
                     <option value="">Seleccione una categoría</option>
@@ -263,11 +293,11 @@ $category_result = $conexion->query($category_query);
                     }
                     ?>
                 </select>
-                
+
                 <label for="fecha">Fecha de Creación</label>
-                <input type="datetime-local" id="fecha" name="fecha_creacion" 
-                       value="<?php echo date('Y-m-d\TH:i', strtotime($fila['fecha_creacion'])); ?>" required>
-                
+                <input type="datetime-local" id="fecha" name="fecha_creacion"
+                    value="<?php echo date('Y-m-d\TH:i', strtotime($fila['fecha_creacion'])); ?>" required>
+
                 <input type="submit" value="MODIFICAR">
             </form>
         </div>
@@ -281,12 +311,12 @@ $category_result = $conexion->query($category_query);
 
     <!-- Scripts personalizados -->
     <script>
-        function handleSubmit(event) {
-            event.preventDefault();
-            const form = event.target;
-            const formData = new FormData(form);
+    function handleSubmit(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
 
-            fetch(form.action, {
+        fetch(form.action, {
                 method: 'POST',
                 body: formData
             })
@@ -300,40 +330,49 @@ $category_result = $conexion->query($category_query);
             })
             .catch(() => showNotification('Error de conexión', 'error'));
 
-            return false;
+        return false;
+    }
+
+    function showNotification(message, type) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.className = `notification ${type}`;
+        notification.style.display = 'block';
+        setTimeout(() => notification.style.display = 'none', 3000);
+    }
+
+    document
+    .getElementById('precio')
+    .addEventListener('input', function(e) {
+        const value = this.value.trim();
+        const regex = /^[0-9]+(\.[0-9]{0,2})?$/;
+        
+        // Prevent non-numeric input except decimal point
+        if (!/^\d*\.?\d*$/.test(value)) {
+            this.value = value.replace(/[^\d.]/g, '');
         }
-
-        function showNotification(message, type) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type}`;
-            notification.style.display = 'block';
-            setTimeout(() => notification.style.display = 'none', 3000);
+        
+        if (!regex.test(value)) {
+            this.style.borderColor = '#f44336';
+            this.setAttribute('aria-invalid', 'true');
+        } else {
+            this.style.borderColor = 'var(--color-accent)';
+            this.setAttribute('aria-invalid', 'false');
         }
+    });
 
-        // Validación en tiempo real para el campo de precio
-        document 🙂
 
-.getElementById('precio').addEventListener('input', function() {
-            const value = this.value;
-            const regex = /^[0-9]+(\.[0-9]{0,2})?$/;
-            if (!regex.test(value)) {
-                this.style.borderColor = '#f44336';
-            } else {
-                this.style.borderColor = 'var(--color-accent)';
-            }
+    // Animación al enfocar los campos
+    const inputs = document.querySelectorAll('input[type="text"], input[type="datetime-local"], select');
+    inputs.forEach(input => {
+        input.addEventListener('focus', () => {
+            input.style.transform = 'scale(1.02)';
         });
-
-        // Animación al enfocar los campos
-        const inputs = document.querySelectorAll('input[type="text"], input[type="datetime-local"], select');
-        inputs.forEach(input => {
-            input.addEventListener('focus', () => {
-                input.style.transform = 'scale(1.02)';
-            });
-            input.addEventListener('blur', () => {
-                input.style.transform = 'scale(1)';
-            });
+        input.addEventListener('blur', () => {
+            input.style.transform = 'scale(1)';
         });
+    });
     </script>
 </body>
+
 </html>
