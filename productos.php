@@ -2,7 +2,7 @@
 // Iniciar la sesión para gestionar datos del usuario logueado
 session_start();
 
-// Verificar si el usuario está autenticado; si no, redirigir al login
+// Verificar si el usuario está autenticado; de lo contrario, redirigir al login
 if (!isset($_SESSION['usuario'])) {
     header("Location: index.php");
     exit();
@@ -14,11 +14,68 @@ $username = htmlspecialchars($_SESSION['usuario']);
 // Incluir el archivo de conexión a la base de datos
 include('db.php');
 
-// Consultar todas las categorías para el modal
+// ----------------------------------------------------------------------
+// CONSULTA DE CATEGORÍAS
+// Se obtiene la lista de categorías disponibles para usarlas en el modal
+// y en el filtro avanzado. Se guardan en un arreglo para reutilizarlas.
 $category_query = "SELECT * FROM categorias";
 $category_result = $conexion->query($category_query);
-?>
+$categories = array();
+while ($cat = $category_result->fetch_assoc()) {
+    $categories[] = $cat;
+}
 
+// ----------------------------------------------------------------------
+// CONSTRUCCIÓN DE LA CONSULTA CON FILTROS AVANZADOS
+// Se revisan los parámetros recibidos vía GET para filtrar la consulta.
+$conditions = array();
+
+if (isset($_GET['nombre']) && !empty($_GET['nombre'])) {
+    // Se utiliza real_escape_string para prevenir inyecciones SQL
+    $nombre = $conexion->real_escape_string($_GET['nombre']);
+    $conditions[] = "p.nombre LIKE '%$nombre%'";
+}
+
+if (isset($_GET['categoria_id']) && !empty($_GET['categoria_id'])) {
+    // Convertir a entero para seguridad
+    $categoria_id = (int)$_GET['categoria_id'];
+    $conditions[] = "p.categoria_id = $categoria_id";
+}
+
+if (isset($_GET['precio_min']) && !empty($_GET['precio_min'])) {
+    $precio_min = (float)$_GET['precio_min'];
+    $conditions[] = "p.precio >= $precio_min";
+}
+
+if (isset($_GET['precio_max']) && !empty($_GET['precio_max'])) {
+    $precio_max = (float)$_GET['precio_max'];
+    $conditions[] = "p.precio <= $precio_max";
+}
+
+if (isset($_GET['fecha_inicio']) && !empty($_GET['fecha_inicio'])) {
+    $fecha_inicio = $conexion->real_escape_string($_GET['fecha_inicio']);
+    $conditions[] = "p.fecha_creacion >= '$fecha_inicio'";
+}
+
+if (isset($_GET['fecha_fin']) && !empty($_GET['fecha_fin'])) {
+    $fecha_fin = $conexion->real_escape_string($_GET['fecha_fin']);
+    $conditions[] = "p.fecha_creacion <= '$fecha_fin'";
+}
+
+// Si existen condiciones, se unen con AND
+$whereClause = "";
+if (count($conditions) > 0) {
+    $whereClause = "WHERE " . implode(" AND ", $conditions);
+}
+
+// Consulta para obtener los productos junto a su categoría, aplicando los filtros si existen
+$query = "SELECT p.*, c.nombre_categoria AS categoria 
+          FROM productos p 
+          LEFT JOIN categorias c ON p.categoria_id = c.categoria_id 
+          $whereClause 
+          ORDER BY p.id ASC";
+$sel = $conexion->query($query);
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -36,6 +93,7 @@ $category_result = $conexion->query($category_query);
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
+        /* Variables de estilo */
         :root {
             --color-primary: #FF5722;
             --color-secondary: #4CAF50;
@@ -59,7 +117,7 @@ $category_result = $conexion->query($category_query);
             padding-bottom: 2rem;
         }
 
-        /* Header modernizado */
+        /* Encabezado */
         header {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -170,7 +228,7 @@ $category_result = $conexion->query($category_query);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
-        /* Modal modernizado */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -302,7 +360,7 @@ $category_result = $conexion->query($category_query);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        /* Búsqueda modernizada */
+        /* Búsqueda básica */
         .search-container {
             margin: 0 auto 2rem;
             width: 100%;
@@ -338,7 +396,16 @@ $category_result = $conexion->query($category_query);
             font-size: 1.2rem;
         }
 
-        /* Tabla modernizada */
+        /* Sección de filtro avanzado */
+        .filter-container {
+            background-color: var(--color-light);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Tabla de productos */
         .table-container {
             background-color: var(--color-light);
             border-radius: 15px;
@@ -560,10 +627,68 @@ $category_result = $conexion->query($category_query);
             </button>
         </div>
 
-        <!-- Campo de búsqueda -->
+        <!-- Campo de búsqueda básico (filtrado en tiempo real) -->
         <div class="search-container">
             <i class="fas fa-search search-icon"></i>
             <input type="text" class="search-input" id="searchInput" placeholder="Buscar productos por nombre, descripción o categoría..." onkeyup="searchProducts()">
+        </div>
+
+        <!-- Sección de Filtro Avanzado -->
+        <!-- Este formulario envía parámetros vía GET para filtrar la consulta en el servidor -->
+        <div class="filter-container">
+            <form method="GET" id="filterForm">
+                <div class="row g-3">
+                    <!-- Filtro por Nombre -->
+                    <div class="col-md-4">
+                        <label class="form-label">Nombre del Producto</label>
+                        <input type="text" name="nombre" class="form-control" placeholder="Buscar por nombre" value="<?php echo isset($_GET['nombre']) ? htmlspecialchars($_GET['nombre']) : ''; ?>">
+                    </div>
+                    <!-- Filtro por Categoría -->
+                    <div class="col-md-4">
+                        <label class="form-label">Categoría</label>
+                        <select name="categoria_id" class="form-select">
+                            <option value="">Todas las categorías</option>
+                            <?php foreach($categories as $cat) { 
+                                $selected = (isset($_GET['categoria_id']) && $_GET['categoria_id'] == $cat['categoria_id']) ? 'selected' : '';
+                            ?>
+                                <option value="<?php echo htmlspecialchars($cat['categoria_id']); ?>" <?php echo $selected; ?>>
+                                    <?php echo htmlspecialchars($cat['nombre_categoria']); ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <!-- Filtro por Precio Mínimo -->
+                    <div class="col-md-4">
+                        <label class="form-label">Precio Mínimo</label>
+                        <input type="number" step="0.01" name="precio_min" class="form-control" placeholder="0" value="<?php echo isset($_GET['precio_min']) ? htmlspecialchars($_GET['precio_min']) : ''; ?>">
+                    </div>
+                    <!-- Filtro por Precio Máximo -->
+                    <div class="col-md-4">
+                        <label class="form-label">Precio Máximo</label>
+                        <input type="number" step="0.01" name="precio_max" class="form-control" placeholder="0" value="<?php echo isset($_GET['precio_max']) ? htmlspecialchars($_GET['precio_max']) : ''; ?>">
+                    </div>
+                    <!-- Filtro por Fecha de Inicio -->
+                    <div class="col-md-4">
+                        <label class="form-label">Fecha Inicio</label>
+                        <input type="datetime-local" name="fecha_inicio" class="form-control" value="<?php echo isset($_GET['fecha_inicio']) ? htmlspecialchars($_GET['fecha_inicio']) : ''; ?>">
+                    </div>
+                    <!-- Filtro por Fecha de Fin -->
+                    <div class="col-md-4">
+                        <label class="form-label">Fecha Fin</label>
+                        <input type="datetime-local" name="fecha_fin" class="form-control" value="<?php echo isset($_GET['fecha_fin']) ? htmlspecialchars($_GET['fecha_fin']) : ''; ?>">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <!-- Botón para aplicar filtros -->
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                    <!-- Enlace para limpiar los filtros y recargar la página -->
+                    <a href="<?php echo basename(__FILE__); ?>" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Limpiar Filtros
+                    </a>
+                </div>
+            </form>
         </div>
 
         <!-- Tabla de productos -->
@@ -583,12 +708,7 @@ $category_result = $conexion->query($category_query);
                     </thead>
                     <tbody>
                         <?php
-                        // Consultar productos con sus categorías
-                        $sel = $conexion->query("SELECT p.*, c.nombre_categoria AS categoria 
-                                                FROM productos p 
-                                                LEFT JOIN categorias c ON p.categoria_id = c.categoria_id 
-                                                ORDER BY p.id ASC");
-                        
+                        // Mostrar productos obtenidos según la consulta filtrada
                         if ($sel->num_rows > 0) {
                             while ($fila = $sel->fetch_assoc()) {
                         ?>
@@ -661,8 +781,8 @@ $category_result = $conexion->query($category_query);
                         <select name="categoria_id" class="form-select" required>
                             <option value="">Seleccione una categoría</option>
                             <?php
-                            $category_result->data_seek(0);
-                            while ($cat = $category_result->fetch_assoc()) {
+                            // Se reutilizan las categorías obtenidas previamente para el modal
+                            foreach($categories as $cat) {
                                 $cat_id = htmlspecialchars($cat['categoria_id']);
                                 $cat_name = htmlspecialchars($cat['nombre_categoria']);
                                 echo '<option value="' . $cat_id . '">' . $cat_name . '</option>';
@@ -683,7 +803,7 @@ $category_result = $conexion->query($category_query);
             </div>
         </div>
 
-        <!-- Notificación -->
+        <!-- Notificación para mensajes de éxito o error -->
         <div id="notification" class="notification"></div>
     </main>
 
@@ -692,7 +812,7 @@ $category_result = $conexion->query($category_query);
 
     <!-- Scripts personalizados -->
     <script>
-        // Establecer la fecha actual en el campo de fecha
+        // Establecer la fecha actual en el campo "Fecha de creación" del modal
         document.addEventListener('DOMContentLoaded', function() {
             const now = new Date();
             const year = now.getFullYear();
@@ -700,24 +820,23 @@ $category_result = $conexion->query($category_query);
             const day = String(now.getDate()).padStart(2, '0');
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
-            
             const currentDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
             document.getElementById('fecha').value = currentDateTime;
         });
 
-        // Abrir el modal
+        // Función para abrir el modal de agregar producto
         function openModal() {
             document.getElementById('productModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Evitar scroll
+            document.body.style.overflow = 'hidden'; // Evitar scroll mientras el modal está abierto
         }
 
-        // Cerrar el modal
+        // Función para cerrar el modal
         function closeModal() {
             document.getElementById('productModal').style.display = 'none';
             document.body.style.overflow = 'auto'; // Restaurar scroll
         }
 
-        // Manejar el envío del formulario
+        // Manejar el envío del formulario del modal usando fetch para enviar datos vía AJAX
         function handleSubmit(event) {
             event.preventDefault();
             const form = event.target;
@@ -744,7 +863,7 @@ $category_result = $conexion->query($category_query);
             return false;
         }
 
-        // Confirmación para eliminar
+        // Función para confirmar la eliminación de un producto
         function confirmDelete(event, productName) {
             if (!confirm(`¿Estás seguro de que quieres eliminar "${productName}"?`)) {
                 event.preventDefault();
@@ -754,14 +873,14 @@ $category_result = $conexion->query($category_query);
             return true;
         }
 
-        // Mostrar notificaciones
+        // Función para mostrar notificaciones en pantalla
         function showNotification(message, type) {
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.className = `notification ${type}`;
             notification.style.display = 'block';
             
-            // Añadir icono según el tipo
+            // Añadir un icono según el tipo de notificación
             const icon = document.createElement('i');
             icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
             icon.style.marginRight = '8px';
@@ -776,31 +895,31 @@ $category_result = $conexion->query($category_query);
             }, 3000);
         }
 
-        // Buscar productos en tiempo real
+        // Función para filtrar productos en tiempo real en la búsqueda básica
         function searchProducts() {
             const searchValue = document.getElementById('searchInput').value.toLowerCase();
             const table = document.getElementById('productsTable');
             const rows = table.getElementsByTagName('tr');
 
+            // Se omite la primera fila (encabezado de la tabla)
             for (let i = 1; i < rows.length; i++) {
                 const cells = rows[i].getElementsByTagName('td');
                 if (cells.length === 0) continue; // Saltar filas sin celdas
                 
                 let found = false;
-
-                for (let j = 0; j < cells.length - 2; j++) { // Excluir columnas de acciones
+                // Se recorren todas las celdas excepto las de acciones
+                for (let j = 0; j < cells.length - 2; j++) {
                     const cellText = cells[j].textContent.toLowerCase();
                     if (cellText.includes(searchValue)) {
                         found = true;
                         break;
                     }
                 }
-
                 rows[i].style.display = found ? '' : 'none';
             }
         }
 
-        // Cerrar modal al hacer clic fuera
+        // Cerrar el modal al hacer clic fuera del contenido modal
         window.onclick = function(event) {
             const modal = document.getElementById('productModal');
             if (event.target === modal) {
