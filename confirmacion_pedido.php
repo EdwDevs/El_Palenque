@@ -7,34 +7,124 @@ if (!isset($_SESSION['usuario'])) {
     exit();
 }
 
+include('db.php');
+
 // Verificar si hay un pedido en la sesión
-if (!isset($_SESSION['ultimo_pedido'])) {
-    header("Location: productos_compra.php?message=No hay pedido para confirmar&status=error");
+if (!isset($_SESSION['ultimo_pedido']) && !isset($_SESSION['numero_pedido'])) {
+    header("Location: productos_compra.php?mensaje=No hay pedido para confirmar&status=error");
     exit();
 }
 
-// Obtener datos del pedido
-$pedido = $_SESSION['ultimo_pedido'];
-$pedido_id = $pedido['pedido_id'];
-$fecha = $pedido['fecha'];
-$cart = $pedido['cart'];
-$subtotal = $pedido['subtotal'];
-$impuestos = $pedido['impuestos'];
-$envio = $pedido['envio'];
-$total = $pedido['total'];
-$nombre = $pedido['nombre'];
-$apellido = $pedido['apellido'];
-$email = $pedido['email'];
-$telefono = $pedido['telefono'];
-$direccion = $pedido['direccion'];
-$departamento = $pedido['departamento'];
-$ciudad = $pedido['ciudad'];
-$tipo_envio = $pedido['tipo_envio'];
-$metodo_pago = $pedido['metodo_pago'];
+// Obtener el ID y número del pedido
+$pedido_id = isset($_SESSION['ultimo_pedido']) ? $_SESSION['ultimo_pedido'] : null;
+$numero_pedido = isset($_SESSION['numero_pedido']) ? $_SESSION['numero_pedido'] : "PED-" . $pedido_id;
+
+// Obtener datos del pedido desde la base de datos
+$stmt = $conexion->prepare("
+    SELECT p.*, e.forma_pago, e.direccion, e.ciudad, e.telefono 
+    FROM pedidos p 
+    LEFT JOIN entregas e ON p.id = e.pedido_id 
+    WHERE p.id = ?
+");
+$stmt->bind_param("i", $pedido_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($row = $result->fetch_assoc()) {
+    $fecha = $row['fecha_pedido'];
+    $total = $row['total'];
+    $estado = $row['estado'];
+    $forma_pago = $row['forma_pago'];
+    $direccion = $row['direccion'];
+    $ciudad = $row['ciudad'];
+    $telefono = $row['telefono'];
+} else {
+    // Si no se encuentra el pedido, redirigir
+    header("Location: productos_compra.php?mensaje=Pedido no encontrado&status=error");
+    exit();
+}
+$stmt->close();
+
+// Obtener los productos del pedido - Consulta corregida
+try {
+    // Primero verificamos si la tabla productos tiene una columna imagen
+    $check_column = $conexion->query("SHOW COLUMNS FROM productos LIKE 'imagen'");
+    $has_imagen = $check_column->num_rows > 0;
+    
+    if ($has_imagen) {
+        // Si existe la columna imagen, usamos la consulta original
+        $stmt = $conexion->prepare("
+            SELECT dp.*, p.nombre, p.imagen 
+            FROM detalles_pedido dp 
+            LEFT JOIN productos p ON dp.producto_id = p.id 
+            WHERE dp.pedido_id = ?
+        ");
+    } else {
+        // Si no existe la columna imagen, la excluimos de la consulta
+        $stmt = $conexion->prepare("
+            SELECT dp.*, p.nombre 
+            FROM detalles_pedido dp 
+            LEFT JOIN productos p ON dp.producto_id = p.id 
+            WHERE dp.pedido_id = ?
+        ");
+    }
+    
+    $stmt->bind_param("i", $pedido_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} catch (Exception $e) {
+    // Si hay algún error con la consulta, usamos una versión más simple
+    $stmt = $conexion->prepare("
+        SELECT * FROM detalles_pedido WHERE pedido_id = ?
+    ");
+    $stmt->bind_param("i", $pedido_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+}
+
+$cart = [];
+$subtotal = 0;
+
+while ($row = $result->fetch_assoc()) {
+    $precio = $row['precio_unitario'];
+    $cantidad = $row['cantidad'];
+    $subtotalItem = $precio * $cantidad;
+    $subtotal += $subtotalItem;
+    
+    $cart[] = [
+        'id' => $row['producto_id'],
+        'nombre' => $row['nombre'] ?? 'Producto #' . $row['producto_id'],
+        'precio' => $precio,
+        'cantidad' => $cantidad,
+        'imagen' => $row['imagen'] ?? 'imagenes/producto_default.jpg'
+    ];
+}
+$stmt->close();
+
+// Obtener datos del usuario
+$usuario_id = $_SESSION['usuario_id'];
+$stmt = $conexion->prepare("SELECT nombre, correo FROM usuarios WHERE id = ?");
+$stmt->bind_param("i", $usuario_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($row = $result->fetch_assoc()) {
+    $nombre_usuario = $row['nombre'];
+    $email = $row['correo'];
+} else {
+    $nombre_usuario = $_SESSION['usuario'];
+    $email = "usuario@ejemplo.com";
+}
+$stmt->close();
+
+// Calcular impuestos y envío
+$impuestos = $subtotal * 0.19;
+$envio = 12000; // Valor fijo de envío
+$total = $subtotal + $impuestos + $envio;
 
 // Formatear método de pago para mostrar
 $metodo_pago_texto = '';
-switch ($metodo_pago) {
+switch ($forma_pago) {
     case 'tarjeta':
         $metodo_pago_texto = 'Tarjeta de Crédito/Débito';
         break;
@@ -48,16 +138,22 @@ switch ($metodo_pago) {
         $metodo_pago_texto = 'Nequi / Daviplata';
         break;
     default:
-        $metodo_pago_texto = $metodo_pago;
+        $metodo_pago_texto = $forma_pago;
 }
 
-// Formatear tipo de envío
+// Determinar tipo de envío (esto debería venir de la base de datos en un sistema real)
+$tipo_envio = 'estandar'; // Por defecto
 $tipo_envio_texto = $tipo_envio === 'express' ? 'Express (1-2 días)' : 'Estándar (3-5 días)';
 
 // Calcular fecha estimada de entrega
 $dias_entrega = $tipo_envio === 'express' ? 2 : 5;
 $fecha_entrega = date('Y-m-d', strtotime($fecha . ' + ' . $dias_entrega . ' days'));
 $fecha_entrega_formateada = date('d/m/Y', strtotime($fecha_entrega));
+
+// Limpiar variables de sesión del pedido para evitar duplicados
+// Comentado para permitir recargar la página
+// unset($_SESSION['ultimo_pedido']);
+// unset($_SESSION['numero_pedido']);
 ?>
 
 <!DOCTYPE html>
@@ -695,7 +791,7 @@ $fecha_entrega_formateada = date('d/m/Y', strtotime($fecha_entrega));
                 <div class="confirmation-container animate__animated animate__fadeIn">
                     <div class="confirmation-header">
                         <h3><i class="fas fa-receipt me-2"></i> Detalles del Pedido</h3>
-                        <span class="badge bg-light text-primary">Pedido #<?php echo htmlspecialchars($pedido_id); ?></span>
+                        <span class="badge bg-light text-primary"><?php echo htmlspecialchars($numero_pedido); ?></span>
                     </div>
                     <div class="confirmation-body">
                         <!-- Información del pedido -->
@@ -703,7 +799,7 @@ $fecha_entrega_formateada = date('d/m/Y', strtotime($fecha_entrega));
                             <h4 class="order-info-title">Información General</h4>
                             <div class="info-row">
                                 <span class="info-label">Número de pedido:</span>
-                                <span class="info-value"><?php echo htmlspecialchars($pedido_id); ?></span>
+                                <span class="info-value"><?php echo htmlspecialchars($numero_pedido); ?></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Fecha del pedido:</span>
@@ -711,7 +807,7 @@ $fecha_entrega_formateada = date('d/m/Y', strtotime($fecha_entrega));
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Estado del pedido:</span>
-                                <span class="info-value"><span class="badge bg-warning text-dark">Pendiente</span></span>
+                                <span class="info-value"><span class="badge bg-warning text-dark"><?php echo ucfirst($estado); ?></span></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Método de pago:</span>
@@ -732,7 +828,7 @@ $fecha_entrega_formateada = date('d/m/Y', strtotime($fecha_entrega));
                             <h4 class="order-info-title">Información de Envío</h4>
                             <div class="info-row">
                                 <span class="info-label">Nombre:</span>
-                                <span class="info-value"><?php echo htmlspecialchars($nombre . ' ' . $apellido); ?></span>
+                                <span class="info-value"><?php echo htmlspecialchars($nombre_usuario); ?></span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Email:</span>
@@ -748,7 +844,7 @@ $fecha_entrega_formateada = date('d/m/Y', strtotime($fecha_entrega));
                             </div>
                             <div class="info-row">
                                 <span class="info-label">Ciudad:</span>
-                                <span class="info-value"><?php echo htmlspecialchars($ciudad . ', ' . $departamento); ?></span>
+                                <span class="info-value"><?php echo htmlspecialchars($ciudad); ?></span>
                             </div>
                         </div>
                         
@@ -756,21 +852,14 @@ $fecha_entrega_formateada = date('d/m/Y', strtotime($fecha_entrega));
                         <h4 class="order-info-title">Productos</h4>
                         <div class="order-products">
                             <?php foreach ($cart as $item): ?>
-                                <?php 
-                                    $nombre = $item['nombre'] ?? $item['name'] ?? "Producto ID: {$item['id']}";
-                                    $precio = floatval($item['precio'] ?? $item['price'] ?? 0);
-                                    $cantidad = intval($item['cantidad'] ?? 1);
-                                    $subtotalItem = $precio * $cantidad;
-                                    $imagen = $item['imagen'] ?? 'imagenes/producto_default.jpg';
-                                ?>
                                 <div class="product-item">
-                                    <img src="<?php echo htmlspecialchars($imagen); ?>" alt="<?php echo htmlspecialchars($nombre); ?>" class="product-image">
+                                    <img src="<?php echo htmlspecialchars($item['imagen']); ?>" alt="<?php echo htmlspecialchars($item['nombre']); ?>" class="product-image">
                                     <div class="product-details">
-                                        <div class="product-name"><?php echo htmlspecialchars($nombre); ?></div>
-                                        <div class="product-price">$<?php echo number_format($precio, 0, ',', '.'); ?></div>
+                                        <div class="product-name"><?php echo htmlspecialchars($item['nombre']); ?></div>
+                                        <div class="product-price">$<?php echo number_format($item['precio'], 0, ',', '.'); ?></div>
                                     </div>
-                                    <div class="product-quantity">x<?php echo $cantidad; ?></div>
-                                    <div class="product-subtotal">$<?php echo number_format($subtotalItem, 0, ',', '.'); ?></div>
+                                    <div class="product-quantity">x<?php echo $item['cantidad']; ?></div>
+                                    <div class="product-subtotal">$<?php echo number_format($item['precio'] * $item['cantidad'], 0, ',', '.'); ?></div>
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -796,7 +885,7 @@ $fecha_entrega_formateada = date('d/m/Y', strtotime($fecha_entrega));
                         </div>
                         
                         <!-- Instrucciones según método de pago -->
-                        <?php if ($metodo_pago === 'transferencia'): ?>
+                        <?php if ($forma_pago === 'transferencia'): ?>
                         <div class="payment-instructions mt-4">
                             <h4><i class="fas fa-info-circle me-2"></i> Instrucciones de Pago</h4>
                             <p>Por favor, realiza la transferencia a la siguiente cuenta bancaria:</p>
@@ -809,7 +898,7 @@ $fecha_entrega_formateada = date('d/m/Y', strtotime($fecha_entrega));
                             </ul>
                             <p>Una vez realizada la transferencia, envía el comprobante a <strong>pagos@sanbasilio.com</strong> indicando tu número de pedido.</p>
                         </div>
-                        <?php elseif ($metodo_pago === 'nequi'): ?>
+                        <?php elseif ($forma_pago === 'nequi'): ?>
                         <div class="payment-instructions mt-4">
                             <h4><i class="fas fa-info-circle me-2"></i> Instrucciones de Pago</h4>
                             <p>Por favor, realiza el pago a través de Nequi o Daviplata:</p>
@@ -820,7 +909,7 @@ $fecha_entrega_formateada = date('d/m/Y', strtotime($fecha_entrega));
                             </ul>
                             <p>Una vez realizado el pago, envía el comprobante a <strong>pagos@sanbasilio.com</strong> indicando tu número de pedido.</p>
                         </div>
-                        <?php elseif ($metodo_pago === 'efectivo'): ?>
+                        <?php elseif ($forma_pago === 'efectivo'): ?>
                         <div class="payment-instructions mt-4">
                             <h4><i class="fas fa-info-circle me-2"></i> Pago Contra Entrega</h4>
                             <p>Has seleccionado pago en efectivo contra entrega. Recuerda tener el monto exacto al momento de recibir tu pedido.</p>
@@ -833,7 +922,7 @@ $fecha_entrega_formateada = date('d/m/Y', strtotime($fecha_entrega));
                             <a href="productos_compra.php" class="btn-action btn-secondary">
                                 <i class="fas fa-shopping-bag me-2"></i> Seguir Comprando
                             </a>
-                            <a href="ver_pedido.php" class="btn-action">
+                            <a href="ver_pedidos.php" class="btn-action">
                                 <i class="fas fa-list-alt me-2"></i> Ver Mis Pedidos
                             </a>
                             <a href="#" class="btn-action btn-outline" onclick="window.print()">
