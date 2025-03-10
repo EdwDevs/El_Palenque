@@ -1018,9 +1018,9 @@ $usuario = [
                             
                             <!-- Botones de acción -->
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn-action btn-secondary btn-lg">
-                                    <i class="fas fa-check-circle me-2"></i> Confirmar Pedido
-                                </button>
+                            <button type="submit" class="btn-action btn-secondary btn-lg" id="btnConfirmarPedido">
+    <i class="fas fa-check-circle me-2"></i> Confirmar Pedido
+</button>
                                 <a href="carrito.php" class="btn-action btn-outline">
                                     <i class="fas fa-arrow-left me-2"></i> Volver al Carrito
                                 </a>
@@ -1043,12 +1043,12 @@ $usuario = [
             </div>
             
             <!-- Campos ocultos para enviar datos -->
-            <input type="hidden" name="cart" value='<?php echo htmlspecialchars(json_encode($cart), ENT_QUOTES, 'UTF-8'); ?>'>
-            <input type="hidden" name="subtotal" value="<?php echo $subtotal; ?>">
-            <input type="hidden" name="impuestos" value="<?php echo $impuestos; ?>">
-            <input type="hidden" name="envio" value="<?php echo $envio; ?>">
-            <input type="hidden" name="total" value="<?php echo $granTotal; ?>" id="total_hidden">
-        </form>
+    <input type="hidden" name="cart" value='<?php echo htmlspecialchars(json_encode($cart), ENT_QUOTES, 'UTF-8'); ?>'>
+    <input type="hidden" name="subtotal" value="<?php echo $subtotal; ?>">
+    <input type="hidden" name="impuestos" value="<?php echo $impuestos; ?>">
+    <input type="hidden" name="envio" value="<?php echo $envio; ?>">
+    <input type="hidden" name="total" value="<?php echo $granTotal; ?>" id="total_hidden">
+</form>
     </main>
 
     <!-- Modal de Términos y Condiciones -->

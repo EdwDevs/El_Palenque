@@ -1,897 +1,432 @@
 <?php
+// ver_pedido.php - Permite a los usuarios ver los detalles de un pedido específico
 session_start();
 
 // Verificar si el usuario está autenticado
 if (!isset($_SESSION['usuario'])) {
-    header("Location: login.php?redirect=ver_pedido.php");
+    header("Location: login.php?redirect=" . urlencode($_SERVER['REQUEST_URI']));
     exit();
 }
 
 include('db.php');
-require('fpdf/fpdf.php'); // Incluir FPDF
-
-// Obtener el ID del usuario desde la sesión
-$usuario_id = isset($_SESSION['usuario_id']) ? intval($_SESSION['usuario_id']) : null;
-if (!$usuario_id) {
-    $usuario = htmlspecialchars($_SESSION['usuario']);
-    $stmt = $conexion->prepare("SELECT id FROM usuarios WHERE nombre = ?");
-    $stmt->bind_param("s", $usuario);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($row = $result->fetch_assoc()) {
-        $usuario_id = $row['id'];
-        $_SESSION['usuario_id'] = $usuario_id;
-    } else {
-        die("Usuario no encontrado en la base de datos.");
-    }
-    $stmt->close();
-}
 
 // Verificar si se proporcionó un ID de pedido
-$isAdmin = isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin';
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header("Location: ver_pedidos.php?mensaje=Por favor selecciona un pedido específico&status=error");
+    header("Location: mis_pedidos.php?mensaje=ID de pedido no válido&status=error");
     exit();
 }
 
-$pedido_id = intval($_GET['id']);
+$pedido_id = $_GET['id'];
+$usuario_id = $_SESSION['usuario_id'];
 
-// Obtener el pedido específico
-if ($isAdmin) {
-    $stmt = $conexion->prepare("
-        SELECT p.id, p.usuario_id, p.fecha_pedido, p.total, p.estado, u.nombre AS usuario_nombre 
-        FROM pedidos p 
-        LEFT JOIN usuarios u ON p.usuario_id = u.id 
-        WHERE p.id = ?
-    ");
-    $stmt->bind_param("i", $pedido_id);
-} else {
-    $stmt = $conexion->prepare("
-        SELECT p.id, p.usuario_id, p.fecha_pedido, p.total, p.estado, u.nombre AS usuario_nombre 
-        FROM pedidos p 
-        LEFT JOIN usuarios u ON p.usuario_id = u.id 
-        WHERE p.id = ? AND p.usuario_id = ?
-    ");
+// Verificar que el pedido pertenezca al usuario actual (o es admin)
+$es_admin = isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin';
+
+if (!$es_admin) {
+    $stmt = $conexion->prepare("SELECT COUNT(*) as count FROM pedidos WHERE id = ? AND usuario_id = ?");
     $stmt->bind_param("ii", $pedido_id, $usuario_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    
+    if ($row['count'] == 0) {
+        header("Location: mis_pedidos.php?mensaje=No tienes permiso para ver este pedido&status=error");
+        exit();
+    }
+    $stmt->close();
 }
-$stmt->execute();
-$result_pedido = $stmt->get_result();
-$pedido = $result_pedido->fetch_assoc();
-$stmt->close();
 
-if (!$pedido) {
-    header("Location: ver_pedidos.php?mensaje=Pedido no encontrado o no tienes permiso&status=error");
+// Obtener datos del pedido
+$stmt = $conexion->prepare("
+    SELECT p.*, e.forma_pago, e.direccion, e.ciudad, e.telefono 
+    FROM pedidos p 
+    LEFT JOIN entregas e ON p.id = e.pedido_id 
+    WHERE p.id = ?
+");
+$stmt->bind_param("i", $pedido_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($row = $result->fetch_assoc()) {
+    $numero_pedido = $row['numero_pedido'] ?? "PED-" . $pedido_id;
+    $fecha = $row['fecha_pedido'];
+    $total = $row['total'];
+    $estado = $row['estado'];
+    $forma_pago = $row['forma_pago'];
+    $direccion = $row['direccion'];
+    $ciudad = $row['ciudad'];
+    $telefono = $row['telefono'];
+    $subtotal = $row['subtotal'] ?? 0;
+    $impuestos = $row['impuestos'] ?? 0;
+    $envio = $row['envio'] ?? 0;
+    $notas = $row['notas'] ?? '';
+    
+    // Si no hay subtotal, impuestos o envío en la tabla pedidos, los calculamos
+    if ($subtotal == 0 && $impuestos == 0 && $envio == 0) {
+        $envio = 12000; // Valor fijo de envío
+        $subtotal = $total - $envio - ($total * 0.19 / 1.19);
+        $impuestos = $total - $subtotal - $envio;
+    }
+} else {
+    header("Location: mis_pedidos.php?mensaje=Pedido no encontrado&status=error");
     exit();
 }
-
-// Obtener detalles del pedido
-$stmt = $conexion->prepare("
-    SELECT dp.producto_id, dp.cantidad, dp.precio_unitario, p.nombre, p.imagen 
-    FROM detalles_pedido dp 
-    LEFT JOIN productos p ON dp.producto_id = p.id 
-    WHERE dp.pedido_id = ?
-");
-$stmt->bind_param("i", $pedido_id);
-$stmt->execute();
-$result_detalles = $stmt->get_result();
-$detalles = [];
-while ($row = $result_detalles->fetch_assoc()) {
-    $detalles[] = $row;
-}
 $stmt->close();
 
-// Obtener datos de entrega
-$stmt = $conexion->prepare("
-    SELECT forma_pago, direccion, ciudad, telefono 
-    FROM entregas 
-    WHERE pedido_id = ?
-");
-$stmt->bind_param("i", $pedido_id);
-$stmt->execute();
-$result_entrega = $stmt->get_result();
-$entrega = $result_entrega->fetch_assoc();
-$stmt->close();
-
-// Generar PDF y actualizar estado si se solicita facturar (solo para admins)
-if ($isAdmin && isset($_GET['facturar']) && $_GET['facturar'] == '1') {
-    $stmt = $conexion->prepare("UPDATE pedidos SET estado = 'confirmado' WHERE id = ?");
+// Obtener los productos del pedido
+try {
+    // Primero verificamos si la tabla productos tiene una columna imagen
+    $check_column = $conexion->query("SHOW COLUMNS FROM productos LIKE 'imagen'");
+    $has_imagen = $check_column->num_rows > 0;
+    
+    if ($has_imagen) {
+        // Si existe la columna imagen, usamos la consulta original
+        $stmt = $conexion->prepare("
+            SELECT dp.*, p.nombre, p.imagen 
+            FROM detalles_pedido dp 
+            LEFT JOIN productos p ON dp.producto_id = p.id 
+            WHERE dp.pedido_id = ?
+        ");
+    } else {
+        // Si no existe la columna imagen, la excluimos de la consulta
+        $stmt = $conexion->prepare("
+            SELECT dp.*, p.nombre 
+            FROM detalles_pedido dp 
+            LEFT JOIN productos p ON dp.producto_id = p.id 
+            WHERE dp.pedido_id = ?
+        ");
+    }
+    
     $stmt->bind_param("i", $pedido_id);
     $stmt->execute();
-    $stmt->close();
+    $result = $stmt->get_result();
+} catch (Exception $e) {
+    // Si hay algún error con la consulta, usamos una versión más simple
+    $stmt = $conexion->prepare("
+        SELECT * FROM detalles_pedido WHERE pedido_id = ?
+    ");
+    $stmt->bind_param("i", $pedido_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+}
 
-    $pdf = new FPDF();
-    $pdf->AddPage();
-    $pdf->SetFont('Arial', 'B', 16);
-    $pdf->Cell(0, 10, 'Factura - San Basilio del Palenque', 0, 1, 'C');
-    $pdf->SetFont('Arial', '', 12);
-    $pdf->Cell(0, 10, 'Fecha: ' . date('d/m/Y'), 0, 1, 'R');
-    $pdf->Ln(10);
+$productos = [];
+while ($row = $result->fetch_assoc()) {
+    $precio = $row['precio_unitario'];
+    $cantidad = $row['cantidad'];
+    $subtotalItem = $precio * $cantidad;
+    
+    $productos[] = [
+        'id' => $row['producto_id'],
+        'nombre' => $row['nombre'] ?? 'Producto #' . $row['producto_id'],
+        'precio' => $precio,
+        'cantidad' => $cantidad,
+        'subtotal' => $subtotalItem,
+        'imagen' => $row['imagen'] ?? 'imagenes/producto_default.jpg'
+    ];
+}
+$stmt->close();
 
-    $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(0, 10, "Detalles del Pedido #{$pedido['id']}", 0, 1);
-    $pdf->SetFont('Arial', '', 12);
-    $pdf->Cell(0, 10, "Cliente: {$pedido['usuario_nombre']}", 0, 1);
-    $pdf->Cell(0, 10, "Fecha del Pedido: " . date('d/m/Y H:i', strtotime($pedido['fecha_pedido'])), 0, 1);
-    $pdf->Cell(0, 10, "Estado: Confirmado", 0, 1);
-    $pdf->Ln(10);
+// Formatear método de pago para mostrar
+$metodo_pago_texto = '';
+switch ($forma_pago) {
+    case 'tarjeta':
+        $metodo_pago_texto = 'Tarjeta de Crédito/Débito';
+        break;
+    case 'transferencia':
+        $metodo_pago_texto = 'Transferencia Bancaria';
+        break;
+    case 'efectivo':
+        $metodo_pago_texto = 'Efectivo (contra entrega)';
+        break;
+    case 'nequi':
+        $metodo_pago_texto = 'Nequi / Daviplata';
+        break;
+    default:
+        $metodo_pago_texto = $forma_pago;
+}
 
-    $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(0, 10, "Datos de Entrega", 0, 1);
-    $pdf->SetFont('Arial', '', 12);
-    $pdf->Cell(0, 10, "Forma de Pago: " . ucfirst($entrega['forma_pago'] ?? 'No especificado'), 0, 1);
-    $pdf->Cell(0, 10, "Dirección: " . ($entrega['direccion'] ?? 'No especificado'), 0, 1);
-    $pdf->Cell(0, 10, "Ciudad: " . ($entrega['ciudad'] ?? 'No especificado'), 0, 1);
-    $pdf->Cell(0, 10, "Teléfono: " . ($entrega['telefono'] ?? 'No especificado'), 0, 1);
-    $pdf->Ln(10);
+// Formatear estado del pedido
+$estado_texto = '';
+$estado_clase = '';
+switch ($estado) {
+    case 'pendiente':
+        $estado_texto = 'Pendiente';
+        $estado_clase = 'warning';
+        break;
+    case 'procesando':
+        $estado_texto = 'Procesando';
+        $estado_clase = 'info';
+        break;
+    case 'enviado':
+        $estado_texto = 'Enviado';
+        $estado_clase = 'primary';
+        break;
+    case 'entregado':
+        $estado_texto = 'Entregado';
+        $estado_clase = 'success';
+        break;
+    case 'cancelado':
+        $estado_texto = 'Cancelado';
+        $estado_clase = 'danger';
+        break;
+    default:
+        $estado_texto = ucfirst($estado);
+        $estado_clase = 'secondary';
+}
 
-    $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(80, 10, 'Producto', 1);
-    $pdf->Cell(30, 10, 'Cantidad', 1);
-    $pdf->Cell(40, 10, 'Precio Unitario', 1);
-    $pdf->Cell(40, 10, 'Subtotal', 1);
-    $pdf->Ln();
+// Determinar tipo de envío (esto debería venir de la base de datos en un sistema real)
+$tipo_envio = 'estandar'; // Por defecto
+$tipo_envio_texto = $tipo_envio === 'express' ? 'Express (1-2 días)' : 'Estándar (3-5 días)';
 
-    $pdf->SetFont('Arial', '', 12);
-    foreach ($detalles as $detalle) {
-        $subtotal = $detalle['precio_unitario'] * $detalle['cantidad'];
-        $pdf->Cell(80, 10, $detalle['nombre'] ?: "Producto ID: {$detalle['producto_id']}", 1);
-        $pdf->Cell(30, 10, $detalle['cantidad'], 1, 0, 'C');
-        $pdf->Cell(40, 10, '$' . number_format($detalle['precio_unitario'], 0, ',', '.'), 1, 0, 'R');
-        $pdf->Cell(40, 10, '$' . number_format($subtotal, 0, ',', '.'), 1, 0, 'R');
-        $pdf->Ln();
+// Calcular fecha estimada de entrega
+$dias_entrega = $tipo_envio === 'express' ? 2 : 5;
+$fecha_entrega = date('Y-m-d', strtotime($fecha . ' + ' . $dias_entrega . ' days'));
+$fecha_entrega_formateada = date('d/m/Y', strtotime($fecha_entrega));
+
+// Formatear fechas
+$fecha_pedido_formateada = date('d/m/Y H:i', strtotime($fecha));
+
+// Función para formatear precios
+function formatear_precio($precio) {
+    return number_format($precio, 0, ',', '.');
+}
+
+// Título de la página
+$titulo = "Detalles del Pedido #" . $numero_pedido;
+
+// Intentar incluir el encabezado con diferentes rutas
+$header_paths = ['header.php', 'includes/header.php', '../header.php', '../includes/header.php'];
+$header_included = false;
+
+foreach ($header_paths as $path) {
+    if (file_exists($path)) {
+        include($path);
+        $header_included = true;
+        break;
     }
+}
 
-    $pdf->Ln(10);
-    $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(150, 10, 'Total:', 0);
-    $pdf->Cell(40, 10, '$' . number_format($pedido['total'], 0, ',', '.'), 0, 1, 'R');
-
-    $pdf->Output('D', "factura_pedido_{$pedido_id}.pdf");
-    exit();
+// Si no se encuentra el encabezado, crear uno básico
+if (!$header_included) {
+    echo '<!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>' . $titulo . '</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    </head>
+    <body>';
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalles del Pedido #<?php echo $pedido_id; ?> - San Basilio del Palenque</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <style>
-        :root {
-            --color-primary: #FF5722;
-            --color-primary-light: #FF8A65;
-            --color-primary-dark: #E64A19;
-            --color-secondary: #4CAF50;
-            --color-secondary-light: #81C784;
-            --color-secondary-dark: #388E3C;
-            --color-accent: #FFC107;
-            --color-accent-light: #FFD54F;
-            --color-text: #333333;
-            --color-text-light: #757575;
-            --color-light: #FFFFFF;
-            --color-light-gray: #F5F5F5;
-            --color-dark-gray: #424242;
-            --color-danger: #f44336;
-            --color-danger-dark: #d32f2f;
-            --color-success: #4CAF50;
-            --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.15);
-            --transition: all 0.3s ease;
-            --border-radius: 10px;
-            --spacing-xs: 0.5rem;
-            --spacing-sm: 1rem;
-            --spacing-md: 1.5rem;
-            --spacing-lg: 2rem;
-            --spacing-xl: 3rem;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--color-light-gray);
-            background-image: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 87, 34, 0.2), rgba(76, 175, 80, 0.2));
-            background-attachment: fixed;
-            color: var(--color-text);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 700;
-        }
-
-        /* Header y Navegación */
-        .custom-navbar {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 0.5rem 1.5rem;
-            box-shadow: var(--shadow-md);
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            transition: var(--transition);
-        }
-
-        .navbar-brand img {
-            max-width: 60px;
-            border-radius: 50%;
-            border: 2px solid var(--color-primary);
-            transition: var(--transition);
-        }
-
-        .navbar-brand img:hover {
-            transform: scale(1.05);
-            border-color: var(--color-secondary);
-        }
-
-        .navbar-nav .nav-link {
-            color: var(--color-text);
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            transition: var(--transition);
-            position: relative;
-        }
-
-        .navbar-nav .nav-link:hover {
-            color: var(--color-primary);
-        }
-
-        .navbar-nav .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 50%;
-            background-color: var(--color-primary);
-            transition: var(--transition);
-            transform: translateX(-50%);
-        }
-
-        .navbar-nav .nav-link:hover::after {
-            width: 80%;
-        }
-
-        .user-welcome {
-            color: var(--color-primary);
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .user-welcome i {
-            font-size: 1.2rem;
-        }
-
-        .btn-action {
-            background-color: var(--color-primary);
-            color: var(--color-light);
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
-            text-decoration: none;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-action:hover {
-            background-color: var(--color-primary-dark);
-            color: var(--color-light);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-action.btn-secondary {
-            background-color: var(--color-secondary);
-        }
-
-        .btn-action.btn-secondary:hover {
-            background-color: var(--color-secondary-dark);
-        }
-
-        .btn-action.btn-danger {
-            background-color: var(--color-danger);
-        }
-
-        .btn-action.btn-danger:hover {
-            background-color: var(--color-danger-dark);
-        }
-
-        /* Contenido principal */
-        .main-content {
-            margin-top: 100px;
-            padding: var(--spacing-lg);
-            flex-grow: 1;
-        }
-
-        .page-title {
-            color: var(--color-primary-dark);
-            text-align: center;
-            margin-bottom: var(--spacing-lg);
-            position: relative;
-            font-size: 2.2rem;
-        }
-
-        .page-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
-            border-radius: 2px;
-        }
-
-        /* Detalles del pedido */
-        .pedido-container {
-            background-color: var(--color-light);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-md);
-            overflow: hidden;
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .pedido-header {
-            background-color: var(--color-primary-light);
-            color: var(--color-light);
-            padding: var(--spacing-md);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .pedido-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-
-        .pedido-status {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            background-color: var(--color-light);
-        }
-
-        .status-pendiente {
-            color: var(--color-accent);
-        }
-
-        .status-confirmado {
-            color: var(--color-secondary);
-        }
-
-        .status-cancelado {
-            color: var(--color-danger);
-        }
-
-        .pedido-body {
-            padding: var(--spacing-md);
-        }
-
-        .pedido-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-md);
-        }
-
-        .info-group {
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .info-label {
-            font-weight: 600;
-            color: var(--color-text-light);
-            margin-bottom: 0.25rem;
-            font-size: 0.9rem;
-        }
-
-        .info-value {
-            font-weight: 600;
-            color: var(--color-text);
-            font-size: 1.1rem;
-        }
-
-        .pedido-section {
-            margin-bottom: var(--spacing-md);
-        }
-
-        .section-title {
-            font-size: 1.2rem;
-            color: var(--color-primary);
-            margin-bottom: var(--spacing-sm);
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--color-light-gray);
-        }
-
-        /* Tabla de productos */
-        .productos-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: var(--spacing-md);
-        }
-
-        .productos-table th {
-            background-color: var(--color-light-gray);
-            color: var(--color-text);
-            font-weight: 600;
-            text-align: left;
-            padding: var(--spacing-sm);
-            border-bottom: 2px solid var(--color-primary-light);
-        }
-
-        .productos-table td {
-            padding: var(--spacing-sm);
-            border-bottom: 1px solid var(--color-light-gray);
-            vertical-align: middle;
-        }
-
-        .productos-table tr:hover {
-            background-color: var(--color-light-gray);
-        }
-
-        .productos-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .producto-imagen {
-            width: 60px;
-            height: 60px;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-        }
-
-        .producto-imagen img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Resumen del pedido */
-        .pedido-resumen {
-            background-color: var(--color-light-gray);
-            padding: var(--spacing-md);
-            border-radius: var(--border-radius);
-            margin-top: var(--spacing-md);
-        }
-
-        .resumen-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-        }
-
-        .resumen-label {
-            font-weight: 600;
-            color: var(--color-text);
-        }
-
-        .resumen-value {
-            font-weight: 700;
-            color: var(--color-text);
-        }
-
-        .resumen-total {
-            font-size: 1.2rem;
-            color: var(--color-primary-dark);
-            border-top: 2px solid var(--color-primary-light);
-            padding-top: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        /* Acciones del pedido */
-        .pedido-actions {
-            display: flex;
-            justify-content: space-between;
-            margin-top: var(--spacing-md);
-            flex-wrap: wrap;
-            gap: var(--spacing-sm);
-        }
-
-        /* Notificaciones */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1050;
-        }
-
-        .custom-toast {
-            background-color: var(--color-light);
-            color: var(--color-text);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            margin-bottom: 0.5rem;
-            box-shadow: var(--shadow-md);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            max-width: 350px;
-            animation: slideInRight 0.3s forwards;
-        }
-
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .toast-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--color-light);
-            font-size: 1.2rem;
-        }
-
-        .toast-icon.success {
-            background-color: var(--color-secondary);
-        }
-
-        .toast-icon.error {
-            background-color: var(--color-danger);
-        }
-
-        .toast-content {
-            flex-grow: 1;
-        }
-
-        .toast-title {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .toast-message {
-            font-size: 0.9rem;
-            margin: 0;
-        }
-
-        .toast-close {
-            background: none;
-            border: none;
-            color: var(--color-text-light);
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 0;
-        }
-
-        /* Footer */
-        footer {
-            background-color: var(--color-dark-gray);
-            color: var(--color-light);
-            padding: var(--spacing-md);
-            text-align: center;
-            margin-top: auto;
-        }
-
-        footer p {
-            margin: 0;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .main-content {
-                padding: var(--spacing-md);
-            }
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="index.php">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="mis_pedidos.php">Mis Pedidos</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Pedido #<?php echo htmlspecialchars($numero_pedido); ?></li>
+                </ol>
+            </nav>
+            <h1 class="mb-4">Detalles del Pedido #<?php echo htmlspecialchars($numero_pedido); ?></h1>
             
-            .page-title {
-                font-size: 1.8rem;
-            }
-            
-            .pedido-header {
-                flex-direction: column;
-                gap: var(--spacing-sm);
-                align-items: flex-start;
-            }
-            
-            .pedido-status {
-                align-self: flex-start;
-            }
-            
-            .productos-table {
-                display: block;
-                overflow-x: auto;
-            }
-            
-            .pedido-actions {
-                flex-direction: column;
-            }
-            
-            .btn-action {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg custom-navbar">
-        <div class="container">
-            <a class="navbar-brand" href="index.php">
-                <img src="palenque.jpeg" alt="San Basilio de Palenque" width="60" height="60">
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" 
-                    aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarMain">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php">Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="tradiciones.php">Tradiciones</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="productos_compra.php">Productos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="historias.php">Historias</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="contacto.php">Contacto</a>
-                    </li>
-                </ul>
-                
-                <div class="d-flex align-items-center gap-3">
-                    <span class="user-welcome d-none d-md-flex">
-                        <i class="fas fa-user-circle"></i> Hola, <?php echo htmlspecialchars($_SESSION['usuario']); ?>
-                    </span>
-                    
-                    <a href="ver_pedidos.php" class="btn-action">
-                        <i class="fas fa-list"></i> Mis Pedidos
-                    </a>
-                    
-                    <?php if ($isAdmin): ?>
-                    <a href="admin_panel.php" class="btn-action btn-secondary">
-                        <i class="fas fa-cogs"></i> Panel Admin
-                    </a>
+            <div class="alert alert-<?php echo $estado_clase; ?> d-flex align-items-center" role="alert">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <div>
+                    Estado del pedido: <strong><?php echo htmlspecialchars($estado_texto); ?></strong>
+                    <?php if ($estado == 'enviado'): ?>
+                        <p class="mb-0 mt-1">Fecha estimada de entrega: <strong><?php echo $fecha_entrega_formateada; ?></strong></p>
                     <?php endif; ?>
-                    
-                    <a href="logout.php" class="btn-action btn-danger">
-                        <i class="fas fa-sign-out-alt"></i> Salir
-                    </a>
                 </div>
             </div>
         </div>
-    </nav>
+    </div>
 
-    <!-- Contenido principal -->
-    <main class="container main-content">
-        <h1 class="page-title animate__animated animate__fadeIn">
-            Detalles del Pedido #<?php echo htmlspecialchars($pedido['id']); ?>
-        </h1>
-        
-        <div class="pedido-container animate__animated animate__fadeIn">
-            <div class="pedido-header">
-                <h2>Pedido #<?php echo htmlspecialchars($pedido['id']); ?></h2>
-                <span class="pedido-status status-<?php echo $pedido['estado']; ?>">
-                    <?php echo ucfirst(htmlspecialchars($pedido['estado'])); ?>
-                </span>
-            </div>
-            
-            <div class="pedido-body">
-                <div class="pedido-info">
-                    <div>
-                        <div class="info-group">
-                            <div class="info-label">Cliente</div>
-                            <div class="info-value"><?php echo htmlspecialchars($pedido['usuario_nombre']); ?></div>
-                        </div>
-                        
-                        <div class="info-group">
-                            <div class="info-label">Fecha del Pedido</div>
-                            <div class="info-value"><?php echo date('d/m/Y H:i', strtotime($pedido['fecha_pedido'])); ?></div>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <div class="info-group">
-                            <div class="info-label">Total</div>
-                            <div class="info-value">$<?php echo number_format($pedido['total'], 0, ',', '.'); ?></div>
-                        </div>
-                        
-                        <div class="info-group">
-                            <div class="info-label">Estado</div>
-                            <div class="info-value"><?php echo ucfirst(htmlspecialchars($pedido['estado'])); ?></div>
-                        </div>
-                    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Productos</h5>
                 </div>
-                
-                <?php if ($entrega): ?>
-                <div class="pedido-section">
-                    <h3 class="section-title">Datos de Entrega</h3>
-                    <div class="pedido-info">
-                        <div>
-                            <div class="info-group">
-                                <div class="info-label">Forma de Pago</div>
-                                <div class="info-value"><?php echo ucfirst(htmlspecialchars($entrega['forma_pago'] ?? 'No especificado')); ?></div>
-                            </div>
-                            
-                            <div class="info-group">
-                                <div class="info-label">Dirección</div>
-                                <div class="info-value"><?php echo htmlspecialchars($entrega['direccion'] ?? 'No especificado'); ?></div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <div class="info-group">
-                                <div class="info-label">Ciudad</div>
-                                <div class="info-value"><?php echo htmlspecialchars($entrega['ciudad'] ?? 'No especificado'); ?></div>
-                            </div>
-                            
-                            <div class="info-group">
-                                <div class="info-label">Teléfono</div>
-                                <div class="info-value"><?php echo htmlspecialchars($entrega['telefono'] ?? 'No especificado'); ?></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
-                
-                <div class="pedido-section">
-                    <h3 class="section-title">Productos</h3>
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="productos-table">
-                            <thead>
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Producto</th>
-                                    <th>Precio Unitario</th>
-                                    <th>Cantidad</th>
-                                    <th>Subtotal</th>
+                                    <th scope="col" class="ps-3">Producto</th>
+                                    <th scope="col" class="text-center">Precio</th>
+                                    <th scope="col" class="text-center">Cantidad</th>
+                                    <th scope="col" class="text-end pe-3">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php 
-                                $subtotal = 0;
-                                foreach ($detalles as $detalle): 
-                                    $itemSubtotal = $detalle['precio_unitario'] * $detalle['cantidad'];
-                                    $subtotal += $itemSubtotal;
-                                ?>
+                                <?php foreach ($productos as $producto): ?>
                                 <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-3">
-                                            <?php if (isset($detalle['imagen']) && $detalle['imagen']): ?>
-                                            <div class="producto-imagen">
-                                                <img src="<?php echo htmlspecialchars($detalle['imagen']); ?>" alt="<?php echo htmlspecialchars($detalle['nombre'] ?: 'Producto'); ?>">
-                                            </div>
-                                            <?php endif; ?>
+                                    <td class="ps-3">
+                                        <div class="d-flex align-items-center">
+                                            <img src="<?php echo htmlspecialchars($producto['imagen']); ?>" alt="<?php echo htmlspecialchars($producto['nombre']); ?>" class="img-thumbnail me-3" style="width: 50px; height: 50px; object-fit: cover;">
                                             <div>
-                                                <?php if ($detalle['nombre']): ?>
-                                                    <?php echo htmlspecialchars($detalle['nombre']); ?>
-                                                <?php else: ?>
-                                                    Producto ID: <?php echo $detalle['producto_id']; ?>
-                                                <?php endif; ?>
+                                                <h6 class="mb-0"><?php echo htmlspecialchars($producto['nombre']); ?></h6>
+                                                <small class="text-muted">ID: <?php echo $producto['id']; ?></small>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>$<?php echo number_format($detalle['precio_unitario'], 0, ',', '.'); ?></td>
-                                    <td><?php echo $detalle['cantidad']; ?></td>
-                                    <td>$<?php echo number_format($itemSubtotal, 0, ',', '.'); ?></td>
+                                    <td class="text-center align-middle">$<?php echo formatear_precio($producto['precio']); ?></td>
+                                    <td class="text-center align-middle"><?php echo $producto['cantidad']; ?></td>
+                                    <td class="text-end pe-3 align-middle">$<?php echo formatear_precio($producto['subtotal']); ?></td>
                                 </tr>
                                 <?php endforeach; ?>
-                                </tbody>
+                            </tbody>
                         </table>
                     </div>
-                    
-                    <div class="pedido-resumen">
-                        <div class="resumen-row">
-                            <span class="resumen-label">Subtotal:</span>
-                            <span class="resumen-value">$<?php echo number_format($subtotal, 0, ',', '.'); ?></span>
-                        </div>
-                        <div class="resumen-row">
-                            <span class="resumen-label">IVA (19%):</span>
-                            <span class="resumen-value">$<?php echo number_format($pedido['total'] - $subtotal, 0, ',', '.'); ?></span>
-                        </div>
-                        <div class="resumen-row resumen-total">
-                            <span class="resumen-label">Total:</span>
-                            <span class="resumen-value">$<?php echo number_format($pedido['total'], 0, ',', '.'); ?></span>
+                </div>
+                <div class="card-footer bg-white">
+                    <div class="row">
+                        <div class="col-md-6 offset-md-6">
+                            <table class="table table-sm table-borderless mb-0">
+                                <tr>
+                                    <td class="text-end">Subtotal:</td>
+                                    <td class="text-end" width="120">$<?php echo formatear_precio($subtotal); ?></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-end">IVA (19%):</td>
+                                    <td class="text-end">$<?php echo formatear_precio($impuestos); ?></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-end">Envío (<?php echo $tipo_envio_texto; ?>):</td>
+                                    <td class="text-end">$<?php echo formatear_precio($envio); ?></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-end"><strong>Total:</strong></td>
+                                    <td class="text-end"><strong>$<?php echo formatear_precio($total); ?></strong></td>
+                                </tr>
+                            </table>
                         </div>
                     </div>
                 </div>
-                
-                <div class="pedido-actions">
-                    <a href="ver_pedidos.php" class="btn-action">
-                        <i class="fas fa-arrow-left"></i> Volver a Mis Pedidos
-                    </a>
-                    
-                    <?php if ($pedido['estado'] !== 'confirmado'): ?>
-                        <?php if ($isAdmin): ?>
-                            <a href="ver_pedido.php?id=<?php echo $pedido_id; ?>&facturar=1" class="btn-action btn-secondary">
-                                <i class="fas fa-file-pdf"></i> Generar Factura
-                            </a>
-                        <?php else: ?>
-                            <button class="btn-action" disabled style="background-color: #ccc; cursor: not-allowed;">
-                                <i class="fas fa-file-pdf"></i> Factura (Solo Admins)
-                            </button>
-                        <?php endif; ?>
-                    <?php else: ?>
-                        <a href="ver_pedido.php?id=<?php echo $pedido_id; ?>&facturar=1" class="btn-action btn-secondary">
-                            <i class="fas fa-file-pdf"></i> Descargar Factura
-                        </a>
-                    <?php endif; ?>
+            </div>
+
+            <?php if (!empty($notas)): ?>
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Notas del pedido</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0"><?php echo nl2br(htmlspecialchars($notas)); ?></p>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
-    </main>
 
-    <!-- Contenedor de notificaciones Toast -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <!-- Footer -->
-    <footer>
-        <p>© 2025 San Basilio del Palenque - Todos los derechos reservados</p>
-    </footer>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Verificar si hay mensajes de la URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const message = urlParams.get('mensaje');
-            const status = urlParams.get('status');
-            
-            if (message) {
-                showToast(message, status || 'success');
-            }
-        });
-        
-        // Función para mostrar notificaciones toast
-        function showToast(message, type = 'success') {
-            const toastContainer = document.getElementById('toastContainer');
-            
-            // Crear elemento toast
-            const toast = document.createElement('div');
-            toast.className = 'custom-toast animate__animated animate__fadeInRight';
-            
-            // Contenido del toast
-            toast.innerHTML = `
-                <div class="toast-icon ${type}">
-                    <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle"></i>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Información del pedido</h5>
                 </div>
-                <div class="toast-content">
-                    <h5 class="toast-title">${type === 'success' ? 'Éxito' : 'Atención'}</h5>
-                    <p class="toast-message">${message}</p>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Número de pedido:</span>
+                            <span class="text-muted"><?php echo htmlspecialchars($numero_pedido); ?></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Fecha de pedido:</span>
+                            <span class="text-muted"><?php echo $fecha_pedido_formateada; ?></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Estado:</span>
+                            <span><span class="badge bg-<?php echo $estado_clase; ?>"><?php echo htmlspecialchars($estado_texto); ?></span></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Método de pago:</span>
+                            <span class="text-muted"><?php echo htmlspecialchars($metodo_pago_texto); ?></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Tipo de envío:</span>
+                            <span class="text-muted"><?php echo htmlspecialchars($tipo_envio_texto); ?></span>
+                        </li>
+                        <?php if ($estado == 'enviado' || $estado == 'entregado'): ?>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Fecha estimada de entrega:</span>
+                            <span class="text-muted"><?php echo $fecha_entrega_formateada; ?></span>
+                        </li>
+                        <?php endif; ?>
+                    </ul>
                 </div>
-                <button type="button" class="toast-close" onclick="this.parentElement.remove()">&times;</button>
-            `;
-            
-            // Agregar al contenedor
-            toastContainer.appendChild(toast);
-            
-            // Auto-eliminar después de 3 segundos
-            setTimeout(() => {
-                toast.classList.remove('animate__fadeInRight');
-                toast.classList.add('animate__fadeOutRight');
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
-            }, 3000);
-        }
-    </script>
-</body>
-</html>
-<?php $conexion->close(); ?>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Dirección de envío</h5>
+                </div>
+                <div class="card-body">
+                    <address class="mb-0">
+                        <strong><?php echo htmlspecialchars($_SESSION['usuario']); ?></strong><br>
+                        <?php echo htmlspecialchars($direccion); ?><br>
+                        <?php echo htmlspecialchars($ciudad); ?><br>
+                        Teléfono: <?php echo htmlspecialchars($telefono); ?>
+                    </address>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <a href="mis_pedidos.php" class="btn btn-outline-primary">Volver a mis pedidos</a>
+                <?php if ($estado == 'pendiente'): ?>
+                <a href="cancelar_pedido.php?id=<?php echo $pedido_id; ?>" class="btn btn-outline-danger" onclick="return confirm('¿Estás seguro de que deseas cancelar este pedido?');">Cancelar pedido</a>
+                <?php endif; ?>
+                <a href="#" class="btn btn-outline-secondary" onclick="window.print();">
+                    <i class="bi bi-printer"></i> Imprimir pedido
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    header, footer, .breadcrumb, .btn, nav {
+        display: none !important;
+    }
+    .container {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    .card {
+        border: 1px solid #ddd !important;
+    }
+    .card-header {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+    }
+    .badge {
+        border: 1px solid #000 !important;
+        color: #000 !important;
+        background-color: transparent !important;
+    }
+}
+</style>
+
+<?php
+// Intentar incluir el pie de página con diferentes rutas
+$footer_paths = ['footer.php', 'includes/footer.php', '../footer.php', '../includes/footer.php'];
+$footer_included = false;
+
+foreach ($footer_paths as $path) {
+    if (file_exists($path)) {
+        include($path);
+        $footer_included = true;
+        break;
+    }
+}
+
+// Si no se encuentra el pie de página, crear uno básico
+if (!$footer_included) {
+    echo '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+    </html>';
+}
+?>

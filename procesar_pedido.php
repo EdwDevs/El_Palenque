@@ -1,32 +1,22 @@
 <?php
-// Iniciar sesión y verificar autenticación
+// procesar_pedido.php - Versión final adaptada a tu estructura
 session_start();
+require_once 'db.php';
 
-if (!isset($_SESSION['usuario'])) {
-    header("Location: login.php");
-    exit();
+// Verificar si el usuario está autenticado
+if (!isset($_SESSION['usuario_id'])) {
+    header('Location: login.php?redirect=finalizar_compra.php');
+    exit;
 }
 
-// Verificar si hay datos del carrito
-if (!isset($_POST['cart']) || empty($_POST['cart'])) {
-    // Intentar obtener el carrito desde la sesión
-    if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
-        $cart = $_SESSION['cart'];
-    } else {
-        // No hay carrito ni en POST ni en sesión
-        header("Location: carrito.php?message=No hay productos en el carrito&status=error");
-        exit();
-    }
-} else {
-    // Decodificar el carrito desde POST
-    $cart = json_decode($_POST['cart'], true);
-    if (empty($cart)) {
-        header("Location: carrito.php?message=El carrito está vacío&status=error");
-        exit();
-    }
+// Verificar si se recibieron datos del formulario
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: carrito.php');
+    exit;
 }
 
 // Obtener datos del formulario
+$usuario_id = $_SESSION['usuario_id'];
 $nombre = $_POST['nombre'] ?? '';
 $apellido = $_POST['apellido'] ?? '';
 $email = $_POST['email'] ?? '';
@@ -39,84 +29,188 @@ $tipo_envio = $_POST['tipo_envio'] ?? 'estandar';
 $metodo_pago = $_POST['metodo_pago'] ?? '';
 $notas = $_POST['notas'] ?? '';
 
-// Calcular totales
-$subtotal = floatval($_POST['subtotal'] ?? 0);
-$impuestos = floatval($_POST['impuestos'] ?? 0);
-$envio = floatval($_POST['envio'] ?? 15000);
-if ($tipo_envio === 'express') {
-    $envio += 10000; // Agregar costo de envío express
+// Obtener productos del carrito
+$cart = [];
+if (isset($_POST['cart']) && !empty($_POST['cart'])) {
+    $cart = json_decode($_POST['cart'], true);
+} else {
+    // Si no hay carrito en POST, intentar obtenerlo de la sesión
+    $cart = $_SESSION['carrito'] ?? [];
 }
-$total = floatval($_POST['total'] ?? ($subtotal + $impuestos + $envio));
 
-// Generar número de pedido único
-$pedido_id = 'PED-' . date('YmdHis') . '-' . substr(md5(uniqid(mt_rand(), true)), 0, 6);
+// Verificar si el carrito está vacío
+if (empty($cart)) {
+    $_SESSION['error'] = "Tu carrito está vacío. Agrega productos antes de finalizar la compra.";
+    header('Location: carrito.php');
+    exit;
+}
 
-// Guardar datos del pedido en la sesión para mostrarlos en la confirmación
-$_SESSION['ultimo_pedido'] = [
-    'pedido_id' => $pedido_id,
-    'fecha' => date('Y-m-d H:i:s'),
-    'cart' => $cart,
-    'subtotal' => $subtotal,
-    'impuestos' => $impuestos,
-    'envio' => $envio,
-    'total' => $total,
-    'nombre' => $nombre,
-    'apellido' => $apellido,
-    'email' => $email,
-    'telefono' => $telefono,
-    'direccion' => $direccion,
-    'departamento' => $departamento,
-    'ciudad' => $ciudad,
-    'codigo_postal' => $codigo_postal,
-    'tipo_envio' => $tipo_envio,
-    'metodo_pago' => $metodo_pago,
-    'notas' => $notas,
-    'estado' => 'pendiente'
-];
+// Calcular costos
+$subtotal = 0;
+$impuestos = 0;
+$envio = 5000; // Costo base de envío
 
-// Intentar guardar el pedido en la base de datos (si está disponible)
-$pedido_guardado = false;
+if ($tipo_envio === 'express') {
+    $envio += 10000;
+}
+
+// Calcular subtotal e impuestos
+foreach ($cart as $item) {
+    $precio = floatval($item['precio'] ?? $item['price'] ?? 0);
+    $cantidad = intval($item['cantidad'] ?? 1);
+    $subtotal += $precio * $cantidad;
+}
+
+$impuestos = $subtotal * 0.19; // 19% de IVA
+$total = $subtotal + $impuestos + $envio;
+
 try {
-    // Incluir conexión a la base de datos
-    if (file_exists('db.php')) {
-        include('db.php');
+    // Iniciar transacción manual con mysqli
+    mysqli_autocommit($conexion, FALSE);
+    
+    // Generar número de pedido único
+    $fecha_actual = date('Ymd');
+    $random = mt_rand(1000, 9999);
+    $numero_pedido = "PED-{$fecha_actual}-{$random}";
+    
+    // Insertar pedido en la base de datos
+    $sql = "INSERT INTO pedidos (usuario_id, numero_pedido, nombre, apellido, email, telefono, direccion, 
+            departamento, ciudad, codigo_postal, tipo_envio, metodo_pago, notas, subtotal, impuestos, 
+            envio, total, estado, fecha_pedido) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendiente', NOW())";
+    
+    $stmt = mysqli_prepare($conexion, $sql);
+    
+    if (!$stmt) {
+        throw new Exception("Error al preparar la consulta: " . mysqli_error($conexion));
+    }
+    
+    mysqli_stmt_bind_param($stmt, "isssssssssssdddds", 
+        $usuario_id, $numero_pedido, $nombre, $apellido, $email, $telefono, $direccion, 
+        $departamento, $ciudad, $codigo_postal, $tipo_envio, $metodo_pago, $notas, 
+        $subtotal, $impuestos, $envio, $total
+    );
+    
+    $result = mysqli_stmt_execute($stmt);
+    
+    if (!$result) {
+        throw new Exception("Error al insertar el pedido: " . mysqli_stmt_error($stmt));
+    }
+    
+    // Obtener el ID del pedido insertado
+    $pedido_id = mysqli_insert_id($conexion);
+    
+    // Crear tabla para detalles del pedido si no existe
+    $sql = "CREATE TABLE IF NOT EXISTS pedido_detalles (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        pedido_id INT NOT NULL,
+        producto_id INT NOT NULL,
+        nombre_producto VARCHAR(255) NOT NULL,
+        precio DECIMAL(10,2) NOT NULL,
+        cantidad INT NOT NULL,
+        subtotal DECIMAL(10,2) NOT NULL,
+        INDEX (pedido_id),
+        INDEX (producto_id),
+        FOREIGN KEY (pedido_id) REFERENCES pedidos(id) ON DELETE CASCADE
+    )";
+    
+    if (!mysqli_query($conexion, $sql)) {
+        throw new Exception("Error al crear la tabla pedido_detalles: " . mysqli_error($conexion));
+    }
+    
+    // Insertar detalles del pedido
+    foreach ($cart as $item) {
+        $producto_id = $item['id'] ?? 0;
+        $nombre_producto = $item['nombre'] ?? $item['name'] ?? "Producto ID: {$producto_id}";
+        $precio = floatval($item['precio'] ?? $item['price'] ?? 0);
+        $cantidad = intval($item['cantidad'] ?? 1);
+        $subtotal_item = $precio * $cantidad;
         
-        // Verificar si existe la conexión
-        if (isset($conn) && $conn instanceof mysqli) {
-            // Preparar datos para insertar en la tabla de pedidos
-            $usuario_id = $_SESSION['usuario_id'] ?? 0;
-            $fecha = date('Y-m-d H:i:s');
-            $estado = 'pendiente';
-            $productos_json = json_encode($cart);
-            
-            // Insertar pedido en la base de datos
-            $query = "INSERT INTO pedidos (pedido_id, usuario_id, fecha, nombre, apellido, email, telefono, 
-                      direccion, departamento, ciudad, codigo_postal, tipo_envio, metodo_pago, 
-                      subtotal, impuestos, envio, total, productos, notas, estado) 
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
-            $stmt = $conn->prepare($query);
-            if ($stmt) {
-                $stmt->bind_param("sisssssssssssdddssss", 
-                    $pedido_id, $usuario_id, $fecha, $nombre, $apellido, $email, $telefono, 
-                    $direccion, $departamento, $ciudad, $codigo_postal, $tipo_envio, $metodo_pago, 
-                    $subtotal, $impuestos, $envio, $total, $productos_json, $notas, $estado);
-                
-                $pedido_guardado = $stmt->execute();
-                $stmt->close();
-            }
+        $sql = "INSERT INTO pedido_detalles (pedido_id, producto_id, nombre_producto, precio, cantidad, subtotal) 
+                VALUES (?, ?, ?, ?, ?, ?)";
+        
+        $stmt = mysqli_prepare($conexion, $sql);
+        
+        if (!$stmt) {
+            throw new Exception("Error al preparar la consulta de detalles: " . mysqli_error($conexion));
+        }
+        
+        mysqli_stmt_bind_param($stmt, "iisddd", $pedido_id, $producto_id, $nombre_producto, $precio, $cantidad, $subtotal_item);
+        
+        $result = mysqli_stmt_execute($stmt);
+        
+        if (!$result) {
+            throw new Exception("Error al insertar detalle del pedido: " . mysqli_stmt_error($stmt));
         }
     }
+    
+    // Guardar dirección del usuario si se solicitó
+    if (isset($_POST['guardar_direccion']) && $_POST['guardar_direccion'] == 1) {
+        $sql = "UPDATE usuarios SET 
+                direccion = ?, 
+                ciudad = ?, 
+                departamento = ?, 
+                codigo_postal = ?, 
+                telefono = ? 
+                WHERE id = ?";
+        
+        $stmt = mysqli_prepare($conexion, $sql);
+        
+        if (!$stmt) {
+            throw new Exception("Error al preparar la consulta de actualización de usuario: " . mysqli_error($conexion));
+        }
+        
+        mysqli_stmt_bind_param($stmt, "sssssi", $direccion, $ciudad, $departamento, $codigo_postal, $telefono, $usuario_id);
+        
+        $result = mysqli_stmt_execute($stmt);
+        
+        if (!$result) {
+            throw new Exception("Error al actualizar datos del usuario: " . mysqli_stmt_error($stmt));
+        }
+    }
+    
+    // Confirmar transacción
+    mysqli_commit($conexion);
+    
+    // Guardar información del pedido en la sesión para mostrarla en la página de confirmación
+    $_SESSION['ultimo_pedido'] = $pedido_id;
+    $_SESSION['numero_pedido'] = $numero_pedido;
+    
+    // Guardar datos adicionales para la página de confirmación
+    $_SESSION['datos_pedido'] = [
+        'nombre' => $nombre,
+        'apellido' => $apellido,
+        'email' => $email,
+        'telefono' => $telefono,
+        'direccion' => $direccion,
+        'departamento' => $departamento,
+        'ciudad' => $ciudad,
+        'codigo_postal' => $codigo_postal,
+        'tipo_envio' => $tipo_envio,
+        'metodo_pago' => $metodo_pago,
+        'subtotal' => $subtotal,
+        'impuestos' => $impuestos,
+        'envio' => $envio,
+        'total' => $total,
+        'productos' => $cart
+    ];
+    
+    // Limpiar carrito
+    unset($_SESSION['carrito']);
+    
+    // Redirigir a la página de confirmación
+    header('Location: confirmacion_pedido.php');
+    exit;
+    
 } catch (Exception $e) {
-    // Registrar error pero continuar con el proceso
-    error_log("Error al guardar pedido: " . $e->getMessage());
+    // Revertir transacción en caso de error
+    mysqli_rollback($conexion);
+    
+    // Guardar mensaje de error
+    $_SESSION['error'] = "Error al procesar el pedido: " . $e->getMessage();
+    
+    // Redirigir de vuelta al checkout
+    header('Location: finalizar_compra.php');
+    exit;
 }
-
-// Limpiar el carrito después de procesar el pedido
-unset($_SESSION['cart']);
-// También limpiar el carrito en localStorage mediante JavaScript
-
-// Redirigir a la página de confirmación
-header("Location: confirmacion_pedido.php?pedido=" . $pedido_id);
-exit();
 ?>
