@@ -528,7 +528,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <a href="login.php" title="Ir a la página de inicio de sesión">
                     <i class="fas fa-sign-in-alt"></i> ¿Ya tienes cuenta? Inicia Sesión
                 </a>
-                <a href="recuperar_contrasena.php" title="Recuperar contraseña olvidada">
+                <a href="restablecer_contrasena.php" title="Recuperar contraseña olvidada">
                     <i class="fas fa-key"></i> ¿Olvidaste tu contraseña?
                 </a>
             </div>

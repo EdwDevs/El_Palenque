@@ -559,7 +559,7 @@ $status = isset($_GET['status']) ? $_GET['status'] : 'success';
     <nav class="navbar navbar-expand-lg custom-navbar">
         <div class="container">
             <a class="navbar-brand" href="index.php">
-                <img src="imagenes/logo.jpeg" alt="San Basilio de Palenque" width="60" height="60">
+                <img src="palenque.jpeg" alt="San Basilio de Palenque" width="60" height="60">
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
