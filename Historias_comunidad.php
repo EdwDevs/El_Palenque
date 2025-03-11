@@ -524,10 +524,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['usuario']) && isset
                             <a class="nav-link" href="tradiciones.php">Tradiciones</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="productos.php">Productos</a>
+                            <a class="nav-link" href="productos_compra.php">Productos</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="historias_comunidad.php" aria-current="page">Historias</a>
+                            <a class="nav-link active" href="Historias_comunidad.php" aria-current="page">Historias</a>
                         </li>
                         <?php if(isset($_SESSION['rol']) && $_SESSION['rol'] == 'admin'): ?>
                         <li class="nav-item">
@@ -1004,8 +1004,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['usuario']) && isset
                     <div class="footer-links">
                         <a href="index.php">Inicio</a>
                         <a href="tradiciones.php">Tradiciones</a>
-                        <a href="productos.php">Productos</a>
-                        <a href="historias_comunidad.php">Historias</a>
+                        <a href="productos_compra.php">Productos</a>
+                        <a href="Historias_comunidad.php">Historias</a>
                         <a href="contacto.php">Contacto</a>
                     </div>
                 </div>

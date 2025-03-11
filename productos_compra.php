@@ -896,11 +896,9 @@ if ($result->num_rows > 0) {
                         <a class="nav-link active" href="productos_compra.php">Productos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="historias.php">Historias</a>
+                        <a class="nav-link" href="Historias_comunidad.php">Historias</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="contacto.php">Contacto</a>
-                    </li>
+                    
                 </ul>
 
                 <div class="user-actions">
@@ -1150,7 +1148,6 @@ if ($result->num_rows > 0) {
                     <a href="index.php" class="footer-link">Inicio</a>
                     <a href="tradiciones.php" class="footer-link">Tradiciones</a>
                     <a href="productos_compra.php" class="footer-link">Productos</a>
-                    <a href="contacto.php" class="footer-link">Contacto</a>
                 </div>
             </div>
         </div>
