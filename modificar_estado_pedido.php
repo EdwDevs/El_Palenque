@@ -41,7 +41,7 @@ $stmt->close();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $estado = $_POST['estado'];
     $total = floatval($_POST['total']);
-    $detalles_form = $_POST['detalles']??""; // Array con los detalles
+    $detalles_form = $_POST['detalles'] ?? [];; // Array con los detalles
 
     // Iniciar transacción para asegurar consistencia
     $conexion->begin_transaction();
